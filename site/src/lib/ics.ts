@@ -51,11 +51,11 @@ export function buildIcs(e: Pick<Listing, "id" | "title" | "start" | "end" | "si
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Citywide Volunteer Hub//Calendar site//EN",
+    "PRODID:-//Citywide Volunteers//Calendar site//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${e.id}@citywide-volunteer-hub`,
+    `UID:${e.id}@citywide-volunteers`,
     `DTSTAMP:${utcStamp(e.last_seen_at)}`,
     `DTSTART:${utcStamp(e.start)}`,
     ...(e.end ? [`DTEND:${utcStamp(e.end)}`] : []),

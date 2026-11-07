@@ -126,7 +126,7 @@ The format names no city. Area ids, section ids, cause ids, host type, faith tra
 
 ## Validating a file
 
-Load both schema files into your validator. The file schema refers to the listing schema by its id, `urn:citywide-volunteer-hub:schema:event`. Turn on format checking so dates and web addresses are checked too.
+Load both schema files into your validator. The file schema refers to the listing schema by its id, `urn:citywide-volunteers:schema:event`. Turn on format checking so dates and web addresses are checked too.
 
 ## What a listing never holds
 
@@ -155,4 +155,4 @@ Some volunteer programs have no set dates or times: you contact the organization
 - `section` and `neighborhood_or_town` come from the address in the same way as for listings.
 - Each `id` appears once in the file. JSON Schema cannot check that, so the pipeline and tests do.
 
-To validate, load three schema files into one validator: the listing schema (`urn:citywide-volunteer-hub:schema:event`), the opportunity schema (`urn:citywide-volunteer-hub:schema:opportunity`) and the file schema. Turn on format checking, as for `events.json`.
+To validate, load three schema files into one validator: the listing schema (`urn:citywide-volunteers:schema:event`), the opportunity schema (`urn:citywide-volunteers:schema:opportunity`) and the file schema. Turn on format checking, as for `events.json`.

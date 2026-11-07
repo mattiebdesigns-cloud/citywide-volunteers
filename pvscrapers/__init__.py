@@ -1,4 +1,4 @@
-"""Citywide Volunteer Hub scrapers.
+"""Citywide Volunteers scrapers.
 
 Each scraper turns one public volunteer calendar into listings in the shared
 event format (docs/EVENT-FORMAT.md). A scraper never holds a list of sources:

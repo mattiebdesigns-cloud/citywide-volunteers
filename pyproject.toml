@@ -1,5 +1,5 @@
 [project]
-name = "citywide-volunteer-hub"
+name = "citywide-volunteers"
 version = "0.1.0"
 description = "Scrapers and shared event format for a city's volunteer calendar."
 readme = "README.md"

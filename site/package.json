@@ -1,10 +1,10 @@
 {
-  "name": "citywide-volunteer-hub-site",
+  "name": "citywide-volunteers-site",
   "private": true,
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",
-  "description": "Phase 1 calendar website for the Citywide Volunteer Hub (static, Astro).",
+  "description": "Phase 1 calendar website for Citywide Volunteers (static, Astro).",
   "engines": {
     "node": ">=22.22.0"
   },

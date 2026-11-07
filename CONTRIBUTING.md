@@ -1,4 +1,4 @@
-# Helping with the Citywide Volunteer Hub
+# Helping with Citywide Volunteers
 
 Thank you for looking. This is open code for a city's calendar of volunteer shifts. The first city is Philadelphia, where it runs as Philly Volunteers.
 
@@ -11,7 +11,7 @@ The project is run by Cedar Water LLC, a small Philadelphia business owned by Mr
 - **Tests and fixtures.**
 
 ## What is not in this repository, and why
-Source lists, keys, the database, and all code for profiles, points and attendance are kept private. The hub lists protests and other sensitive events, and the people who attend them must not be traceable through this project. Please do not ask for access to that data; nobody outside the owner and his appointed moderators has it.
+Source lists, keys, the database, and all code for profiles, points and attendance are kept private. The site lists protests and other sensitive events, and the people who attend them must not be traceable through this project. Please do not ask for access to that data; nobody outside the owner and his appointed moderators has it.
 
 ## Ground rules
 1. Never commit a key, a source list, or anything about a real person.
@@ -21,7 +21,7 @@ Source lists, keys, the database, and all code for profiles, points and attendan
 5. Be kind. This is a volunteer project about volunteering.
 
 ## Bringing it to your city
-The code is MIT licensed: you may run your own hub without asking. You supply your own settings (city name, areas, languages) and your own list of sources, and you are responsible for your own users' data. If you do start one, open an issue to say hello; shared scrapers for the common sign-up platforms help every city.
+The code is MIT licensed: you may run your own site without asking. You supply your own settings (city name, areas, languages) and your own list of sources, and you are responsible for your own users' data. If you do start one, open an issue to say hello; shared scrapers for the common sign-up platforms help every city.
 
 ## How to start
 Build the site from the sample data in `site/` (instructions will be added there once the first version exists), or pick an issue marked "good first issue".

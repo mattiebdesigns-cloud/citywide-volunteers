@@ -1,4 +1,4 @@
-# Citywide Volunteer Hub
+# Citywide Volunteers
 
 Open-source code for a city's volunteer calendar: scrapers that turn public volunteer calendars into one shared event format, and the website that shows them. It starts in Philadelphia, as Philly Volunteers, and is built so any city can run its own.
 

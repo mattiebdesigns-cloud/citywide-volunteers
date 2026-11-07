@@ -1,7 +1,7 @@
 {
   "_about": "Example city settings for building the site with no private files. Philadelphia is only the example. A real city passes its own settings with PV_SETTINGS=path/to/settings.json (the private repo converts config/site.yml to JSON). Every key the site reads is here; see site/README.md.",
   "site": {
-    "name": "Citywide Rewards",
+    "name": "Citywide Volunteers",
     "region": { "en": "Greater Philadelphia", "es": "Gran Filadelfia" },
     "contact_email": "hello@example.org",
     "timezone": "America/New_York"

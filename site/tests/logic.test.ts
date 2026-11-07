@@ -306,3 +306,9 @@ test("flexible opportunities use the same place line as listings", () => {
   assert.equal(placeText(esTr, garden, settings), "Filadelfia");
   assert.equal(placeSpoken(esTr, garden, settings), "");
 });
+
+test("calendar file event id ends in @citywide-volunteers (decision 0021)", () => {
+  const ics = buildIcs(sample.events[0], { location: "100 Example Street", description: "Hello" });
+  assert.match(ics, new RegExp(`\\r?\\nUID:${sample.events[0].id}@citywide-volunteers\\r?\\n`));
+  assert.doesNotMatch(ics, /citywide-volunteer-hub/);
+});

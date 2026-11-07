@@ -75,7 +75,7 @@ OK = (200, {"content-type": "text/calendar; charset=utf-8"}, CALENDAR)
 
 
 def test_user_agent_names_the_bot_and_contact():
-    assert user_agent(CONTACT) == f"CitywideVolunteerHubBot/{__version__} (+mailto:{CONTACT})"
+    assert user_agent(CONTACT) == f"CitywideVolunteersBot/{__version__} (+mailto:{CONTACT})"
 
 
 @pytest.mark.parametrize("contact", ["", "   ", "not-an-address", "a@b"])
@@ -348,7 +348,7 @@ def rules(text: str) -> RobotsRules:
 
 
 def test_group_naming_our_bot_wins_over_star():
-    text = "User-agent: *\nDisallow: /\n\nUser-agent: CitywideVolunteerHubBot\nDisallow: /private/"
+    text = "User-agent: *\nDisallow: /\n\nUser-agent: CitywideVolunteersBot\nDisallow: /private/"
     r = rules(text)
     assert r.allowed("https://x.org/events/")
     assert not r.allowed("https://x.org/private/a")

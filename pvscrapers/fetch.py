@@ -4,7 +4,7 @@ What it promises (README ground rules 1 and 2):
 
 - It reads a site's robots.txt before any other request to that site, and
   never fetches an address robots.txt disallows for our bot.
-- It identifies itself as `CitywideVolunteerHubBot/<version> (+mailto:<contact>)`.
+- It identifies itself as `CitywideVolunteersBot/<version> (+mailto:<contact>)`.
   The contact address comes from the city's settings; this code holds none.
   There is no way to send any other User-Agent, so it can never pose as a
   browser or as another crawler.
@@ -71,7 +71,7 @@ from urllib.parse import urljoin, urlsplit
 from pvscrapers import __version__
 from pvscrapers.robots import RobotsRules
 
-BOT_NAME = "CitywideVolunteerHubBot"
+BOT_NAME = "CitywideVolunteersBot"
 FLOOR_DELAY_SECONDS = 1.0  # never wait less than this between requests to one site
 BLOCK_SECONDS = 86_400  # the command line remembers a site that turned the bot away this long
 _EMAIL = re.compile(r"^[^@\s()<>]+@[^@\s()<>]+\.[^@\s()<>]+$")

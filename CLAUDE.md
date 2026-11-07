@@ -1,4 +1,4 @@
-# Citywide Volunteer Hub (PUBLIC repo: citywide-volunteer-hub)
+# Citywide Volunteers (PUBLIC repo: citywide-volunteers)
 
 Everything committed here is, or will be, visible to anyone. Treat every commit as published.
 

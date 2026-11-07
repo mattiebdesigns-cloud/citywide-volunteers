@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:citywide-volunteer-hub:schema:event",
+  "$id": "urn:citywide-volunteers:schema:event",
   "title": "Volunteer listing",
   "description": "One volunteer shift or event in the shared event format. Plain-language guide: docs/EVENT-FORMAT.md. Unknown values: join_method and spanish_spoken use the string \"unknown\"; every other field that may be unknown uses null (section, host_type, faith_tradition and activity included). A field never has two ways to say unknown. The open-spots fields (spots_left, spots_total, full), the tag fields (host_type, faith_tradition, activity) and section are optional so older files still validate; new output should always write them (null, or false for full, when the page shows nothing).",
   "type": "object",

@@ -190,7 +190,7 @@ def _saved_page(tmp_path, **changes):
         "final_url": HTML_SOURCE["url"],
         "status": 200,
         "fetched_at": "2026-11-05T17:02:11+00:00",
-        "bot": "CitywideVolunteerHubBot/0.1.0",
+        "bot": "CitywideVolunteersBot/0.1.0",
         "robots_txt": {
             "url": "https://org.example.org/robots.txt",
             "read_at": "2026-11-05T17:02:10+00:00",
