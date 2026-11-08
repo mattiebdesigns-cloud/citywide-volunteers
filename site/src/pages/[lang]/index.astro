@@ -3,7 +3,12 @@
  * Home page: one column of listing cards, soonest first
  * (PROJECT.md 2; docs/briefs/phase1-home-page.md). One page per language.
  * Weekly picks (decision 0008) come in the next slice.
+ *
+ * The list also holds the flexible opportunities (decision 0018), hidden
+ * until the Kind filter asks for them (owner, 2026-11-08); without
+ * JavaScript the list shows dated shifts only, as before.
  */
+import ResultsHeading from "../../components/ResultsHeading.astro";
 import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
@@ -13,36 +18,59 @@ import { businessLabel, joinLabel, placeSpoken, placeText, spotsLabel, typeLabel
 export const getStaticPaths = languagePaths;
 
 const { lang } = Astro.params as { lang: string };
-const { i18n, listings, builtAt, settings } = siteData();
+const { i18n, listings, opportunities, builtAt, settings } = siteData();
 const tr = translator(lang);
 const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.home(code)]));
+
+/** The same fact lines as on the Flexible and Teams pages. */
+function flexibleFacts(o: (typeof opportunities)[number]) {
+  const out: Array<{ template: string; name: string; value: string; lang?: string }> = [];
+  if (o.team_required && o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
+  if (o.team_required && o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
+  if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
+  if (o.commitment) out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
+  return out;
+}
 ---
 
-<Base lang={lang} alternates={alternates} path={paths.home(lang)} filters>
+<Base lang={lang} alternates={alternates} path={paths.home(lang)}>
   <div class="page results">
-    <h1 id="results-heading" class="results__heading" tabindex="-1">{t("filters.heading")}</h1>
+    <ResultsHeading lang={lang} text={t("filters.heading")} filters />
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
-    <ul class="more-links">
-      <li><a class="tap-link" href={paths.flexible(lang)}>{t("flexible.home_link")}</a></li>
-      <li><a class="tap-link" href={paths.teams(lang)}>{t("teams.home_link")}</a></li>
-      <li><a class="tap-link" href={paths.medicaid(lang)}>{t("medicaid.home_link")}</a></li>
-    </ul>
     <p
       id="results-count"
       class="results__count"
       role="status"
       data-count-one={t("results.count.one")}
       data-count-other={t("results.count.other")}
+      data-count-flexible-one={t("flexible.count.one")}
+      data-count-flexible-other={t("flexible.count.other")}
+      data-count-teams-one={t("teams.count.one")}
+      data-count-teams-other={t("teams.count.other")}
     >
       {tr.plural("results.count", listings.length)}
     </p>
-    <div id="results-none" class="results__none" hidden={listings.length > 0}>
-      <p>{t("results.none")}</p>
-      <p class="muted">{t("results.none_hint")}</p>
+    <div
+      id="results-none"
+      class="results__none"
+      hidden={listings.length > 0}
+      data-empty-dated={t("results.empty")}
+      data-match-dated={t("results.none")}
+      data-hint-dated={t("results.none_hint")}
+      data-empty-flexible={t("flexible.none")}
+      data-match-flexible={t("flexible.none_match")}
+      data-hint-flexible={t("flexible.none_match_hint")}
+      data-empty-teams={t("teams.none")}
+      data-match-teams={t("teams.none_match")}
+      data-hint-teams={t("flexible.none_match_hint")}
+    >
+      <p data-none-main>{listings.length > 0 ? t("results.none") : t("results.empty")}</p>
+      <p class="muted" data-none-hint hidden={listings.length === 0}>{t("results.none_hint")}</p>
     </div>
+    <p id="external-note" class="muted" hidden>{t("listing.external_note")}</p>
 
     <ul id="listing-list" class="stack listing-list">
       {
@@ -62,6 +90,7 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
             data-faith={e.faith_tradition ?? ""}
             data-activity={(e.activity ?? []).join(" ")}
             data-team={String(e.team_required === true)}
+            data-kind="dated"
             data-over-at={e.overAt}
           >
             <ListingCard
@@ -91,6 +120,45 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
           </li>
         ))
       }
+      {
+        opportunities.map((o) => (
+          <li
+            data-id={o.id}
+            data-kind="flexible"
+            data-area={o.area}
+            data-cause={o.cause ?? ""}
+            data-type={o.type}
+            data-join={o.join_method}
+            data-training={o.training_required === null ? "" : String(o.training_required)}
+            data-spanish={String(o.spanish_spoken)}
+            data-host={o.host_type ?? ""}
+            data-faith={o.faith_tradition ?? ""}
+            data-activity={(o.activity ?? []).join(" ")}
+            data-team={String(o.team_required === true)}
+            hidden
+          >
+            <ListingCard
+              id={o.id}
+              href={o.signup_url}
+              external
+              describedBy="external-note"
+              title={o.title}
+              titleLang={o.listing_language}
+              org={o.org_name}
+              hostedBy={t("listing.hosted_by")}
+              place={placeText(tr, o, settings)}
+              placeSpoken={placeSpoken(tr, o, settings)}
+              flexibleLabel={t("flexible.tag")}
+              teamLabel={o.team_required ? t("teams.tag") : undefined}
+              facts={flexibleFacts(o)}
+              cause={o.cause}
+              joinMethod={o.join_method}
+              joinLabel={t(`filters.join.${o.join_method}`)}
+              headingLevel={2}
+            />
+          </li>
+        ))
+      }
     </ul>
     <p
       id="action-status"
@@ -108,17 +176,3 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
   import "../../scripts/filters.ts";
 </script>
 
-<style>
-  /* Links to the Flexible opportunities page (decision 0018) and the Medicaid
-     hours calculator (decision 0022), each a 48 px tap target. */
-  .more-links {
-    margin: 0 0 var(--space-2);
-    padding: 0;
-    list-style: none;
-  }
-  .tap-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-  }
-</style>

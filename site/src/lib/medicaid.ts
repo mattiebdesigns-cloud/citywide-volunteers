@@ -170,3 +170,13 @@ export function computeHours(input: MedicaidInput): MedicaidResult {
 export function checklistText(heading: string, items: string[]): string {
   return [heading, ...items.map((item) => `- ${item}`)].join("\n");
 }
+
+/**
+ * Pennsylvania's start date in words for one language, with no weekday:
+ * "January 1, 2027" / "1 de enero de 2027". From MEDICAID.startDate, never typed.
+ */
+export function startDateText(lang: string): string {
+  return new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(
+    new Date(`${MEDICAID.startDate}T12:00:00Z`),
+  );
+}

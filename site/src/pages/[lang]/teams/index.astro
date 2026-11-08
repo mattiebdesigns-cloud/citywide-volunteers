@@ -8,6 +8,7 @@
  * Dated ones come first, soonest first, and link to our listing page; the
  * others link out to the organization's own page.
  */
+import ResultsHeading from "../../../components/ResultsHeading.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
@@ -42,10 +43,10 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
 }
 ---
 
-<Base lang={lang} title={t("teams.title")} alternates={alternates} path={paths.teams(lang)} filters={any}>
+<Base lang={lang} title={t("teams.title")} alternates={alternates} path={paths.teams(lang)}>
   <div class="page results">
     <p class="teams__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
-    <h1 id="results-heading" class="results__heading" tabindex="-1">{t("teams.title")}</h1>
+    <ResultsHeading lang={lang} text={t("teams.title")} filters={any} />
     <p>{t("teams.intro")}</p>
   </div>
   {

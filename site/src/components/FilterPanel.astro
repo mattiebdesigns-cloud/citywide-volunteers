@@ -11,19 +11,26 @@
  *
  * Only choices that some listing has are offered. Areas appear only when the
  * settings mark them live (PROJECT.md 4), and only when there are two or more.
+ *
+ * Kind (owner, 2026-11-08) comes first: dated shifts (the default),
+ * flexible opportunities (decision 0018) or Volunteer Teams (decision 0020).
+ * Flexible opportunities have no day or time, so with "Flexible" those
+ * fields hide and a note says why.
  */
 import Button from "./ui/Button.astro";
 import Chip from "./ui/Chip.astro";
 import IconButton from "./ui/IconButton.astro";
 import { liveAreas, usedIds } from "../lib/prepare.ts";
-import { siteData, translator } from "../lib/site.ts";
+import { paths, siteData, translator } from "../lib/site.ts";
 
 interface Props {
   lang: string;
 }
 
 const { lang } = Astro.props;
-const { settings, listings } = siteData();
+const { settings, listings: dated, opportunities } = siteData();
+// Choices come from everything the home list can show.
+const listings = [...dated, ...opportunities];
 const tr = translator(lang);
 const t = tr.t;
 
@@ -35,7 +42,6 @@ const types = (["service", "training", "campaign", "protest_action"] as const).f
 const hosts = usedIds(settings.host_types, listings.map((e) => e.host_type));
 const faiths = usedIds(settings.faith_traditions, listings.map((e) => e.faith_tradition));
 const activities = usedIds(settings.activities, listings.flatMap((e) => e.activity ?? []));
-const anyTeams = listings.some((e) => e.team_required);
 const days = ["today", "tomorrow", "this_week", "this_weekend", "pick_date"];
 const times = ["morning", "afternoon", "evening", "overnight"];
 const joins = ["drop_in", "signup", "application", "unknown"];
@@ -55,18 +61,39 @@ const joins = ["drop_in", "signup", "application", "unknown"];
 
   <div class="filter-panel__fields">
     <div class="field">
+      <label for="filter-kind">{t("filters.kind.label")}</label>
+      <select id="filter-kind" data-filter="kind" aria-describedby="kind-note">
+        <option value="">{t("filters.kind.dated")}</option>
+        <option value="flexible">{t("filters.kind.flexible")}</option>
+        <option value="teams">{t("filters.kind.teams")}</option>
+      </select>
+      {/* A polite live region, always on the page and empty when there is no note, so a screen reader hears when day and time are switched off. */}
+      <p
+        id="kind-note"
+        class="field__hint"
+        role="status"
+        data-note-flexible={t("filters.kind.note_flexible")}
+        data-note-teams={t("filters.kind.note_teams")}
+      ></p>
+      <ul class="filter-panel__pages">
+        <li><a href={paths.flexible(lang)}>{t("filters.kind.see_flexible")}</a></li>
+        <li><a href={paths.teams(lang)}>{t("filters.kind.see_teams")}</a></li>
+      </ul>
+    </div>
+
+    <div class="field" data-dated-only>
       <label for="filter-day">{t("filters.day.label")}</label>
       <select id="filter-day" data-filter="day">
         <option value="">{t("filters.any")}</option>
         {days.map((d) => <option value={d}>{t(`filters.day.${d}`)}</option>)}
       </select>
     </div>
-    <div class="field" data-date-field hidden>
+    <div class="field" data-date-field data-dated-only hidden>
       <label for="filter-date">{t("filters.day.pick_date")}</label>
       <input id="filter-date" type="date" data-filter="date" />
     </div>
 
-    <div class="field">
+    <div class="field" data-dated-only>
       <label for="filter-time">{t("filters.time_of_day.label")}</label>
       <select id="filter-time" data-filter="time">
         <option value="">{t("filters.any")}</option>
@@ -164,19 +191,6 @@ const joins = ["drop_in", "signup", "application", "unknown"];
       )
     }
 
-    {
-      anyTeams && (
-        <div class="field">
-          <label for="filter-team">{t("filters.team.label")}</label>
-          <select id="filter-team" data-filter="team">
-            <option value="">{t("filters.any")}</option>
-            <option value="only">{t("filters.team.only")}</option>
-            <option value="hide">{t("filters.team.hide")}</option>
-          </select>
-        </div>
-      )
-    }
-
     <div class="filter-panel__chips">
       <Chip label={t("filters.no_training")} data-filter-toggle="no_training" />
       <Chip label={t("filters.spanish_spoken")} data-filter-toggle="spanish" />
@@ -186,7 +200,13 @@ const joins = ["drop_in", "signup", "application", "unknown"];
   </div>
 
   <div class="filter-panel__actions">
-    <Button block data-filters-apply>{t("filters.apply")}</Button>
+    <Button
+      block
+      data-filters-apply
+      data-label-dated={t("filters.apply")}
+      data-label-flexible={t("flexible.apply")}
+      data-label-teams={t("teams.apply")}>{t("filters.apply")}</Button
+    >
     <Button variant="quiet" block data-filters-clear>{t("filters.clear")}</Button>
   </div>
 </section>
@@ -220,6 +240,16 @@ const joins = ["drop_in", "signup", "application", "unknown"];
     flex-direction: column;
     gap: var(--space-4);
     min-width: 0;
+  }
+  .filter-panel__pages {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .filter-panel__pages a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
   }
   .filter-panel__chips {
     display: flex;

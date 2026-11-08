@@ -16,7 +16,7 @@
 import Base from "../../../layouts/Base.astro";
 import Button from "../../../components/ui/Button.astro";
 import Phones from "../../../components/Phones.astro";
-import { MEDICAID } from "../../../lib/medicaid.ts";
+import { MEDICAID, startDateText } from "../../../lib/medicaid.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 
 export const getStaticPaths = languagePaths;
@@ -91,6 +91,7 @@ const fields = {
   <div class="page mh">
     <p class="mh__back no-print"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
     <h1 class="no-print">{t("medicaid.title")}</h1>
+    <p class="mh__starts no-print">{t("medicaid.starts", { date: startDateText(tr.lang) })}</p>
     <p class="no-print">
       {t("medicaid.intro", { start: day(m.startDate), hours: num(m.hoursNeeded), income: fmt.income })}
     </p>
@@ -251,6 +252,10 @@ const fields = {
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
+  }
+  .mh__starts {
+    font-size: var(--text-lead);
+    font-weight: var(--weight-strong);
   }
   .mh__back {
     margin: 0;

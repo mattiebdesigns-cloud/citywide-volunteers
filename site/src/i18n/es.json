@@ -17,8 +17,7 @@
     "footer_sources": "Los anuncios vienen de los calendarios públicos de las organizaciones.",
     "footer_open_source": "Cualquier persona puede ver y reutilizar el código de este sitio.",
     "footer_code_link": "Ver el código",
-    "test_version": "Versión de prueba. Los anuncios pueden tener errores o no estar al día.",
-    "rewards_coming": "Las recompensas por hacer voluntariado llegan pronto. Por ahora, busque un turno en el que pueda participar."
+    "test_version": "Versión de prueba. Los anuncios pueden tener errores o no estar al día."
   },
   "filters": {
     "heading": "Buscar un turno",
@@ -51,10 +50,15 @@
       "label": "Parte de la ciudad",
       "all": "Todas las partes de la ciudad"
     },
-    "team": {
-      "label": "Equipos de voluntarios",
-      "only": "Solo actividades para equipos de voluntarios",
-      "hide": "Ocultar actividades para equipos de voluntarios"
+    "kind": {
+      "label": "Tipo",
+      "dated": "Turnos con fecha",
+      "flexible": "Flexibles",
+      "teams": "Equipos de voluntarios",
+      "note_flexible": "Las oportunidades flexibles no tienen día ni hora fijos, así que los filtros de día y hora no se usan.",
+      "note_teams": "Los filtros de día y hora solo se aplican a los turnos en equipo con fecha.",
+      "see_flexible": "Ver todas las oportunidades flexibles",
+      "see_teams": "Ver todas las actividades para equipos de voluntarios"
     },
     "cause": {
       "label": "Causa",
@@ -78,14 +82,23 @@
     },
     "no_training": "No requiere capacitación",
     "spanish_spoken": "Se habla español",
-    "host_type": { "label": "Quién lo organiza" },
-    "faith_tradition": { "label": "Tradición religiosa" },
-    "activity": { "label": "Cómo es el trabajo" },
+    "host_type": {
+      "label": "Quién lo organiza"
+    },
+    "faith_tradition": {
+      "label": "Tradición religiosa"
+    },
+    "activity": {
+      "label": "Cómo es el trabajo"
+    },
     "show_only": "Mostrar solo: {name}",
     "hide": "Ocultar: {name}",
     "show_only_group": "Mostrar solo",
     "hide_group": "Ocultar",
-    "active_count": {"one": "{count} filtro activo", "other": "{count} filtros activos"},
+    "active_count": {
+      "one": "{count} filtro activo",
+      "other": "{count} filtros activos"
+    },
     "saved_only": "Solo turnos guardados"
   },
   "causes": {
@@ -137,7 +150,8 @@
       "other": "{count} turnos"
     },
     "none": "Ningún turno coincide con estos filtros.",
-    "none_hint": "Pruebe otro día o quite un filtro."
+    "none_hint": "Pruebe otro día o quite un filtro.",
+    "empty": "No hay turnos publicados por ahora."
   },
   "home": {
     "picks_heading": "Recomendados de esta semana",
@@ -250,7 +264,6 @@
     "intro": "Estos programas no tienen fechas ni horarios fijos. Usted elige un horario con la organización.",
     "tag": "Flexible",
     "commitment": "Tiempo que se pide: {commitment}",
-    "home_link": "Oportunidades flexibles: sin horario fijo",
     "count": {
       "one": "{count} oportunidad",
       "other": "{count} oportunidades"
@@ -266,7 +279,6 @@
     "tag": "Equipo de voluntarios",
     "size": "Tamaño del equipo: {size}",
     "task": "Lo que hace el equipo: {task}",
-    "home_link": "Equipos de voluntarios: actividades que necesitan un equipo",
     "count": {
       "one": "{count} actividad en equipo",
       "other": "{count} actividades en equipo"
@@ -277,6 +289,8 @@
   },
   "medicaid": {
     "title": "Calculadora de horas para Medicaid",
+    "starts": "La regla de Pensilvania empieza el {date}.",
+    "link_with_date": "Calculadora de horas para Medicaid: la regla de Pensilvania empieza el {date}",
     "intro": "Desde el {start}, muchos adultos de 19 a 64 años con Medicaid en Pensilvania deben mostrar {hours} horas en un mes de trabajo, voluntariado, un programa de empleo o estudios. Un ingreso mensual de al menos {income} también cuenta. Esta página suma sus horas de un mes.",
     "private": "No guardamos nada de lo que escribe aquí. Se queda en su dispositivo y se borra al salir de la página.",
     "only_dhs": "Esta herramienta suma horas. No decide si usted mantiene Medicaid. Solo el DHS de Pensilvania lo decide.",
@@ -368,8 +382,7 @@
     "link_cls": "Community Legal Services",
     "call": "Llame al {phone}",
     "phone_dhs": "DHS: {phone} (en Filadelfia: {phila})",
-    "phone_hr1": "Línea de preguntas del DHS sobre los cambios en Medicaid: {phone}",
-    "home_link": "Calculadora de horas para Medicaid"
+    "phone_hr1": "Línea de preguntas del DHS sobre los cambios en Medicaid: {phone}"
   },
   "about_page": {
     "nav": "Acerca de",
@@ -417,8 +430,7 @@
     "more": {
       "heading": "Más que turnos de un solo día",
       "flexible": "Oportunidades flexibles: programas en los que usted elige un horario con la organización.",
-      "teams": "Equipos de voluntarios: actividades que necesitan un equipo, no una sola persona.",
-      "medicaid": "Una calculadora de horas para Medicaid que suma un mes de trabajo, voluntariado y estudios."
+      "teams": "Equipos de voluntarios: actividades que necesitan un equipo, no una sola persona."
     },
     "rewards": {
       "heading": "Lo que viene: Citywide Rewards",

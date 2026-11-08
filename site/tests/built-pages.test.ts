@@ -475,7 +475,7 @@ test("Volunteer Teams page: dated and arranged team activities, each with the ta
   }
 });
 
-test("calendar: Volunteer Team tag on cards and listing pages, and a show-only / hide filter", () => {
+test("calendar: Volunteer Team tag on cards and listing pages", () => {
   const b = build({});
   try {
     const team = sample.events.find((e) => e.team_required === true)!;
@@ -488,14 +488,84 @@ test("calendar: Volunteer Team tag on cards and listing pages, and a show-only /
       assert.ok(text(card(team.id)).includes(tr.t("teams.tag")));
       assert.match(card(other.id), /data-team="false"/);
       assert.ok(!text(card(other.id)).includes(tr.t("teams.tag")));
-      const select = home.slice(home.indexOf('id="filter-team"'), home.indexOf("</select>", home.indexOf('id="filter-team"')));
-      assert.deepEqual([...select.matchAll(/<option value="([^"]*)"/g)].map((m) => m[1]), ["", "only", "hide"]);
-      assert.ok(home.includes(`<label for="filter-team"`) && home.includes(tr.t("filters.team.label")));
-      const page = text(b.read(`${lang}/listing/${team.id}/index.html`));
+      // Only the page's own content: the footer now links to "Volunteer Teams" on every page.
+      const mainOf = (html: string) => html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      const page = text(mainOf(b.read(`${lang}/listing/${team.id}/index.html`)));
       assert.ok(page.includes(tr.t("teams.tag")));
       assert.ok(page.includes(tr.t("teams.size", { size: team.team_size! })));
       assert.ok(page.includes(tr.t("teams.task", { task: team.team_task! })));
-      assert.ok(!text(b.read(`${lang}/listing/${other.id}/index.html`)).includes(tr.t("teams.tag")));
+      assert.ok(!text(mainOf(b.read(`${lang}/listing/${other.id}/index.html`))).includes(tr.t("teams.tag")));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("home page: Kind filter, flexible cards in the list (hidden until chosen), no links at the top", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const home = b.read(`${lang}/index.html`);
+      const main = home.slice(home.indexOf("<main"), home.indexOf("</main>"));
+      // The three links are gone from the top of the page.
+      const top = main.slice(0, main.indexOf('id="listing-list"'));
+      for (const href of ["flexible", "teams", "medicaid-hours"]) {
+        const outsidePanel = top.replace(/<section id="filter-panel"[\s\S]*?<\/section>/, "");
+        assert.ok(!outsidePanel.includes(`href="/${lang}/${href}/"`), `${lang}: no ${href} link at the top`);
+      }
+      // Kind comes first in the panel, with the three choices and the two page links.
+      const panel = home.slice(home.indexOf('id="filter-panel"'), home.indexOf("</section>", home.indexOf('id="filter-panel"')));
+      assert.ok(panel.indexOf('id="filter-kind"') < panel.indexOf('id="filter-day"'));
+      const kind = panel.slice(panel.indexOf('id="filter-kind"'), panel.indexOf("</select>", panel.indexOf('id="filter-kind"')));
+      assert.deepEqual([...kind.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)/g)].map((m) => [m[1], decode(m[2])]), [
+        ["", tr.t("filters.kind.dated")],
+        ["flexible", tr.t("filters.kind.flexible")],
+        ["teams", tr.t("filters.kind.teams")],
+      ]);
+      assert.ok(panel.includes(`href="/${lang}/flexible/"`) && panel.includes(`href="/${lang}/teams/"`));
+      assert.doesNotMatch(panel, /id="filter-team"/, "the old team filter is folded into Kind");
+      // Day and time are marked so the script can switch them off for flexible items.
+      assert.equal([...panel.matchAll(/data-dated-only/g)].length, 3);
+      // Every flexible opportunity is in the list, hidden until Kind asks for it, with the Flexible card style.
+      for (const o of oppSample.opportunities) {
+        const li = home.slice(home.indexOf(`<li data-id="${o.id}"`), home.indexOf("</li>", home.indexOf(`<li data-id="${o.id}"`)));
+        assert.match(li, /data-kind="flexible"/);
+        assert.match(li, /\shidden[\s>]/);
+        assert.match(li, /aria-describedby="external-note"/);
+        assert.ok(text(li).includes(tr.t("flexible.tag")));
+      }
+      assert.match(home, /<p id="external-note"[^>]*hidden/);
+      // Empty-state words for each kind are on the page for the script.
+      for (const [attr, key] of [
+        ["data-empty-flexible", "flexible.none"],
+        ["data-empty-teams", "teams.none"],
+        ["data-empty-dated", "results.empty"],
+      ]) {
+        assert.ok(home.includes(`${attr}="${tr.t(key).replace(/'/g, "&#39;")}"`) || decode(home).includes(`${attr}="${tr.t(key)}"`), `${lang} ${attr}`);
+      }
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("footer: About, Flexible, Volunteer Teams, and the calculator with Pennsylvania's start date", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date("2027-01-01T12:00:00Z"));
+      const label = tr.t("medicaid.link_with_date", { date });
+      assert.equal(label, lang === "en" ? "Medicaid hours calculator: Pennsylvania's rule starts January 1, 2027" : "Calculadora de horas para Medicaid: la regla de Pensilvania empieza el 1 de enero de 2027");
+      const home = b.read(`${lang}/index.html`);
+      const footer = text(home.slice(home.indexOf("<footer")));
+      for (const words of [tr.t("about_page.nav"), tr.t("flexible.title"), tr.t("teams.title"), label]) assert.ok(footer.includes(words), `${lang}: ${words}`);
+      // The About page links to the calculator with the same label; the calculator says the date near the top.
+      assert.ok(text(b.read(`${lang}/about/index.html`)).includes(label));
+      const calc = b.read(`${lang}/medicaid-hours/index.html`);
+      const main = calc.slice(calc.indexOf("<main"));
+      assert.ok(text(main.slice(0, main.indexOf("</h1>") + 400)).includes(tr.t("medicaid.starts", { date })));
     }
   } finally {
     b.done();
@@ -512,7 +582,6 @@ test("Volunteer Teams: with none, a plain message and no filters; no team filter
       const html = b.read(`${lang}/teams/index.html`);
       assert.ok(text(html).includes(i18n.translator(lang).t("teams.none")));
       assert.doesNotMatch(html, /id="filters-toggle"|id="filter-panel"|<li data-id=/);
-      assert.doesNotMatch(b.read(`${lang}/index.html`), /id="filter-team"/);
     }
   } finally {
     b.done();
@@ -523,7 +592,7 @@ test("Volunteer Teams: with none, a plain message and no filters; no team filter
 test("Volunteer Teams words never say 'group' (decision 0020)", () => {
   for (const [lang, word] of [["en", /group/i], ["es", /grupo/i]] as const) {
     const all = JSON.parse(readFileSync(join(site, `src/i18n/${lang}.json`), "utf8"));
-    for (const value of [...Object.values(all.teams), ...Object.values(all.filters.team)].flatMap((v) => (typeof v === "string" ? [v] : Object.values(v as object)))) {
+    for (const value of [...Object.values(all.teams), ...Object.values(all.filters.kind)].flatMap((v) => (typeof v === "string" ? [v] : Object.values(v as object)))) {
       assert.doesNotMatch(String(value), word, `${lang}: ${value}`);
     }
   }
@@ -658,8 +727,69 @@ test("the link to the page you are on is marked aria-current=page, in the header
       assert.deepEqual(current(`${lang}/about/index.html`), [`/${lang}/about/`, `/${lang}/about/`]);
       assert.deepEqual(current(`${lang}/medicaid-hours/index.html`), [`/${lang}/medicaid-hours/`]);
       assert.deepEqual(current(`${lang}/index.html`), [`/${lang}/`]);
-      assert.deepEqual(current(`${lang}/flexible/index.html`), []);
+      assert.deepEqual(current(`${lang}/flexible/index.html`), [`/${lang}/flexible/`]);
+      assert.deepEqual(current(`${lang}/listing/${sample.events[0].id}/index.html`), []);
     }
+  } finally {
+    b.done();
+  }
+});
+
+test("the 'rewards are coming' line is gone from every page (owner, 2026-11-08)", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      for (const page of [`${lang}/index.html`, `${lang}/about/index.html`, `${lang}/flexible/index.html`, `${lang}/listing/${sample.events[0].id}/index.html`]) {
+        const html = b.read(page);
+        assert.doesNotMatch(html, /rewards-coming|rewards_coming/, page);
+        assert.ok(!html.includes(lang === "en" ? "Rewards for volunteering are coming" : "Las recompensas por hacer voluntariado llegan pronto"), page);
+      }
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("Filters button sits beside the page heading, not in the site header (owner, 2026-11-08)", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      for (const page of [`${lang}/index.html`, `${lang}/flexible/index.html`, `${lang}/teams/index.html`]) {
+        const html = b.read(page);
+        const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+        assert.doesNotMatch(header, /filters-toggle/, `${page}: not in the header`);
+        const box = html.slice(html.indexOf('<div class="results-heading"'), html.indexOf("</button>", html.indexOf('<div class="results-heading"')));
+        assert.match(box, /<h1 id="results-heading"/, `${page}: a real h1`);
+        assert.ok(box.indexOf("<h1") < box.indexOf('id="filters-toggle"'), `${page}: heading first, then the button`);
+        // Same name as before: "Filters" (plus the spoken count when filters are on).
+        assert.match(box, new RegExp(`id="filters-toggle"[\\s\\S]*${i18n.translator(lang).t("filters.open")}`));
+      }
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("Kind note is a polite live region that is always on the page; Apply follows the kind (accessibility gate)", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const home = b.read(`${lang}/index.html`);
+      const note = home.match(/<p id="kind-note"[^>]*>([^<]*)<\/p>/);
+      assert.ok(note, `${lang}: the note is on the page`);
+      assert.match(note[0], /role="status"/);
+      assert.doesNotMatch(note[0], /\shidden[\s>=]/, "never hidden");
+      assert.equal(note[1].trim(), "", "empty until a kind needs a note");
+      assert.match(home, /id="filter-kind"[^>]*aria-describedby="kind-note"/);
+      const apply = home.match(/<button[^>]*data-filters-apply[^>]*>/)![0];
+      for (const [attr, key] of [["data-label-dated", "filters.apply"], ["data-label-flexible", "flexible.apply"], ["data-label-teams", "teams.apply"]]) {
+        assert.ok(decode(apply).includes(`${attr}="${tr.t(key)}"`), `${lang}: ${attr}`);
+      }
+    }
+    // The script never hides the note; it only changes its words.
+    const script = readFileSync(join(site, "src/scripts/filters.ts"), "utf8");
+    assert.doesNotMatch(script, /kindNote\.hidden/);
   } finally {
     b.done();
   }

@@ -11,7 +11,7 @@
 import Base from "../../../layouts/Base.astro";
 import AboutArt from "../../../components/AboutArt.astro";
 import { aboutCounts } from "../../../lib/about.ts";
-import { MEDICAID } from "../../../lib/medicaid.ts";
+import { MEDICAID, startDateText } from "../../../lib/medicaid.ts";
 import { cityName } from "../../../lib/og.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 
@@ -86,7 +86,7 @@ const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}")
       <ul class="about__links">
         <li><a href={paths.flexible(lang)}>{t("about_page.more.flexible")}</a></li>
         <li><a href={paths.teams(lang)}>{t("about_page.more.teams")}</a></li>
-        <li><a href={paths.medicaid(lang)}>{t("about_page.more.medicaid")}</a></li>
+        <li><a href={paths.medicaid(lang)}>{t("medicaid.link_with_date", { date: startDateText(tr.lang) })}</a></li>
       </ul>
     </section>
 

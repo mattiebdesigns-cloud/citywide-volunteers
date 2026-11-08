@@ -22,6 +22,8 @@ export interface CardFacts {
   activities: string[];
   /** "true" when the listing needs a Volunteer Team (decision 0020). */
   team: string;
+  /** "dated" for a calendar listing, "flexible" for a flexible opportunity (decision 0018). */
+  kind: string;
 }
 
 export interface FilterState {
@@ -37,8 +39,12 @@ export interface FilterState {
   faith: string;
   /** "", "only:<id>" or "hide:<id>" */
   activity: string;
-  /** "", "only" or "hide": Volunteer Team activities (decision 0020). */
-  team: string;
+  /**
+   * What the list shows (owner, 2026-11-08): "" dated shifts (the default),
+   * "flexible" flexible opportunities, "teams" everything that needs a
+   * Volunteer Team, dated or flexible.
+   */
+  kind: string;
   no_training: boolean;
   spanish: boolean;
   saved: boolean;
@@ -55,7 +61,7 @@ export const EMPTY_FILTERS: FilterState = {
   host: "",
   faith: "",
   activity: "",
-  team: "",
+  kind: "",
   no_training: false,
   spanish: false,
   saved: false,
@@ -67,6 +73,8 @@ export function activeCount(state: FilterState): number {
   for (const key of Object.keys(EMPTY_FILTERS) as Array<keyof FilterState>) {
     if (key === "date") continue; // part of the day filter
     if (key === "day" && state.day === "pick_date" && !state.date) continue;
+    // Flexible opportunities have no day or time, so those filters are off and not counted.
+    if ((key === "day" || key === "time") && state.kind === "flexible") continue;
     if (state[key]) n += 1;
   }
   return n;
@@ -99,15 +107,24 @@ function tagMatches(choice: string, values: string[]): boolean {
   return true;
 }
 
+function kindMatches(card: CardFacts, kind: string): boolean {
+  if (kind === "flexible") return card.kind === "flexible";
+  if (kind === "teams") return card.team === "true";
+  return card.kind !== "flexible"; // the default: dated shifts
+}
+
 /**
  * True when the card passes every filter that is on.
  * `today` is the local date in the city's time zone; `saved` is the set of
  * ids saved on this device.
  */
 export function matches(card: CardFacts, state: FilterState, today: string, saved: ReadonlySet<string>): boolean {
+  const flexible = card.kind === "flexible";
   return (
-    dayMatches(card, state, today) &&
-    (!state.time || card.time === state.time) &&
+    kindMatches(card, state.kind) &&
+    // Day and time apply only to dated shifts.
+    (flexible || dayMatches(card, state, today)) &&
+    (flexible || !state.time || card.time === state.time) &&
     (!state.area || card.area === state.area) &&
     (!state.cause || card.cause === state.cause) &&
     (!state.type || card.type === state.type) &&
@@ -115,8 +132,6 @@ export function matches(card: CardFacts, state: FilterState, today: string, save
     tagMatches(state.host, card.host ? [card.host] : []) &&
     (!state.faith || card.faith === state.faith) &&
     tagMatches(state.activity, card.activities) &&
-    (state.team !== "only" || card.team === "true") &&
-    (state.team !== "hide" || card.team !== "true") &&
     (!state.no_training || card.training === "false") &&
     (!state.spanish || card.spanish === "true") &&
     (!state.saved || saved.has(card.id))

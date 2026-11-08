@@ -21,8 +21,6 @@ interface Props {
   titleLang?: string;
   /** This page's address in every language, for the language switch. */
   alternates: Record<string, string>;
-  /** Show the filters button in the header (home page only). */
-  filters?: boolean;
   /** This page's path, for the link-preview address (decision 0014). */
   path: string;
   /**
@@ -33,7 +31,7 @@ interface Props {
   noStorage?: boolean;
 }
 
-const { lang, title, alternates, filters = false, path, noStorage = false } = Astro.props;
+const { lang, title, alternates, path, noStorage = false } = Astro.props;
 const { testBuild, siteUrl, settings, listings } = siteData();
 // Every listing in this build and when it is over, so the browser can clear
 // saved shifts that have ended (owner, Q32). Ids are letters, digits, - and _.
@@ -65,7 +63,7 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
     <SvgSprite />
     {testBuild && <TestBanner text={tr.t("site.test_version")} />}
     <a class="skip-link" href="#main">{tr.t("site.skip_to_content")}</a>
-    <SiteHeader lang={lang} alternates={alternates} filters={filters} noStorage={noStorage} path={path} />
+    <SiteHeader lang={lang} alternates={alternates} noStorage={noStorage} path={path} />
     <main id="main" tabindex="-1">
       <slot />
     </main>

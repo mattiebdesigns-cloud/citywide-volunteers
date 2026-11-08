@@ -1,0 +1,96 @@
+---
+/**
+ * The page heading with the Filters button beside it (owner, 2026-11-08):
+ * heading on the left, button on the right. When both do not fit on one
+ * line (a long heading at 360 px), the button wraps under the heading; it
+ * never overlaps the heading and never shrinks below its 48 px height.
+ * The heading stays a real <h1>; the button keeps its accessible name
+ * ("Filters", plus ", 2 filters on" when filters are on). The button is
+ * hidden until the filter script runs, so it never shows without JavaScript.
+ */
+import Button from "./ui/Button.astro";
+import { translator } from "../lib/site.ts";
+
+interface Props {
+  lang: string;
+  /** The heading's words. */
+  text: string;
+  /** Show the Filters button (only where the page has a filter panel). */
+  filters?: boolean;
+}
+
+const { lang, text, filters = false } = Astro.props;
+const tr = translator(lang);
+---
+
+<div class="results-heading">
+  <h1 id="results-heading" class="results__heading" tabindex="-1">{text}</h1>
+  {
+    filters && (
+      <Button
+        variant="secondary"
+        icon="filter"
+        class="results-heading__filters"
+        id="filters-toggle"
+        aria-expanded="false"
+        aria-controls="filter-panel"
+        hidden
+      >
+        {tr.t("filters.open")}
+        <span
+          class="results-heading__count"
+          data-filters-count
+          data-count-one={tr.t("filters.active_count.one")}
+          data-count-other={tr.t("filters.active_count.other")}
+          hidden
+        >
+          <span class="results-heading__number" aria-hidden="true" data-filters-number></span>
+          <span class="sr-only" data-filters-words></span>
+        </span>
+      </Button>
+    )
+  }
+</div>
+
+<style>
+  .results-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+  }
+  .results-heading h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  /* Never squeezed: keeps its full size, or moves to the next line. */
+  .results-heading :global(.results-heading__filters) {
+    flex: none;
+  }
+  .results-heading :global(.results-heading__filters[hidden]) {
+    display: none;
+  }
+  /* The number of filters on, as a small round badge next to "Filters". */
+  .results-heading__count {
+    display: inline-flex;
+    margin-inline-start: var(--space-2);
+  }
+  .results-heading__count[hidden] {
+    display: none;
+  }
+  .results-heading__number {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 var(--space-1);
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: var(--text-min);
+    line-height: 1;
+  }
+</style>

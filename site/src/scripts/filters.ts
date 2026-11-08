@@ -32,6 +32,7 @@ if (panel && toggle && list && countEl) {
         faith: d.faith ?? "",
         activities: (d.activity ?? "").split(" ").filter(Boolean),
         team: d.team ?? "",
+        kind: d.kind ?? "dated",
       },
     ];
   });
@@ -40,6 +41,16 @@ if (panel && toggle && list && countEl) {
   const selects = [...panel.querySelectorAll<HTMLSelectElement | HTMLInputElement>("[data-filter]")];
   const chips = [...panel.querySelectorAll<HTMLButtonElement>("[data-filter-toggle]")];
   const dateField = panel.querySelector<HTMLElement>("[data-date-field]");
+  const datedOnly = [...panel.querySelectorAll<HTMLElement>("[data-dated-only]")];
+  const kindNote = document.getElementById("kind-note");
+  const applyButton = panel.querySelector<HTMLElement>("[data-filters-apply]");
+  const externalNote = document.getElementById("external-note");
+  // How many items of each kind the page holds, for the "none yet" message.
+  const kindTotals = {
+    "": cards.filter(([, f]) => f.kind !== "flexible").length,
+    flexible: cards.filter(([, f]) => f.kind === "flexible").length,
+    teams: cards.filter(([, f]) => f.team === "true").length,
+  };
   const countBadge = toggle.querySelector<HTMLElement>("[data-filters-count]");
   const pluralRules = new Intl.PluralRules(document.documentElement.lang);
 
@@ -60,11 +71,25 @@ if (panel && toggle && list && countEl) {
       const key = chip.dataset.filterToggle as keyof FilterState;
       chip.setAttribute("aria-pressed", String(Boolean(state[key])));
     }
-    if (dateField) dateField.hidden = state.day !== "pick_date";
+    // Flexible opportunities have no day or time: hide those fields and say why.
+    const flexible = state.kind === "flexible";
+    for (const field of datedOnly) if (field !== dateField) field.hidden = flexible;
+    if (dateField) dateField.hidden = flexible || state.day !== "pick_date";
+    // "Show shifts" / "Show opportunities" / "Show team activities".
+    if (applyButton) {
+      const label = flexible ? applyButton.dataset.labelFlexible : state.kind === "teams" ? applyButton.dataset.labelTeams : applyButton.dataset.labelDated;
+      const words = applyButton.querySelector("span") ?? applyButton;
+      if (label) words.textContent = label;
+    }
+    if (kindNote) {
+      const note = state.kind === "flexible" ? kindNote.dataset.noteFlexible : state.kind === "teams" ? kindNote.dataset.noteTeams : "";
+      // Never hidden: an empty live region stays on the page so changes are announced.
+      if (kindNote.textContent !== (note ?? "")) kindNote.textContent = note ?? "";
+    }
   }
 
-  function plural(el: HTMLElement, count: number): string {
-    const text = el.dataset[`count${pluralRules.select(count) === "one" ? "One" : "Other"}`] ?? "";
+  function plural(el: HTMLElement, count: number, prefix = "count"): string {
+    const text = el.dataset[`${prefix}${pluralRules.select(count) === "one" ? "One" : "Other"}`] ?? "";
     return text.replace("{count}", new Intl.NumberFormat(document.documentElement.lang).format(count));
   }
 
@@ -79,8 +104,25 @@ if (panel && toggle && list && countEl) {
       li.hidden = !visible;
       if (visible) shown += 1;
     }
-    countEl!.textContent = plural(countEl!, shown);
-    if (noneEl) noneEl.hidden = shown > 0;
+    // Count words for what is shown: "shifts", "opportunities" or "team activities".
+    const prefix = state.kind === "flexible" ? "countFlexible" : state.kind === "teams" ? "countTeams" : "count";
+    countEl!.textContent = plural(countEl!, shown, prefix);
+    if (noneEl) {
+      noneEl.hidden = shown > 0;
+      // None of this kind at all: "No flexible opportunities yet." Otherwise: none match these filters.
+      const kind = (state.kind || "") as keyof typeof kindTotals;
+      const empty = (kindTotals[kind] ?? 0) === 0;
+      const name = kind === "flexible" ? "Flexible" : kind === "teams" ? "Teams" : "Dated";
+      const main = noneEl.querySelector<HTMLElement>("[data-none-main]");
+      const hint = noneEl.querySelector<HTMLElement>("[data-none-hint]");
+      if (main) main.textContent = noneEl.dataset[`${empty ? "empty" : "match"}${name}`] ?? "";
+      if (hint) {
+        hint.textContent = noneEl.dataset[`hint${name}`] ?? "";
+        hint.hidden = empty;
+      }
+    }
+    // The "sign-up happens on the organization's website" note, when flexible cards can show.
+    if (externalNote) externalNote.hidden = state.kind !== "flexible" && state.kind !== "teams";
     const active = activeCount(state);
     if (countBadge) {
       // Sighted people see the number in a badge; screen readers hear ", 2 filters on".

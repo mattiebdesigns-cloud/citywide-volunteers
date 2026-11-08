@@ -127,6 +127,7 @@ const card: CardFacts = {
   faith: "",
   activities: ["outdoors", "physical"],
   team: "false",
+  kind: "dated",
 };
 const today = "2026-10-20"; // a Tuesday
 const none = new Set<string>();
@@ -320,17 +321,25 @@ test("calendar file event id ends in @citywide-volunteers (decision 0021)", () =
 
 // Volunteer Teams (decision 0020).
 
-test("Volunteer Team filter: show only, or hide, team activities", () => {
-  const team = { ...card, team: "true" };
-  const only = { ...EMPTY_FILTERS, team: "only" };
-  const hide = { ...EMPTY_FILTERS, team: "hide" };
-  assert.equal(matches(team, EMPTY_FILTERS, today, none), true);
-  assert.equal(matches(card, EMPTY_FILTERS, today, none), true);
-  assert.equal(matches(team, only, today, none), true);
-  assert.equal(matches(card, only, today, none), false);
-  assert.equal(matches(team, hide, today, none), false);
-  assert.equal(matches(card, hide, today, none), true);
-  assert.equal(activeCount(only), 1);
+test("Kind filter: dated shifts by default, flexible opportunities, or everything for a Volunteer Team", () => {
+  const datedTeam = { ...card, team: "true" };
+  const flex = { ...card, kind: "flexible", date: "", time: "" };
+  const flexTeam = { ...flex, team: "true" };
+  const kind = (k: string) => ({ ...EMPTY_FILTERS, kind: k });
+  const shows = (state: typeof EMPTY_FILTERS) => [card, datedTeam, flex, flexTeam].map((c) => matches(c, state, today, none));
+  assert.deepEqual(shows(EMPTY_FILTERS), [true, true, false, false]);
+  assert.deepEqual(shows(kind("flexible")), [false, false, true, true]);
+  assert.deepEqual(shows(kind("teams")), [false, true, false, true]);
+  // Day and time never hide a flexible card; they still apply to dated team shifts.
+  const tomorrowEvening = { ...kind("teams"), day: "today", time: "evening" };
+  assert.deepEqual(shows(tomorrowEvening), [false, false, false, true]);
+  assert.deepEqual(shows({ ...kind("flexible"), day: "today", time: "evening" }), [false, false, true, true]);
+  // Other filters still apply to flexible cards.
+  assert.deepEqual(shows({ ...kind("flexible"), cause: "animals" }), [false, false, false, false]);
+  // With Flexible, day and time are off, so they are not counted as filters on.
+  assert.equal(activeCount({ ...kind("flexible"), day: "today", time: "evening" }), 1);
+  assert.equal(activeCount({ ...kind("teams"), day: "today" }), 2);
+  assert.equal(activeCount(EMPTY_FILTERS), 0);
 });
 
 test("team fields: true only when the file says true; blank words count as none; older files still work", () => {

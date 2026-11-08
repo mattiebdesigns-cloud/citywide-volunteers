@@ -44,9 +44,13 @@ A city keeps its settings in its own private place. If they are in YAML, convert
 
 A normal build's `robots.txt` lets every crawler in.
 
+### Home page filters
+
+The Filters button sits beside the page heading (heading left, button right; on a narrow screen the button wraps under the heading). The panel's first filter, **Kind**, chooses what the list shows: dated shifts (the default), flexible opportunities, or everything that needs a Volunteer Team. Flexible opportunities are in the home page's list too, hidden until Kind asks for them, so the page works without JavaScript as before. Day and time filters do not apply to flexible opportunities: with Kind set to Flexible they hide, with a note. The panel links to the full Flexible and Volunteer Teams pages; the footer links to About, Flexible, Volunteer Teams and the Medicaid hours calculator.
+
 ### Flexible opportunities
 
-`/en/flexible/` and `/es/flexible/` list programs with no set dates or times, where the volunteer schedules with the organization (decision 0018). They come from `PV_OPPORTUNITIES`, never from the events file, so the calendar does not change. Each card shows a "Flexible" tag, the title (linking to the organization's own page), who hosts it, the part of the city and neighborhood, how to join, the minimum age and the time asked. Filters: part of the city, cause and how to join. There is no detail page. The home page links here.
+`/en/flexible/` and `/es/flexible/` list programs with no set dates or times, where the volunteer schedules with the organization (decision 0018). They come from `PV_OPPORTUNITIES`, never from the events file, so the calendar does not change. Each card shows a "Flexible" tag, the title (linking to the organization's own page), who hosts it, the part of the city and neighborhood, how to join, the minimum age and the time asked. Filters: part of the city, cause and how to join. There is no detail page. The home page's Kind filter and the footer link here.
 
 ### Volunteer Teams
 

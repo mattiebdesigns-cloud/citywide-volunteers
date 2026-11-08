@@ -6,6 +6,7 @@
  * own page (sign-ups never happen here in Phase 1); there is no detail page.
  * Filters: part of the city, cause, how to join.
  */
+import ResultsHeading from "../../../components/ResultsHeading.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
@@ -31,10 +32,10 @@ function facts(o: (typeof opportunities)[number]) {
 }
 ---
 
-<Base lang={lang} title={t("flexible.title")} alternates={alternates} path={paths.flexible(lang)} filters={any}>
+<Base lang={lang} title={t("flexible.title")} alternates={alternates} path={paths.flexible(lang)}>
   <div class="page results">
     <p class="flexible__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
-    <h1 id="results-heading" class="results__heading" tabindex="-1">{t("flexible.title")}</h1>
+    <ResultsHeading lang={lang} text={t("flexible.title")} filters={any} />
     <p>{t("flexible.intro")}</p>
   </div>
   {any && <FlexibleFilterPanel lang={lang} />}

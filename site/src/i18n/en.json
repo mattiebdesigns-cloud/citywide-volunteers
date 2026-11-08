@@ -17,8 +17,7 @@
     "footer_sources": "Listings come from organizations' public calendars.",
     "footer_open_source": "Anyone can see and reuse the code for this site.",
     "footer_code_link": "See the code",
-    "test_version": "Test version. Listings may be wrong or out of date.",
-    "rewards_coming": "Rewards for volunteering are coming. For now, find a shift you can join."
+    "test_version": "Test version. Listings may be wrong or out of date."
   },
   "filters": {
     "heading": "Find a shift",
@@ -51,10 +50,15 @@
       "label": "Part of the city",
       "all": "All parts of the city"
     },
-    "team": {
-      "label": "Volunteer Teams",
-      "only": "Only Volunteer Team activities",
-      "hide": "Hide Volunteer Team activities"
+    "kind": {
+      "label": "Kind",
+      "dated": "Dated shifts",
+      "flexible": "Flexible",
+      "teams": "Volunteer Teams",
+      "note_flexible": "Flexible opportunities have no set day or time, so the day and time filters are off.",
+      "note_teams": "Day and time filters apply only to dated team shifts.",
+      "see_flexible": "See all flexible opportunities",
+      "see_teams": "See all Volunteer Team activities"
     },
     "cause": {
       "label": "Cause",
@@ -78,14 +82,23 @@
     },
     "no_training": "No training needed",
     "spanish_spoken": "Spanish spoken here",
-    "host_type": { "label": "Who runs it" },
-    "faith_tradition": { "label": "Faith tradition" },
-    "activity": { "label": "What the work is like" },
+    "host_type": {
+      "label": "Who runs it"
+    },
+    "faith_tradition": {
+      "label": "Faith tradition"
+    },
+    "activity": {
+      "label": "What the work is like"
+    },
     "show_only": "Show only: {name}",
     "hide": "Hide: {name}",
     "show_only_group": "Show only",
     "hide_group": "Hide",
-    "active_count": {"one": "{count} filter on", "other": "{count} filters on"},
+    "active_count": {
+      "one": "{count} filter on",
+      "other": "{count} filters on"
+    },
     "saved_only": "Saved shifts only"
   },
   "causes": {
@@ -137,7 +150,8 @@
       "other": "{count} shifts"
     },
     "none": "No shifts match these filters.",
-    "none_hint": "Try another day, or remove a filter."
+    "none_hint": "Try another day, or remove a filter.",
+    "empty": "No shifts are listed right now."
   },
   "home": {
     "picks_heading": "This week's picks",
@@ -250,7 +264,6 @@
     "intro": "These programs have no set dates or times. You choose a time with the organization.",
     "tag": "Flexible",
     "commitment": "Time asked: {commitment}",
-    "home_link": "Flexible opportunities: no set times",
     "count": {
       "one": "{count} opportunity",
       "other": "{count} opportunities"
@@ -266,7 +279,6 @@
     "tag": "Volunteer Team",
     "size": "Team size: {size}",
     "task": "What the team does: {task}",
-    "home_link": "Volunteer Teams: activities that need a team",
     "count": {
       "one": "{count} team activity",
       "other": "{count} team activities"
@@ -277,6 +289,8 @@
   },
   "medicaid": {
     "title": "Medicaid hours calculator",
+    "starts": "Pennsylvania's rule starts {date}.",
+    "link_with_date": "Medicaid hours calculator: Pennsylvania's rule starts {date}",
     "intro": "From {start}, many Pennsylvania adults aged 19 to 64 with Medicaid must show {hours} hours in one month of work, volunteering, a work program or school. A monthly income of at least {income} also counts. This page adds up your hours for one month.",
     "private": "We do not save anything you type here. It stays on your device and is gone when you leave the page.",
     "only_dhs": "This tool adds up hours. It does not decide whether you keep Medicaid. Only Pennsylvania DHS decides.",
@@ -368,8 +382,7 @@
     "link_cls": "Community Legal Services",
     "call": "Call {phone}",
     "phone_dhs": "DHS: {phone} (in Philadelphia: {phila})",
-    "phone_hr1": "DHS question line about the Medicaid changes: {phone}",
-    "home_link": "Medicaid hours calculator"
+    "phone_hr1": "DHS question line about the Medicaid changes: {phone}"
   },
   "about_page": {
     "nav": "About",
@@ -417,8 +430,7 @@
     "more": {
       "heading": "More than one-off shifts",
       "flexible": "Flexible opportunities: programs where you choose a time with the organization.",
-      "teams": "Volunteer Teams: activities that need a team, not one person.",
-      "medicaid": "A Medicaid hours calculator that adds up one month of work, volunteering and school."
+      "teams": "Volunteer Teams: activities that need a team, not one person."
     },
     "rewards": {
       "heading": "Coming next: Citywide Rewards",
