@@ -48,6 +48,14 @@ A normal build's `robots.txt` lets every crawler in.
 
 `/en/flexible/` and `/es/flexible/` list programs with no set dates or times, where the volunteer schedules with the organization (decision 0018). They come from `PV_OPPORTUNITIES`, never from the events file, so the calendar does not change. Each card shows a "Flexible" tag, the title (linking to the organization's own page), who hosts it, the part of the city and neighborhood, how to join, the minimum age and the time asked. Filters: part of the city, cause and how to join. There is no detail page. The home page links here.
 
+### Volunteer Teams
+
+`/en/teams/` and `/es/teams/` list every activity that needs a team, not one person (`team_required` true; decision 0020): dated calendar listings first, then flexible opportunities. Cards show a "Volunteer Team" tag, the team size and task in the organization's own words, who hosts it, the place and how to join. Filters: part of the city, cause and how to join. On the calendar, team listings carry the same tag, the listing page shows the team size and task, and the filter panel has a Volunteer Teams filter (show only, or hide) when any listing needs a team.
+
+### Medicaid hours calculator
+
+`/en/medicaid-hours/` and `/es/medicaid-hours/` add up one month of work (or income), volunteering, a work program and school for Pennsylvania's Medicaid rule (decision 0022). It runs only in the browser: no form, no network request, no storage of any kind (the page leaves out the site's storage scripts), no analytics. Every figure, link and phone number is in `MEDICAID` in `src/lib/medicaid.ts`, with the date they were last checked; check them against Pennsylvania DHS before launch and whenever DHS publishes guidance. The checklist prints on its own and copies as plain text.
+
 ### Link previews
 
 When someone shares a link on Facebook or a similar site, the post shows a picture, a title and a short description (decision 0014). Every page carries these tags (`og:*` and `twitter:card`) in its own language. The home page uses the site's name and `og.description`. A listing page uses exactly the home page's preview; only `og:url` points at the listing. No listing's title, date, organization or picture ever goes into a preview (owner, Q38). The pictures are `public/og/en.png` and `public/og/es.png`, 1200 × 630 px.

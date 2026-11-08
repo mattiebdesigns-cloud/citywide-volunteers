@@ -5,6 +5,9 @@
  * (components/FilterPanel.astro): browser only, nothing is sent anywhere,
  * choices kept for this tab only, and without JavaScript every card shows.
  * Only choices that some opportunity has are offered.
+ *
+ * The Volunteer Teams page (decision 0020) uses it too, with its own items,
+ * button words and storage key.
  */
 import Button from "./ui/Button.astro";
 import IconButton from "./ui/IconButton.astro";
@@ -14,22 +17,35 @@ import { siteData, translator } from "../lib/site.ts";
 
 interface Props {
   lang: string;
+  /** What the page lists. Default: the flexible opportunities. */
+  items?: Array<{ section?: string | null; cause: string | null }>;
+  /** The button that closes the panel. Default: "Show opportunities". */
+  applyLabel?: string;
+  /** Where this tab remembers the choices (sessionStorage). */
+  storageKey?: string;
 }
 
 const { lang } = Astro.props;
 const { settings, opportunities } = siteData();
+const items = Astro.props.items ?? opportunities;
 const tr = translator(lang);
 const t = tr.t;
 
 const sections = usedIds(
   (settings.sections ?? []).map((s) => s.id),
-  opportunities.map((o) => o.section),
+  items.map((o) => o.section),
 );
-const causes = usedIds(settings.causes, opportunities.map((o) => o.cause));
+const causes = usedIds(settings.causes, items.map((o) => o.cause));
 const joins = ["drop_in", "signup", "application", "unknown"];
 ---
 
-<section id="filter-panel" class="filter-panel" aria-labelledby="filter-panel-heading" hidden>
+<section
+  id="filter-panel"
+  class="filter-panel"
+  aria-labelledby="filter-panel-heading"
+  hidden
+  data-storage-key={Astro.props.storageKey}
+>
   <div class="filter-panel__top">
     <h2 id="filter-panel-heading" class="filter-panel__heading">{t("filters.open")}</h2>
     <IconButton icon="close" label={t("filters.close")} tone="plain" data-filters-close />
@@ -70,7 +86,7 @@ const joins = ["drop_in", "signup", "application", "unknown"];
   </div>
 
   <div class="filter-panel__actions">
-    <Button block data-filters-apply>{t("flexible.apply")}</Button>
+    <Button block data-filters-apply>{Astro.props.applyLabel ?? t("flexible.apply")}</Button>
     <Button variant="quiet" block data-filters-clear>{t("filters.clear")}</Button>
   </div>
 </section>

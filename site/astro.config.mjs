@@ -30,6 +30,8 @@ process.env.PV_SETTINGS_PATH = process.env.PV_SETTINGS
 
 export default defineConfig({
   site: process.env.PV_SITE_URL || undefined,
+  // Tests give each build its own cache folder (tests/build-helper.ts).
+  ...(process.env.PV_CACHE_DIR ? { cacheDir: process.env.PV_CACHE_DIR } : {}),
   output: "static",
   trailingSlash: "ignore",
   build: { format: "directory" },

@@ -56,6 +56,37 @@
       "faith_tradition": null,
       "activity": null,
       "commitment": null
+    },
+    {
+      "id": "sample-supper-club-team-month",
+      "org_name": "Example Supper Club",
+      "title": "Host a supper with your own team",
+      "address": "300 Example Lane, Philadelphia, PA 19106",
+      "area": "philadelphia",
+      "section": "center-city",
+      "neighborhood_or_town": "Old City",
+      "cause": "food",
+      "type": "service",
+      "sensitive": false,
+      "photos_allowed": true,
+      "signup_url": "https://supper.example.org/teams/host",
+      "join_method": "application",
+      "min_age": 16,
+      "listing_language": "en",
+      "spanish_spoken": "unknown",
+      "training_required": false,
+      "clearances_required": false,
+      "group_friendly": true,
+      "team_required": true,
+      "team_size": "4 to 6 people",
+      "team_task": "plan, shop for and serve one Sunday supper; the date is set with the club",
+      "source_url": "https://supper.example.org/teams/host",
+      "source_id": "sample-supper-club",
+      "last_seen_at": "2026-11-03T00:00:00-05:00",
+      "host_type": "nonprofit",
+      "faith_tradition": null,
+      "activity": ["kitchen"],
+      "commitment": "one Sunday a month"
     }
   ]
 }

@@ -34,6 +34,8 @@ export function pruneSavedNow(): void {
 const FILTERS_KEY = "cvh.filters";
 /** Filters on the Flexible page are kept apart, so a day filter never empties it. */
 export const FLEXIBLE_FILTERS_KEY = "cvh.filters.flexible";
+/** The Volunteer Teams page's own filters (decision 0020). */
+export const TEAMS_FILTERS_KEY = "cvh.filters.teams";
 
 export function readSaved(): Set<string> {
   pruneSavedNow();

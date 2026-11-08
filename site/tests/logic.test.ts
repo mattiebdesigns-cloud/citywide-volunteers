@@ -125,6 +125,7 @@ const card: CardFacts = {
   host: "business-led",
   faith: "",
   activities: ["outdoors", "physical"],
+  team: "false",
 };
 const today = "2026-10-20"; // a Tuesday
 const none = new Set<string>();
@@ -270,11 +271,12 @@ test("flexible opportunities: sorted by title; campaigns only when switched on; 
   const all = prepareOpportunities(file, settings);
   assert.deepEqual(
     all.map((o) => o.title),
-    ["Ayuda en el huerto cuando puedas", "Take a shelter dog out for the afternoon"],
+    file.opportunities.map((o) => o.title).sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" })),
   );
+  const n = file.opportunities.length;
   file.opportunities[0].type = "campaign";
-  assert.equal(prepareOpportunities(file, { ...settings, features: { campaigns: false } }).length, 1);
-  assert.equal(prepareOpportunities(file, { ...settings, features: { campaigns: true } }).length, 2);
+  assert.equal(prepareOpportunities(file, { ...settings, features: { campaigns: false } }).length, n - 1);
+  assert.equal(prepareOpportunities(file, { ...settings, features: { campaigns: true } }).length, n);
   file.opportunities[0].type = "protest_action";
   file.opportunities[0].sensitive = false;
   assert.equal(prepareOpportunities(file, settings).find((o) => o.id === file.opportunities[0].id)?.sensitive, true);
@@ -300,7 +302,9 @@ test("flexible filters: part of the city, cause and how to join", () => {
 });
 
 test("flexible opportunities use the same place line as listings", () => {
-  const [garden, shelter] = prepareOpportunities(opportunities, settings);
+  const prepared = prepareOpportunities(opportunities, settings);
+  const shelter = prepared.find((o) => o.id === "sample-shelter-dog-outings")!;
+  const garden = prepared.find((o) => o.id === "sample-garden-open-volunteering")!;
   assert.equal(placeText(enTr, shelter, settings), "River Wards · Fishtown");
   assert.equal(placeSpoken(enTr, shelter, settings), "River Wards, Fishtown");
   assert.equal(placeText(esTr, garden, settings), "Filadelfia");
@@ -311,4 +315,40 @@ test("calendar file event id ends in @citywide-volunteers (decision 0021)", () =
   const ics = buildIcs(sample.events[0], { location: "100 Example Street", description: "Hello" });
   assert.match(ics, new RegExp(`\\r?\\nUID:${sample.events[0].id}@citywide-volunteers\\r?\\n`));
   assert.doesNotMatch(ics, /citywide-volunteer-hub/);
+});
+
+// Volunteer Teams (decision 0020).
+
+test("Volunteer Team filter: show only, or hide, team activities", () => {
+  const team = { ...card, team: "true" };
+  const only = { ...EMPTY_FILTERS, team: "only" };
+  const hide = { ...EMPTY_FILTERS, team: "hide" };
+  assert.equal(matches(team, EMPTY_FILTERS, today, none), true);
+  assert.equal(matches(card, EMPTY_FILTERS, today, none), true);
+  assert.equal(matches(team, only, today, none), true);
+  assert.equal(matches(card, only, today, none), false);
+  assert.equal(matches(team, hide, today, none), false);
+  assert.equal(matches(card, hide, today, none), true);
+  assert.equal(activeCount(only), 1);
+});
+
+test("team fields: true only when the file says true; blank words count as none; older files still work", () => {
+  const file = structuredClone(sample);
+  const listings = prepareListings(file, settings, { now: before });
+  const teamIds = file.events.filter((e) => e.team_required === true).map((e) => e.id);
+  assert.ok(teamIds.length > 0, "the sample has a team listing");
+  for (const e of listings) assert.equal(e.team_required, teamIds.includes(e.id));
+  const older = structuredClone(sample);
+  for (const e of older.events) {
+    delete e.team_required;
+    delete e.team_size;
+    delete e.team_task;
+  }
+  assert.ok(prepareListings(older, settings, { now: before }).every((e) => e.team_required === false && e.team_size === null && e.team_task === null));
+  const blank = structuredClone(opportunities);
+  blank.opportunities[0].team_required = "yes" as unknown as boolean;
+  blank.opportunities[0].team_task = "  ";
+  const o = prepareOpportunities(blank, settings).find((x) => x.id === blank.opportunities[0].id)!;
+  assert.equal(o.team_required, false);
+  assert.equal(o.team_task, null);
 });

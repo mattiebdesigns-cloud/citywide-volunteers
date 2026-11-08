@@ -32,6 +32,11 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
 const spots = spotsLabel(tr, e, builtAt);
 // The organization's name is its own wording, so it carries the listing's language.
 const [hostBefore, hostAfter] = splitAround(t("listing.hosted_by"), "org");
+// Volunteer Team details (decision 0020), in the organization's own words.
+const teamLines = [
+  e.team_size ? { parts: splitAround(t("teams.size"), "size"), value: e.team_size } : null,
+  e.team_task ? { parts: splitAround(t("teams.task"), "task"), value: e.team_task } : null,
+].filter((x) => x !== null);
 const type = typeLabel(tr, e);
 const where = whereLines(tr, e, settings);
 const cause = tr.causeName(e.cause);
@@ -45,7 +50,8 @@ if (e.min_age !== null) facts.push(t("listing.min_age", { age: tr.formatNumber(e
 if (e.training_required === true) facts.push(t("listing.training_required"));
 if (e.training_required === false) facts.push(t("listing.no_training"));
 if (e.clearances_required === true) facts.push(t("listing.clearances_required"));
-if (e.group_friendly === true) facts.push(t("listing.group_friendly"));
+// A listing that needs a Volunteer Team never also says "Good for groups" (owner, 2026-11-08).
+if (e.group_friendly === true && !e.team_required) facts.push(t("listing.group_friendly"));
 if (e.spanish_spoken === true) facts.push(t("listing.spanish_spoken"));
 if (e.recurring) facts.push(t("listing.recurring"));
 
@@ -84,6 +90,7 @@ const reportHref =
       <div class="listing__pills">
         <Pill kind="join" value={e.join_method} label={joinLabel(tr, e)} />
         {type && <Pill kind="type" value={e.type} label={type} />}
+        {e.team_required && <Pill icon="team" label={t("teams.tag")} />}
         {spots && <SpotsBadge label={spots.label} full={spots.full} />}
       </div>
 
@@ -122,6 +129,23 @@ const reportHref =
             {t(`listing.join_hint.${e.join_method}`)}
           </dd>
         </div>
+        {
+          e.team_required && teamLines.length > 0 && (
+            <div>
+              <dt>{t("teams.tag")}</dt>
+              <dd>
+                {teamLines.map((line, i) => (
+                  <>
+                    {i > 0 && <br />}
+                    {line.parts[0]}
+                    <span lang={e.listing_language}>{line.value}</span>
+                    {line.parts[1]}
+                  </>
+                ))}
+              </dd>
+            </div>
+          )
+        }
         {
           cause && (
             <div>

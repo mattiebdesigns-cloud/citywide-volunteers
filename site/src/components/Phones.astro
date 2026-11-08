@@ -1,0 +1,30 @@
+---
+/**
+ * A translated sentence with phone numbers in it, such as "DHS: {phone} (in
+ * Philadelphia: {phila})". Each number becomes a tap-to-call link that never
+ * breaks across lines and keeps its plain hyphens, so it copies as written
+ * (Medicaid hours calculator, decision 0022).
+ */
+interface Props {
+  /** The sentence from the translation files, with {placeholders} left open. */
+  text: string;
+  /** Placeholder name to phone number, as written, e.g. { phone: "877-395-8930" }. */
+  numbers: Record<string, string>;
+}
+
+const { text, numbers } = Astro.props;
+const tel = (phone: string) => `tel:+1${phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "")}`;
+const parts = text.split(/(\{[a-z_]+\})/).map((part): { phone: string } | { text: string } => {
+  const name = part.match(/^\{([a-z_]+)\}$/)?.[1];
+  const phone = name ? numbers[name] : undefined;
+  return phone ? { phone } : { text: part };
+});
+---
+
+{parts.map((p) => ("phone" in p ? <a class="phone" href={tel(p.phone)}>{p.phone}</a> : p.text))}
+
+<style>
+  .phone {
+    white-space: nowrap;
+  }
+</style>

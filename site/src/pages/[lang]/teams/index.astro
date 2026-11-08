@@ -1,0 +1,152 @@
+---
+/**
+ * Volunteer Teams (decision 0020; PROJECT.md 2, 4, 5): every activity that
+ * needs a team, not one person, whether it has a date (calendar listings with
+ * team_required) or is arranged with the organization (flexible opportunities
+ * with team_required). Built like the Flexible page: same cards, same
+ * filters (part of the city, cause, how to join), its own filter memory.
+ * Dated ones come first, soonest first, and link to our listing page; the
+ * others link out to the organization's own page.
+ */
+import Base from "../../../layouts/Base.astro";
+import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
+import ListingCard from "../../../components/ui/ListingCard.astro";
+import { TEAMS_FILTERS_KEY } from "../../../scripts/device.ts";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+import { joinLabel, placeSpoken, placeText, whenText } from "../../../lib/words.ts";
+import type { Opportunity, PreparedListing } from "../../../lib/types.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n, listings, opportunities, settings } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.teams(code)]));
+
+const dated = listings.filter((e) => e.team_required);
+const arranged = opportunities.filter((o) => o.team_required);
+const items = [...dated, ...arranged];
+const any = items.length > 0;
+
+type Fact = { template: string; name: string; value: string; lang?: string };
+function teamFacts(o: PreparedListing | Opportunity): Fact[] {
+  const out: Fact[] = [];
+  if (o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
+  if (o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
+  if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
+  if ("commitment" in o && o.commitment) {
+    out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
+  }
+  return out;
+}
+---
+
+<Base lang={lang} title={t("teams.title")} alternates={alternates} path={paths.teams(lang)} filters={any}>
+  <div class="page results">
+    <p class="teams__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+    <h1 id="results-heading" class="results__heading" tabindex="-1">{t("teams.title")}</h1>
+    <p>{t("teams.intro")}</p>
+  </div>
+  {
+    any && (
+      <FlexibleFilterPanel lang={lang} items={items} applyLabel={t("teams.apply")} storageKey={TEAMS_FILTERS_KEY} />
+    )
+  }
+  <div class="page results">
+    {
+      any ? (
+        <>
+          <p id="external-note" class="muted">{t("listing.external_note")}</p>
+          <p
+            id="results-count"
+            class="results__count"
+            role="status"
+            data-count-one={t("teams.count.one")}
+            data-count-other={t("teams.count.other")}
+          >
+            {tr.plural("teams.count", items.length)}
+          </p>
+          <div id="results-none" class="results__none" hidden>
+            <p>{t("teams.none_match")}</p>
+            <p class="muted">{t("flexible.none_match_hint")}</p>
+          </div>
+          <ul id="listing-list" class="stack listing-list">
+            {dated.map((e) => (
+              <li
+                data-id={e.id}
+                data-section={e.section ?? ""}
+                data-cause={e.cause ?? ""}
+                data-join={e.join_method}
+                data-over-at={e.overAt}
+              >
+                <ListingCard
+                  id={e.id}
+                  href={paths.listing(lang, e.id)}
+                  title={e.title}
+                  titleLang={e.listing_language}
+                  org={e.org_name}
+                  hostedBy={t("listing.hosted_by")}
+                  when={whenText(tr, e)}
+                  datetime={e.start}
+                  place={placeText(tr, e, settings)}
+                  placeSpoken={placeSpoken(tr, e, settings)}
+                  teamLabel={t("teams.tag")}
+                  facts={teamFacts(e)}
+                  cause={e.cause}
+                  joinMethod={e.join_method}
+                  joinLabel={joinLabel(tr, e)}
+                  headingLevel={2}
+                />
+              </li>
+            ))}
+            {arranged.map((o) => (
+              <li data-id={o.id} data-section={o.section ?? ""} data-cause={o.cause ?? ""} data-join={o.join_method}>
+                <ListingCard
+                  id={o.id}
+                  href={o.signup_url}
+                  external
+                  describedBy="external-note"
+                  title={o.title}
+                  titleLang={o.listing_language}
+                  org={o.org_name}
+                  hostedBy={t("listing.hosted_by")}
+                  place={placeText(tr, o, settings)}
+                  placeSpoken={placeSpoken(tr, o, settings)}
+                  teamLabel={t("teams.tag")}
+                  flexibleLabel={t("flexible.tag")}
+                  facts={teamFacts(o)}
+                  cause={o.cause}
+                  joinMethod={o.join_method}
+                  joinLabel={t(`filters.join.${o.join_method}`)}
+                  headingLevel={2}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p id="teams-none">{t("teams.none")}</p>
+      )
+    }
+  </div>
+</Base>
+
+{
+  any && (
+    <script>
+      import "../../../scripts/flexible-filters.ts";
+    </script>
+  )
+}
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .teams__back {
+    margin: 0;
+  }
+</style>

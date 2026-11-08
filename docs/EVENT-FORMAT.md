@@ -94,6 +94,21 @@ These three fields say whether a shift still has room. They are optional, so fil
 - Sensitive listings may show counts too, by the owner's decision (decision 0008): a kitchen shift for a protest group can still have a limit. Only the current count is kept, with no history of past counts.
 - New scraper output should always write all three (`null`, `null`, `false` when the page shows nothing), so a listing has one way to say "no count". Leaving them out is allowed only so older files still pass.
 
+### Volunteer Teams (optional)
+
+Some activities need a team, not one person: for example, a team of three or more buys the groceries and cooks a supper (decision 0020). The site shows these with a **Volunteer Team** tag. This is different from `group_friendly`, which only says groups are welcome.
+
+| Field | Type | Notes |
+|---|---|---|
+| team_required | true or false, default false | true when the organization asks people to come or sign up as a team |
+| team_size | text or null | The team size, in the organization's own words, for example "3 or more" |
+| team_task | text or null | What the team does, in the organization's own words, for example "buy the groceries and cook supper for 40" |
+
+- Set `team_required` to true only when the organization says a team is needed. Never guess it from the kind of work.
+- `team_size` and `team_task` copy the organization's words. If it does not say, write null.
+- All three are optional, so older files still pass. New output should write all three (`false`, `null`, `null` when the page says nothing about teams).
+- Flexible opportunities can carry the same three fields.
+
 ### join_method
 
 - `drop_in`: just show up.
@@ -106,7 +121,7 @@ These three fields say whether a shift still has room. They are optional, so fil
 If the source does not say, record that it does not say. Each field has exactly one way to do this:
 
 - `join_method` and `spanish_spoken` use the text `"unknown"`, because the site shows those two to visitors as "unknown" or "check with the organizer". They are never null.
-- Every other field that can be unknown uses `null`: `end`, `address`, `section`, `neighborhood_or_town`, `cause`, `host_type`, `faith_tradition`, `activity`, `min_age`, `training_required`, `clearances_required`, `group_friendly`, `recurrence_rule`.
+- Every other field that can be unknown uses `null`: `end`, `address`, `section`, `neighborhood_or_town`, `cause`, `host_type`, `faith_tradition`, `activity`, `min_age`, `training_required`, `clearances_required`, `group_friendly`, `team_size`, `team_task`, `recurrence_rule`.
 - `photos_allowed` is the one field with a default: true, unless the listing says "no photos".
 - `sensitive` has no unknown: when unsure, write true.
 - `spots_left` and `spots_total` use `null` when the page shows no count; `full` is false unless the page says full. All three may be left out of older files.
@@ -130,7 +145,7 @@ Load both schema files into your validator. The file schema refers to the listin
 
 ## What a listing never holds
 
-Scrapers never output names of attendees, counts by name, or sign-up lists. The open-spots fields hold only the numbers the organization itself shows to the public. They store facts and a link back, not the organization's full description or images.
+Scrapers never output names of attendees, counts by name, or sign-up lists. The open-spots fields hold only the numbers the organization itself shows to the public. They store facts and a link back, not the organization's full description or images. Contact email addresses for organizations are not part of this format either; they are not published.
 
 ## Flexible opportunities
 
@@ -146,7 +161,7 @@ Some volunteer programs have no set dates or times: you contact the organization
 { "generated_at": "2026-11-05T06:00:00-05:00", "opportunities": [ ... ] }
 ```
 
-- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
+- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`, and optionally `team_required, team_size, team_task`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
 - **No `start`, `end`, `recurring` or `recurrence_rule`.** A schedule is never guessed from opening hours. If an organization publishes real dates, those dates are listings in `events.json` instead.
 - **No open-spots fields** (`spots_left`, `spots_total`, `full`).
 - **One extra field, `commitment`:** the time the organization asks for, in its own words, for example "2 hours a week for 6 months". `null` when the organization does not say. Never worked out by us.

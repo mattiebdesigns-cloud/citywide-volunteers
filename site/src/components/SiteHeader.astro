@@ -12,9 +12,11 @@ interface Props {
   lang: string;
   alternates: Record<string, string>;
   filters?: boolean;
+  /** Passed to the language switch: remember nothing in browser storage. */
+  noStorage?: boolean;
 }
 
-const { lang, alternates, filters = false } = Astro.props;
+const { lang, alternates, filters = false, noStorage = false } = Astro.props;
 const tr = translator(lang);
 const siteName = tr.setting(siteData().settings.site.name);
 ---
@@ -22,7 +24,7 @@ const siteName = tr.setting(siteData().settings.site.name);
 <header class="site-header">
   <div class="page site-header__inner">
     <p class="site-header__name"><a href={paths.home(lang)}>{siteName}</a></p>
-    <LanguageSwitch lang={lang} alternates={alternates} />
+    <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
     {
       filters && (
         <Button

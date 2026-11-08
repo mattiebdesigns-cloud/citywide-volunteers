@@ -35,6 +35,7 @@ const types = (["service", "training", "campaign", "protest_action"] as const).f
 const hosts = usedIds(settings.host_types, listings.map((e) => e.host_type));
 const faiths = usedIds(settings.faith_traditions, listings.map((e) => e.faith_tradition));
 const activities = usedIds(settings.activities, listings.flatMap((e) => e.activity ?? []));
+const anyTeams = listings.some((e) => e.team_required);
 const days = ["today", "tomorrow", "this_week", "this_weekend", "pick_date"];
 const times = ["morning", "afternoon", "evening", "overnight"];
 const joins = ["drop_in", "signup", "application", "unknown"];
@@ -158,6 +159,19 @@ const joins = ["drop_in", "signup", "application", "unknown"];
             <optgroup label={t("filters.hide_group")}>
               {activities.map((id) => <option value={`hide:${id}`}>{t("filters.hide", { name: tr.listName("activities", id) })}</option>)}
             </optgroup>
+          </select>
+        </div>
+      )
+    }
+
+    {
+      anyTeams && (
+        <div class="field">
+          <label for="filter-team">{t("filters.team.label")}</label>
+          <select id="filter-team" data-filter="team">
+            <option value="">{t("filters.any")}</option>
+            <option value="only">{t("filters.team.only")}</option>
+            <option value="hide">{t("filters.team.hide")}</option>
           </select>
         </div>
       )

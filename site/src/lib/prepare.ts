@@ -99,6 +99,7 @@ function normalise(e: Listing): Listing {
     full,
     spots_left: typeof e.spots_left === "number" ? e.spots_left : null,
     spots_total: typeof e.spots_total === "number" ? e.spots_total : null,
+    ...teamFields(e),
   };
 }
 
@@ -171,7 +172,14 @@ export function prepareOpportunities(file: OpportunitiesFile, settings: SiteSett
         host_type: o.host_type ?? null,
         faith_tradition: o.faith_tradition ?? null,
         activity: Array.isArray(o.activity) && o.activity.length ? o.activity : null,
+        ...teamFields(o),
       }),
     )
     .sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }) || a.id.localeCompare(b.id));
+}
+
+/** Volunteer Team fields (decision 0020): true only when the file says true; blank words count as none. */
+function teamFields(e: Pick<Listing, "team_required" | "team_size" | "team_task">) {
+  const words = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+  return { team_required: e.team_required === true, team_size: words(e.team_size), team_task: words(e.team_task) };
 }

@@ -4,7 +4,7 @@
 // folder from the sample listings, moved into the future so they never expire.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { astroBuild, buildFolder, removeFolder } from "./build-helper.ts";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -101,18 +101,14 @@ function futureEvents(dir: string, edit?: (file: EventsFile) => void): string {
 }
 
 function build(env: Record<string, string>, edit?: (file: EventsFile) => void): { out: string; read: (p: string) => string; done: () => void } {
-  const dir = mkdtempSync(join(tmpdir(), "pv-preview-"));
-  const out = join(dir, "dist");
-  const clean = { ...process.env };
-  delete clean.PV_SITE_URL;
-  delete clean.PV_TEST_BUILD;
-  delete clean.PV_OPPORTUNITIES;
-  execFileSync(join(site, "node_modules/.bin/astro"), ["build", "--outDir", out, "--silent"], {
-    cwd: site,
-    env: { ...clean, ASTRO_TELEMETRY_DISABLED: "1", PV_EVENTS: futureEvents(dir, edit), ...env },
-    stdio: "pipe",
-  });
-  return { out, read: (p) => readFileSync(join(out, p), "utf8"), done: () => rmSync(dir, { recursive: true, force: true }) };
+  const dir = buildFolder();
+  try {
+    const out = astroBuild(dir, { PV_EVENTS: futureEvents(dir, edit), ...env });
+    return { out, read: (p) => readFileSync(join(out, p), "utf8"), done: () => removeFolder(dir) };
+  } catch (err) {
+    removeFolder(dir);
+    throw err;
+  }
 }
 
 const decode = (s: string) =>
@@ -312,7 +308,7 @@ test("Flexible page from the public sample: each card's tag, title, host, place,
       const html = b.read(`${lang}/flexible/index.html`);
       assert.match(html, new RegExp(`<h1[^>]*>${tr.t("flexible.title")}</h1>`));
       assert.match(html, /id="filters-toggle"/, "the Filters button is there");
-      assert.ok(html.includes(tr.t("flexible.count.other").replace("{count}", "2")));
+      assert.ok(html.includes(tr.plural("flexible.count", oppSample.opportunities.length)));
       for (const o of oppSample.opportunities) {
         const card = oppCard(html, o.id);
         const words = text(card);
@@ -368,8 +364,11 @@ test("Flexible filters: part of the city, cause and how to join, only with choic
     const panel = html.slice(html.indexOf('id="filter-panel"'), html.indexOf("</section>", html.indexOf('id="filter-panel"')));
     const options = (name: string) =>
       [...(panel.match(new RegExp(`data-filter="${name}"[\\s\\S]*?</select>`))?.[0] ?? "").matchAll(/<option value="([^"]*)"/g)].map((m) => m[1]);
-    assert.deepEqual(options("section"), ["", "river-wards", "west"]);
-    assert.deepEqual(options("cause"), ["", "parks-and-trees", "animals"]);
+    // In the settings' order, only those some opportunity uses.
+    const used = (list: string[], values: Array<string | null | undefined>) => list.filter((id) => values.includes(id));
+    assert.deepEqual(options("section"), ["", ...used(settings.sections!.map((s) => s.id), file.opportunities.map((o) => o.section))]);
+    assert.ok(options("section").includes("west"));
+    assert.deepEqual(options("cause"), ["", ...used(settings.causes, file.opportunities.map((o) => o.cause))]);
     assert.deepEqual(options("join"), ["", "drop_in", "signup", "application", "unknown"]);
     assert.doesNotMatch(panel, /data-filter="(day|time|area|type|host)"/);
     assert.match(html, /data-section="west"/);
@@ -424,4 +423,130 @@ test("Flexible cards: long names and long time-asked text wrap; nothing is cut o
   assert.ok(rule, "host and fact lines share the wrapping rule");
   assert.match(rule[1], /overflow-wrap:\s*anywhere/);
   assert.doesNotMatch(rule[1], /nowrap|ellipsis|line-clamp/);
+});
+
+// ---- Volunteer Teams (decision 0020) ----
+
+test("Volunteer Teams page: dated and arranged team activities, each with the tag, size, task, host, place and join", () => {
+  const b = build({ PV_SITE_URL: URL_ });
+  try {
+    const dated = sample.events.filter((e) => e.team_required === true);
+    const arranged = oppSample.opportunities.filter((o) => o.team_required === true);
+    assert.ok(dated.length > 0 && arranged.length > 0, "the samples have both kinds");
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/teams/index.html`);
+      assert.match(html, new RegExp(`<h1[^>]*>${tr.t("teams.title")}</h1>`));
+      assert.ok(html.includes(tr.plural("teams.count", dated.length + arranged.length)));
+      assert.match(html, /id="filters-toggle"/);
+      assert.match(html, /data-storage-key="cvh\.filters\.teams"/);
+      // Dated ones first.
+      assert.ok(html.indexOf(`data-id="${dated[0].id}"`) < html.indexOf(`data-id="${arranged[0].id}"`));
+      for (const item of [...dated, ...arranged]) {
+        const card = oppCard(html, item.id);
+        const words = text(card);
+        assert.ok(words.includes(tr.t("teams.tag")), "Volunteer Team tag");
+        assert.ok(words.includes(tr.t("teams.size", { size: item.team_size! })), "team size");
+        assert.ok(words.includes(tr.t("teams.task", { task: item.team_task! })), "team task");
+        // Size and task are the organization's own words, marked with its language.
+        const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        for (const value of [item.team_size!, item.team_task!]) {
+          assert.match(card, new RegExp(`<span lang="${item.listing_language}"[^>]*>${esc(value)}</span>`), value);
+        }
+        assert.ok(words.includes(item.org_name), "host");
+        assert.ok(words.includes(tr.t(`filters.join.${item.join_method}`)), "how to join");
+        if (item.section) assert.ok(card.includes('class="sr-only"'), "spoken place line");
+      }
+      // A dated one links to our listing page and shows its time; an arranged one links out.
+      const d = oppCard(html, dated[0].id);
+      assert.match(d, new RegExp(`href="/${lang}/listing/${dated[0].id}/"`));
+      assert.match(d, /<time /);
+      const a = oppCard(html, arranged[0].id);
+      assert.match(a, new RegExp(`href="${arranged[0].signup_url}"[^>]*rel="noopener"[^>]*aria-describedby="external-note"`));
+      assert.ok(text(a).includes(tr.t("flexible.tag")));
+      // Site-only previews, own address.
+      assert.equal(one(tagsIn(html), "og:url"), `${URL_}/${lang}/teams/`);
+      assert.equal(one(tagsIn(html), "og:title"), tr.setting(settings.site.name));
+      // Linked from the home page.
+      assert.ok(b.read(`${lang}/index.html`).includes(`href="/${lang}/teams/"`));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("calendar: Volunteer Team tag on cards and listing pages, and a show-only / hide filter", () => {
+  const b = build({});
+  try {
+    const team = sample.events.find((e) => e.team_required === true)!;
+    const other = sample.events.find((e) => e.team_required !== true)!;
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const home = b.read(`${lang}/index.html`);
+      const card = (id: string) => home.slice(home.indexOf(`<li data-id="${id}"`), home.indexOf("</li>", home.indexOf(`<li data-id="${id}"`)));
+      assert.match(card(team.id), /data-team="true"/);
+      assert.ok(text(card(team.id)).includes(tr.t("teams.tag")));
+      assert.match(card(other.id), /data-team="false"/);
+      assert.ok(!text(card(other.id)).includes(tr.t("teams.tag")));
+      const select = home.slice(home.indexOf('id="filter-team"'), home.indexOf("</select>", home.indexOf('id="filter-team"')));
+      assert.deepEqual([...select.matchAll(/<option value="([^"]*)"/g)].map((m) => m[1]), ["", "only", "hide"]);
+      assert.ok(home.includes(`<label for="filter-team"`) && home.includes(tr.t("filters.team.label")));
+      const page = text(b.read(`${lang}/listing/${team.id}/index.html`));
+      assert.ok(page.includes(tr.t("teams.tag")));
+      assert.ok(page.includes(tr.t("teams.size", { size: team.team_size! })));
+      assert.ok(page.includes(tr.t("teams.task", { task: team.team_task! })));
+      assert.ok(!text(b.read(`${lang}/listing/${other.id}/index.html`)).includes(tr.t("teams.tag")));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("Volunteer Teams: with none, a plain message and no filters; no team filter on the calendar either", () => {
+  const [path, done] = oppFile({ generated_at: "2026-11-05T06:00:00-05:00", opportunities: [] });
+  const b = build({ PV_OPPORTUNITIES: path }, (file) => {
+    for (const e of file.events) e.team_required = false;
+  });
+  try {
+    for (const lang of ["en", "es"]) {
+      const html = b.read(`${lang}/teams/index.html`);
+      assert.ok(text(html).includes(i18n.translator(lang).t("teams.none")));
+      assert.doesNotMatch(html, /id="filters-toggle"|id="filter-panel"|<li data-id=/);
+      assert.doesNotMatch(b.read(`${lang}/index.html`), /id="filter-team"/);
+    }
+  } finally {
+    b.done();
+    done();
+  }
+});
+
+test("Volunteer Teams words never say 'group' (decision 0020)", () => {
+  for (const [lang, word] of [["en", /group/i], ["es", /grupo/i]] as const) {
+    const all = JSON.parse(readFileSync(join(site, `src/i18n/${lang}.json`), "utf8"));
+    for (const value of [...Object.values(all.teams), ...Object.values(all.filters.team)].flatMap((v) => (typeof v === "string" ? [v] : Object.values(v as object)))) {
+      assert.doesNotMatch(String(value), word, `${lang}: ${value}`);
+    }
+  }
+});
+
+test("a Volunteer Team listing never also says 'Good for groups'; other listings still can (owner, 2026-11-08)", () => {
+  const team = sample.events.find((e) => e.team_required === true)!;
+  const plainId = sample.events.find((e) => e.team_required !== true)!.id;
+  const b = build({}, (file) => {
+    // Both say group_friendly, so only team_required makes the difference.
+    for (const e of file.events) if (e.id === team.id || e.id === plainId) e.group_friendly = true;
+  });
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const groups = tr.t("listing.group_friendly");
+      assert.ok(!text(b.read(`${lang}/listing/${team.id}/index.html`)).includes(groups), `${lang}: team listing page`);
+      assert.ok(text(b.read(`${lang}/listing/${plainId}/index.html`)).includes(groups), `${lang}: other listing page still shows it`);
+      // Cards on the home page and the Teams page never show it.
+      assert.ok(!text(b.read(`${lang}/index.html`)).includes(groups), `${lang}: home cards`);
+      assert.ok(!text(b.read(`${lang}/teams/index.html`)).includes(groups), `${lang}: Teams page`);
+    }
+  } finally {
+    b.done();
+  }
 });

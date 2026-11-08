@@ -25,9 +25,15 @@ interface Props {
   filters?: boolean;
   /** This page's path, for the link-preview address (decision 0014). */
   path: string;
+  /**
+   * Leave out every script that uses browser storage: tidying saved hearts
+   * and remembering the language choice. The Medicaid calculator (decision
+   * 0022) runs no storage code at all.
+   */
+  noStorage?: boolean;
 }
 
-const { lang, title, alternates, filters = false, path } = Astro.props;
+const { lang, title, alternates, filters = false, path, noStorage = false } = Astro.props;
 const { testBuild, siteUrl, settings, listings } = siteData();
 // Every listing in this build and when it is over, so the browser can clear
 // saved shifts that have ended (owner, Q32). Ids are letters, digits, - and _.
@@ -59,15 +65,19 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
     <SvgSprite />
     {testBuild && <TestBanner text={tr.t("site.test_version")} />}
     <a class="skip-link" href="#main">{tr.t("site.skip_to_content")}</a>
-    <SiteHeader lang={lang} alternates={alternates} filters={filters} />
+    <SiteHeader lang={lang} alternates={alternates} filters={filters} noStorage={noStorage} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
     <SiteFooter lang={lang} />
-    <script type="application/json" id="live-listings" set:html={live} />
-    <script>
-      import { pruneSavedNow } from "../scripts/device.ts";
-      pruneSavedNow();
-    </script>
+    {!noStorage && <script type="application/json" id="live-listings" set:html={live} />}
+    {
+      !noStorage && (
+        <script>
+          import { pruneSavedNow } from "../scripts/device.ts";
+          pruneSavedNow();
+        </script>
+      )
+    }
   </body>
 </html>

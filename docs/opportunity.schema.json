@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:citywide-volunteers:schema:opportunity",
   "title": "Flexible opportunity",
-  "description": "One volunteer program with no set dates or times: the volunteer schedules with the organization. Plain-language guide: docs/EVENT-FORMAT.md, section \"Flexible opportunities\". Every shared field has the same meaning and the same rules as in a listing (docs/event.schema.json), and points at that definition, so the two cannot drift apart. There is no start, end, recurring or recurrence_rule: a schedule is never guessed from open hours. Unknown values: join_method and spanish_spoken use the string \"unknown\"; every other field that may be unknown uses null.",
+  "description": "One volunteer program with no set dates or times: the volunteer schedules with the organization. Plain-language guide: docs/EVENT-FORMAT.md, section \"Flexible opportunities\". Every shared field has the same meaning and the same rules as in a listing (docs/event.schema.json), and points at that definition, so the two cannot drift apart. There is no start, end, recurring or recurrence_rule: a schedule is never guessed from open hours. Unknown values: join_method and spanish_spoken use the string \"unknown\"; every other field that may be unknown uses null. The team fields (team_required, team_size, team_task; decision 0020) are optional, as in a listing.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -98,6 +98,15 @@
     },
     "group_friendly": {
       "$ref": "urn:citywide-volunteers:schema:event#/properties/group_friendly"
+    },
+    "team_required": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/team_required"
+    },
+    "team_size": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/team_size"
+    },
+    "team_task": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/team_task"
     },
     "source_url": {
       "$ref": "urn:citywide-volunteers:schema:event#/properties/source_url"

@@ -100,6 +100,16 @@ BAD_LISTINGS = {
     # Section (decision 0013; PROJECT.md 4).
     "section typed as a place name": lambda e: e.update(section="River Wards"),
     "section as an empty string": lambda e: e.update(section=""),
+    # Volunteer Teams (decision 0020; PROJECT.md 4).
+    "team_required as text": lambda e: e.update(team_required="yes"),
+    "team_required null": lambda e: e.update(team_required=None),
+    "team_size as a number": lambda e: e.update(team_required=True, team_size=3),
+    "team_size as an empty string": lambda e: e.update(team_required=True, team_size=""),
+    "team_task as an empty string": lambda e: e.update(team_required=True, team_task=""),
+    # Organization contact addresses stay private (decision 0023).
+    "contact_email in a public listing": lambda e: e.update(contact_email="info@example.org"),
+    "contact_email_personal in a public listing": lambda e: e.update(contact_email_personal=True),
+    "contact_email_read in a public listing": lambda e: e.update(contact_email_read="2026-11-08"),
 }
 
 # Each case changes a valid listing in a way the schema must still accept.
@@ -129,7 +139,26 @@ GOOD_LISTINGS = {
     # Section is optional so older files still pass (decision 0013).
     "section left out": lambda e: e.pop("section", None),
     "section null": lambda e: e.update(section=None),
+    # Team fields are optional so older files still pass (decision 0020).
+    "team fields left out": lambda e: (
+        e.pop("team_required", None),
+        e.pop("team_size", None),
+        e.pop("team_task", None),
+    ),
+    "not a team activity": lambda e: e.update(team_required=False, team_size=None, team_task=None),
+    "team activity in the organization's words": lambda e: e.update(
+        team_required=True, team_size="3 or more", team_task="cook supper for 40"
+    ),
+    "team activity with size and task not given": lambda e: e.update(
+        team_required=True, team_size=None, team_task=None
+    ),
 }
+
+
+def test_sample_has_a_team_activity():
+    # Decision 0020: the sample shows an invented Volunteer Team.
+    teams = [e for e in _sample()["events"] if e.get("team_required") is True]
+    assert teams and all(".example.org/" in e["signup_url"] for e in teams)
 
 
 @pytest.mark.parametrize("case", sorted(BAD_LISTINGS))

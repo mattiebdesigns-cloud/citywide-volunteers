@@ -38,6 +38,12 @@ export interface Listing {
   host_type?: string | null;
   faith_tradition?: string | null;
   activity?: string[] | null;
+  /** Needs a team, not one person (decision 0020). Optional in older files; false when left out. */
+  team_required?: boolean;
+  /** Team size in the organization's own words, or null. */
+  team_size?: string | null;
+  /** What the team does, in the organization's own words, or null. */
+  team_task?: string | null;
   spots_left?: number | null;
   spots_total?: number | null;
   full?: boolean;
@@ -76,6 +82,9 @@ export interface Opportunity
     | "host_type"
     | "faith_tradition"
     | "activity"
+    | "team_required"
+    | "team_size"
+    | "team_task"
   > {
   /** The time asked, in the organization's own words, or null. */
   commitment: string | null;

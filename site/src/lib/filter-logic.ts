@@ -20,6 +20,8 @@ export interface CardFacts {
   host: string;
   faith: string;
   activities: string[];
+  /** "true" when the listing needs a Volunteer Team (decision 0020). */
+  team: string;
 }
 
 export interface FilterState {
@@ -35,6 +37,8 @@ export interface FilterState {
   faith: string;
   /** "", "only:<id>" or "hide:<id>" */
   activity: string;
+  /** "", "only" or "hide": Volunteer Team activities (decision 0020). */
+  team: string;
   no_training: boolean;
   spanish: boolean;
   saved: boolean;
@@ -51,6 +55,7 @@ export const EMPTY_FILTERS: FilterState = {
   host: "",
   faith: "",
   activity: "",
+  team: "",
   no_training: false,
   spanish: false,
   saved: false,
@@ -110,6 +115,8 @@ export function matches(card: CardFacts, state: FilterState, today: string, save
     tagMatches(state.host, card.host ? [card.host] : []) &&
     (!state.faith || card.faith === state.faith) &&
     tagMatches(state.activity, card.activities) &&
+    (state.team !== "only" || card.team === "true") &&
+    (state.team !== "hide" || card.team !== "true") &&
     (!state.no_training || card.training === "false") &&
     (!state.spanish || card.spanish === "true") &&
     (!state.saved || saved.has(card.id))

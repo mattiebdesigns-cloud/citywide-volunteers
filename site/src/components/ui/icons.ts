@@ -25,7 +25,8 @@ export type IconName =
   | "filter"
   | "globe"
   | "flag"
-  | "info";
+  | "info"
+  | "team";
 
 // Stroked with currentColor, so an icon takes the colour of the text next to it.
 export const paths: Record<IconName, string> = {
@@ -56,4 +57,6 @@ export const paths: Record<IconName, string> = {
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5c-2.3-2.4-3.4-5.2-3.4-8.5S9.7 5.9 12 3.5Z"/>',
   flag: '<path d="M5.5 21V4"/><path d="M5.5 4.5h11l-2 4 2 4h-11"/>',
   info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r="0.6" fill="currentColor"/>',
+  // Volunteer Team (decision 0020): three people side by side.
+  team: '<circle cx="12" cy="7.5" r="2.5"/><path d="M7.5 18.5v-1a4.5 4.5 0 0 1 9 0v1"/><circle cx="5.5" cy="9.5" r="2"/><path d="M2.5 18.5V18a3 3 0 0 1 3.5-3"/><circle cx="18.5" cy="9.5" r="2"/><path d="M21.5 18.5V18a3 3 0 0 0-3.5-3"/>',
 };

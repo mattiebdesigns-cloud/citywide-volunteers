@@ -4,3 +4,6 @@ dist/
 # A city's real settings file stays private; only settings.example.json is committed.
 settings.json
 settings.local.json
+
+# Test builds (tests/build-helper.ts)
+.test-builds/

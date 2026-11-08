@@ -31,6 +31,7 @@ if (panel && toggle && list && countEl) {
         host: d.host ?? "",
         faith: d.faith ?? "",
         activities: (d.activity ?? "").split(" ").filter(Boolean),
+        team: d.team ?? "",
       },
     ];
   });

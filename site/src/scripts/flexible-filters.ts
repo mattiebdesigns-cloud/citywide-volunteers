@@ -1,5 +1,6 @@
-// Filters on the Flexible opportunities page (decision 0018). Browser only:
-// nothing here sends a request. See components/FlexibleFilterPanel.astro.
+// Filters on the Flexible opportunities page (decision 0018) and the
+// Volunteer Teams page (decision 0020). Browser only: nothing here sends a
+// request. See components/FlexibleFilterPanel.astro.
 import {
   EMPTY_FLEXIBLE_FILTERS,
   flexibleActiveCount,
@@ -16,6 +17,7 @@ const countEl = document.getElementById("results-count");
 const noneEl = document.getElementById("results-none");
 
 if (panel && toggle && list && countEl) {
+  const storageKey = panel.dataset.storageKey || FLEXIBLE_FILTERS_KEY;
   const cards = [...list.querySelectorAll<HTMLElement>("li[data-id]")].map((li): [HTMLElement, FlexibleFacts] => [
     li,
     { section: li.dataset.section ?? "", cause: li.dataset.cause ?? "", join: li.dataset.join ?? "" },
@@ -26,7 +28,7 @@ if (panel && toggle && list && countEl) {
   const pluralRules = new Intl.PluralRules(lang);
   const number = new Intl.NumberFormat(lang);
 
-  let state: FlexibleFilterState = readFilters(EMPTY_FLEXIBLE_FILTERS, FLEXIBLE_FILTERS_KEY);
+  let state: FlexibleFilterState = readFilters(EMPTY_FLEXIBLE_FILTERS, storageKey);
 
   function showState(): void {
     for (const field of selects) {
@@ -48,8 +50,11 @@ if (panel && toggle && list && countEl) {
 
   function apply(): void {
     let shown = 0;
+    const now = Date.now();
     for (const [li, facts] of cards) {
-      const visible = flexibleMatches(facts, state);
+      // A dated shift that ended after the page was built is hidden, as on the home page.
+      const over = Number(li.dataset.overAt ?? Infinity) < now;
+      const visible = !over && flexibleMatches(facts, state);
       li.hidden = !visible;
       if (visible) shown += 1;
     }
@@ -63,7 +68,7 @@ if (panel && toggle && list && countEl) {
       if (num) num.textContent = active ? number.format(active) : "";
       if (words) words.textContent = active ? `, ${plural(countBadge, active)}` : "";
     }
-    writeFilters(state, FLEXIBLE_FILTERS_KEY);
+    writeFilters(state, storageKey);
   }
 
   function open(isOpen: boolean, returnFocus = true): void {

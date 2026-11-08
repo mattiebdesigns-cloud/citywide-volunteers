@@ -79,9 +79,13 @@ def test_schemas_are_valid_json_schema():
     Draft202012Validator.check_schema(_load(FILE))
 
 
-def test_fields_are_the_ones_decision_0018_names():
+# Decision 0020: optional team fields, as in a listing.
+TEAM_FIELDS = ["team_required", "team_size", "team_task"]
+
+
+def test_fields_are_the_ones_decisions_0018_and_0020_name():
     schema = _load(OPPORTUNITY)
-    assert sorted(schema["properties"]) == sorted(DECISION_0018_FIELDS)
+    assert sorted(schema["properties"]) == sorted(DECISION_0018_FIELDS + TEAM_FIELDS)
     assert sorted(schema["required"]) == sorted(DECISION_0018_FIELDS)
 
 
@@ -136,6 +140,13 @@ BAD = {
     "protest_action not marked sensitive": lambda o: o.update(
         type="protest_action", sensitive=False
     ),
+    "team_required as text": lambda o: o.update(team_required="yes"),
+    "team_size as a number": lambda o: o.update(team_required=True, team_size=4),
+    "team_task as an empty string": lambda o: o.update(team_required=True, team_task=""),
+    # Organization contact addresses stay private (decision 0023).
+    "contact_email": lambda o: o.update(contact_email="info@example.org"),
+    "contact_email_personal": lambda o: o.update(contact_email_personal=True),
+    "contact_email_read": lambda o: o.update(contact_email_read="2026-11-08"),
 }
 
 # Each case changes a valid program in a way the schema must still accept.
@@ -146,7 +157,22 @@ GOOD = {
     "no address, section or neighborhood": lambda o: o.update(
         address=None, section=None, neighborhood_or_town=None
     ),
+    "team fields left out": lambda o: [o.pop(f, None) for f in TEAM_FIELDS],
+    "team activity": lambda o: o.update(
+        team_required=True, team_size="4 to 6 people", team_task="serve one supper"
+    ),
 }
+
+
+def test_sample_has_a_team_activity():
+    teams = [o for o in _load(SAMPLE)["opportunities"] if o.get("team_required") is True]
+    assert teams, "the sample shows no Volunteer Team (decision 0020)"
+
+
+def test_no_contact_field_in_any_public_schema():
+    # Decision 0023: contact addresses live only in the private config.
+    for path in sorted((ROOT / "docs").glob("*.schema.json")):
+        assert "contact_email" not in path.read_text(encoding="utf-8"), path.name
 
 
 def _sample_with(edit) -> dict:

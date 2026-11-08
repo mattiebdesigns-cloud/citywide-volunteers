@@ -1,0 +1,343 @@
+---
+/**
+ * Medicaid hours calculator (decision 0022; PROJECT.md 2, 5, 9).
+ *
+ * Privacy: the maths runs only in the visitor's browser. There is no form
+ * (so pressing Enter never puts numbers in the address bar), nothing is
+ * sent, nothing is stored (not even in the browser), and the page leaves out
+ * the frame's saved-hearts script. It never asks for a name, case number,
+ * health, Medicaid status, immigration or jail history.
+ *
+ * Order: what the rule is and what this tool is not, who is exempt (as
+ * information, no checkboxes), the calculator, which month is checked, the
+ * checklist (print or copy), where to get help. Every figure comes from
+ * MEDICAID in src/lib/medicaid.ts.
+ */
+import Base from "../../../layouts/Base.astro";
+import Button from "../../../components/ui/Button.astro";
+import Phones from "../../../components/Phones.astro";
+import { MEDICAID } from "../../../lib/medicaid.ts";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.medicaid(code)]));
+
+// US dollars as US readers see them, in either language: $580, $7.25.
+const money = (n: number) =>
+  new Intl.NumberFormat(`${tr.lang}-US`, { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+// Noon, so the date is the same day in every time zone.
+const day = (iso: string) => tr.formatDate(`${iso}T12:00:00Z`);
+const m = MEDICAID;
+// One decimal mark on the whole page, the US one, in both languages: 4.33, like $7.25.
+const num = (n: number) => new Intl.NumberFormat(`${tr.lang}-US`, { maximumFractionDigits: 2 }).format(n);
+/**
+ * A translated sentence split around its {placeholders}, so a phone number
+ * can become a tap-to-call link that never breaks across lines (plain
+ * hyphens, so it copies as typed) and an English term can carry lang="en".
+ */
+const pieces = (text: string) => text.split(/(\{[a-z_]+\})/).map((part) => {
+  const m = part.match(/^\{([a-z_]+)\}$/);
+  return m ? { name: m[1] } : { text: part };
+});
+const tel = (phone: string) => `tel:+1${phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "")}`;
+
+const exemptions = ["age", "pregnant", "caregiver", "frail", "treatment", "jail", "foster", "native", "veteran", "snap_tanf", "hardship"];
+const checklistKeys = ["org", "what", "dates", "hours", "contact"];
+const checklist = checklistKeys.map((k) => t(`medicaid.checklist.${k}`));
+const help: Array<{ key: string; href: string; phone?: string }> = [
+  { key: "link_dhs", href: m.links.dhs },
+  { key: "link_compass", href: m.links.compass },
+  { key: "link_panavigate", href: m.links.panavigate },
+  { key: "link_benephilly", href: m.links.benephilly, phone: m.phones.benephilly },
+  { key: "link_phlp", href: m.links.phlp, phone: m.phones.phlp },
+  { key: "link_cls", href: m.links.cls, phone: m.phones.cls },
+];
+const fmt = { wage: money(m.minimumWage), income: money(m.incomeNeeded) };
+// Words the browser script needs, all from the translation files.
+const words = {
+  hoursOne: t("medicaid.duration.hours.one"),
+  hoursOther: t("medicaid.duration.hours.other"),
+  minutes: t("medicaid.duration.minutes"),
+  both: t("medicaid.duration.both"),
+  needed: t("medicaid.still_needed"),
+  roundedInput: t("medicaid.rounded_input"),
+  reached: t("medicaid.reached", { hours: num(m.hoursNeeded) }),
+  invalid: t("medicaid.invalid"),
+  copied: t("medicaid.copied"),
+  copyFailed: t("medicaid.copy_failed"),
+};
+const checklistPlain = [t("medicaid.checklist_heading"), ...checklist.map((item) => `- ${item}`)].join("\n");
+
+const numberField = (id: string, label: string, hint?: string) => ({ id, label, hint });
+const fields = {
+  work: numberField("mh-work", t("medicaid.work_hours_label"), t("medicaid.work_hours_hint")),
+  income: numberField("mh-income", t("medicaid.income_label"), t("medicaid.income_hint")),
+  volunteer: numberField("mh-volunteer", t("medicaid.volunteer_label"), t("medicaid.volunteer_hint")),
+  program: numberField("mh-program", t("medicaid.program_label"), t("medicaid.program_hint")),
+  credits: numberField(
+    "mh-credits",
+    t("medicaid.credits_label"),
+    t("medicaid.credits_hint", { per: num(m.hoursPerCredit) }),
+  ),
+};
+---
+
+<Base lang={lang} title={t("medicaid.title")} alternates={alternates} path={paths.medicaid(lang)} noStorage>
+  <div class="page mh">
+    <p class="mh__back no-print"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+    <h1 class="no-print">{t("medicaid.title")}</h1>
+    <p class="no-print">
+      {t("medicaid.intro", { start: day(m.startDate), hours: num(m.hoursNeeded), income: fmt.income })}
+    </p>
+
+    <ul class="mh__notes no-print">
+      <li><strong>{t("medicaid.private")}</strong></li>
+      <li>{t("medicaid.only_dhs")}</li>
+      <li>
+        <Phones text={t("medicaid.not_legal")} numbers={{ phlp: m.phones.phlp, cls: m.phones.cls }} />
+      </li>
+      <li><strong>{t("medicaid.answer_letters")}</strong></li>
+      <li>{t("medicaid.not_proof")}</li>
+    </ul>
+
+    <section class="no-print" aria-labelledby="mh-exempt">
+      <h2 id="mh-exempt">{t("medicaid.exempt_heading")}</h2>
+      <p>{t("medicaid.exempt_intro")}</p>
+      <ul>
+        {
+          exemptions.map((k) => (
+            <li>
+              {pieces(t(`medicaid.exempt.${k}`)).map((p) =>
+                "name" in p ? <span lang="en">{t("medicaid.foster_term")}</span> : p.text,
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="no-print" aria-labelledby="mh-calc">
+      <h2 id="mh-calc">{t("medicaid.calc_heading")}</h2>
+      <noscript><p>{t("medicaid.noscript")}</p></noscript>
+      <div id="mh-calculator" class="mh__calc" hidden data-words={JSON.stringify(words)}>
+        <p class="muted">{t("medicaid.month_hint")}</p>
+        <p class="muted">{t("medicaid.rounding")}</p>
+
+        <fieldset class="mh__group">
+          <legend>{t("medicaid.work_legend")}</legend>
+          <label class="check"><input type="radio" name="mh-work-mode" value="hours" checked /><span>{t("medicaid.work_mode_hours")}</span></label>
+          <label class="check"><input type="radio" name="mh-work-mode" value="income" /><span>{t("medicaid.work_mode_income")}</span></label>
+        </fieldset>
+
+        {
+          [fields.work, fields.income, fields.volunteer, fields.program].map((f) => (
+            <div class="field" data-field={f.id} hidden={f.id === "mh-income"}>
+              <label for={f.id}>{f.label}</label>
+              <input
+                id={f.id}
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                spellcheck="false"
+                aria-describedby={`${f.id}-hint ${f.id}-error ${f.id}-note`}
+              />
+              {f.hint && <p id={`${f.id}-hint`} class="field__hint">{f.hint}</p>}
+              <p id={`${f.id}-note`} class="field__hint" hidden />
+              <p id={`${f.id}-error`} class="field__error" hidden />
+            </div>
+          ))
+        }
+
+        <fieldset class="mh__group">
+          <legend>{t("medicaid.school_legend")}</legend>
+          <label class="check"><input type="radio" name="mh-school" value="none" checked /><span>{t("medicaid.school_none")}</span></label>
+          <label class="check"><input type="radio" name="mh-school" value="half_time" /><span>{t("medicaid.school_half")}</span></label>
+          <label class="check"><input type="radio" name="mh-school" value="credits" /><span>{t("medicaid.school_credits")}</span></label>
+        </fieldset>
+        <div class="field" data-field={fields.credits.id} hidden>
+          <label for={fields.credits.id}>{fields.credits.label}</label>
+          <input
+            id={fields.credits.id}
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby={`${fields.credits.id}-hint ${fields.credits.id}-error`}
+          />
+          <p id={`${fields.credits.id}-hint`} class="field__hint">{fields.credits.hint}</p>
+          <p id={`${fields.credits.id}-error`} class="field__error" hidden />
+        </div>
+
+        <div class="mh__buttons">
+          <Button id="mh-add" block>{t("medicaid.add_button")}</Button>
+          <Button id="mh-clear" variant="quiet" block>{t("medicaid.clear_button")}</Button>
+        </div>
+
+        <section id="mh-results" class="mh__results" aria-labelledby="mh-results-heading" hidden>
+          <h3 id="mh-results-heading" tabindex="-1">{t("medicaid.results_heading")}</h3>
+          <dl class="mh__sums">
+            <div data-row="work"><dt data-label-hours={t("medicaid.from_work")} data-label-income={t("medicaid.from_income", { wage: fmt.wage })}>{t("medicaid.from_work")}</dt><dd data-out="work"></dd></div>
+            <div data-row="volunteer"><dt>{t("medicaid.from_volunteer")}</dt><dd data-out="volunteer"></dd></div>
+            <div data-row="program"><dt>{t("medicaid.from_program")}</dt><dd data-out="program"></dd></div>
+            <div data-row="school"><dt>{t("medicaid.from_school")}</dt><dd data-out="school"></dd></div>
+            <div class="mh__total"><dt>{t("medicaid.total")}</dt><dd data-out="total"></dd></div>
+          </dl>
+          <p class="mh__needed" data-out="needed"></p>
+          <p data-note="income" hidden>{t("medicaid.income_alone", { income: fmt.income })}</p>
+          <p data-note="school" hidden>{t("medicaid.school_alone")}</p>
+          <p class="muted">{t("medicaid.rounding")}</p>
+          <p class="muted">{t("medicaid.only_dhs")}</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="no-print" aria-labelledby="mh-month">
+      <h2 id="mh-month">{t("medicaid.check_month_heading")}</h2>
+      <ul>
+        <li>{t("medicaid.check_month_renewing")}</li>
+        <li>{t("medicaid.check_month_applying")}</li>
+      </ul>
+    </section>
+
+    <section id="mh-checklist" class="mh__checklist" aria-labelledby="mh-checklist-heading">
+      <h2 id="mh-checklist-heading">{t("medicaid.checklist_heading")}</h2>
+      <ul>
+        {checklist.map((item) => <li>{item}</li>)}
+      </ul>
+      <div class="mh__buttons no-print" data-checklist-actions hidden>
+        <Button id="mh-print" variant="secondary" block>{t("medicaid.print")}</Button>
+        <Button id="mh-copy" variant="secondary" block data-text={checklistPlain}>{t("medicaid.copy")}</Button>
+      </div>
+      <p id="mh-copy-status" class="no-print" role="status"></p>
+    </section>
+
+    <section class="no-print" aria-labelledby="mh-help">
+      <h2 id="mh-help">{t("medicaid.help_heading")}</h2>
+      <ul class="mh__help">
+        {
+          help.map((h) => (
+            <li>
+              <a href={h.href} rel="noopener">{t(`medicaid.${h.key}`)}</a>
+              {h.phone && (
+                <>
+                  <br />
+                  <a href={tel(h.phone)}>
+                    {pieces(t("medicaid.call")).map((p) => ("name" in p ? <span class="phone">{h.phone}</span> : p.text))}
+                  </a>
+                </>
+              )}
+            </li>
+          ))
+        }
+        <li><Phones text={t("medicaid.phone_dhs")} numbers={{ phone: m.phones.dhs, phila: m.phones.dhsPhiladelphia }} /></li>
+        <li><Phones text={t("medicaid.phone_hr1")} numbers={{ phone: m.phones.hr1Faq }} /></li>
+      </ul>
+      <p class="muted">{t("medicaid.last_checked", { date: day(m.lastChecked) })}</p>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import "../../../scripts/medicaid-calculator.ts";
+</script>
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .mh__back {
+    margin: 0;
+  }
+  .mh__notes {
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6, 2rem);
+    background: var(--color-surface);
+    border: var(--border) solid var(--color-line);
+    border-radius: var(--radius);
+  }
+  .mh__notes li + li {
+    margin-top: var(--space-2);
+  }
+  .mh__calc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .mh__calc[hidden],
+  [data-checklist-actions][hidden] {
+    display: none;
+  }
+  .mh__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .mh__results {
+    padding: var(--space-4);
+    border: var(--border) solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+  .mh__results h3 {
+    margin-top: 0;
+  }
+  .mh__sums {
+    margin: 0;
+  }
+  .mh__sums > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--space-3);
+    padding-block: var(--space-2);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mh__sums dt {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mh__sums dd {
+    margin: 0;
+    font-weight: var(--weight-strong);
+  }
+  .mh__total {
+    font-size: var(--text-lead);
+  }
+  .mh__needed {
+    font-size: var(--text-lead);
+    font-weight: var(--weight-strong);
+  }
+  /* A phone number never breaks across lines. */
+  .phone {
+    white-space: nowrap;
+  }
+  .mh__help li + li {
+    margin-top: var(--space-3);
+  }
+  .mh__help a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    overflow-wrap: anywhere;
+  }
+  /* Printing shows only the checklist (decision 0022 point 3). */
+  @media print {
+    :global(body > *:not(main)),
+    :global(.skip-link),
+    .no-print {
+      display: none !important;
+    }
+    :global(body) {
+      background: #fff;
+    }
+    .mh__checklist {
+      font-size: 14pt;
+    }
+  }
+</style>

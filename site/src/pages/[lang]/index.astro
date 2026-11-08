@@ -25,9 +25,11 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
-    <p class="flexible-link">
-      <a class="tap-link" href={paths.flexible(lang)}>{t("flexible.home_link")}</a>
-    </p>
+    <ul class="more-links">
+      <li><a class="tap-link" href={paths.flexible(lang)}>{t("flexible.home_link")}</a></li>
+      <li><a class="tap-link" href={paths.teams(lang)}>{t("teams.home_link")}</a></li>
+      <li><a class="tap-link" href={paths.medicaid(lang)}>{t("medicaid.home_link")}</a></li>
+    </ul>
     <p
       id="results-count"
       class="results__count"
@@ -59,6 +61,7 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
             data-host={e.host_type ?? ""}
             data-faith={e.faith_tradition ?? ""}
             data-activity={(e.activity ?? []).join(" ")}
+            data-team={String(e.team_required === true)}
             data-over-at={e.overAt}
           >
             <ListingCard
@@ -78,6 +81,7 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
               type={typeLabel(tr, e) ? e.type : undefined}
               typeLabel={typeLabel(tr, e)}
               businessLabel={businessLabel(tr, e)}
+              teamLabel={e.team_required ? t("teams.tag") : undefined}
               spots={spotsLabel(tr, e, builtAt)}
               saveLabel={t("listing.save")}
               shareLabel={t("listing.share")}
@@ -105,9 +109,12 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
 </script>
 
 <style>
-  /* Link to the Flexible opportunities page (decision 0018), with a 48 px tap target. */
-  .flexible-link {
+  /* Links to the Flexible opportunities page (decision 0018) and the Medicaid
+     hours calculator (decision 0022), each a 48 px tap target. */
+  .more-links {
     margin: 0 0 var(--space-2);
+    padding: 0;
+    list-style: none;
   }
   .tap-link {
     display: inline-flex;
