@@ -1,23 +1,11 @@
 // Heart (save on this device), share, and "Add to my calendar".
 // Buttons are found by data attributes, so pv-design's components can carry them:
 //   data-save-id="<listing id>"             heart; aria-pressed shows the state
-//   data-share-url="<path>" data-share-title  share a plain link to the listing
+//   (share buttons, data-share-url, open the share panel: scripts/share-panel.ts)
 //   data-ics="<calendar file text>" data-ics-name="<file name>"
-// Messages ("Link copied.") come from data attributes on #action-status,
-// which the page fills from the translation files.
 import { readSaved, writeSaved } from "./device.ts";
 
 export const SAVED_CHANGED = "cvh:saved-changed";
-
-const status = document.getElementById("action-status");
-let statusTimer: number | undefined;
-
-function announce(key: "copied" | "failed"): void {
-  if (!status) return;
-  status.textContent = status.dataset[key] ?? "";
-  window.clearTimeout(statusTimer);
-  statusTimer = window.setTimeout(() => (status.textContent = ""), 5000);
-}
 
 function wireSave(): void {
   const saved = readSaved();
@@ -33,28 +21,6 @@ function wireSave(): void {
         same.setAttribute("aria-pressed", String(now.has(id)));
       }
       document.dispatchEvent(new CustomEvent(SAVED_CHANGED));
-    });
-  }
-}
-
-function wireShare(): void {
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-share-url]")) {
-    button.addEventListener("click", async () => {
-      const url = new URL(button.dataset.shareUrl ?? "", location.href).href;
-      if (navigator.share) {
-        try {
-          await navigator.share({ title: button.dataset.shareTitle, url });
-          return;
-        } catch (error) {
-          if ((error as DOMException)?.name === "AbortError") return; // the visitor closed the share sheet
-        }
-      }
-      try {
-        await navigator.clipboard.writeText(url);
-        announce("copied");
-      } catch {
-        announce("failed");
-      }
     });
   }
 }
@@ -78,5 +44,4 @@ function wireIcs(): void {
 }
 
 wireSave();
-wireShare();
 wireIcs();

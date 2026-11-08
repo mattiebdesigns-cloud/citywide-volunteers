@@ -9,6 +9,7 @@
  * JavaScript the list shows dated shifts only, as before.
  */
 import ResultsHeading from "../../components/ResultsHeading.astro";
+import SharePanel from "../../components/SharePanel.astro";
 import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
@@ -140,6 +141,8 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
             <ListingCard
               id={o.id}
               href={o.signup_url}
+              shareLabel={t("listing.share")}
+              shareUrl={o.signup_url}
               external
               describedBy="external-note"
               title={o.title}
@@ -169,10 +172,12 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
     >
     </p>
   </div>
+  <SharePanel lang={lang} />
 </Base>
 
 <script>
   import "../../scripts/actions.ts";
+  import "../../scripts/share-panel.ts";
   import "../../scripts/filters.ts";
 </script>
 

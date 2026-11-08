@@ -25,6 +25,7 @@ import {
 import { buildIcs, escapeText, foldLine } from "../src/lib/ics.ts";
 import { pruneSaved } from "../src/lib/saved.ts";
 import { aboutCounts } from "../src/lib/about.ts";
+import { SHARE_TARGETS, STORY_SAFE_BOTTOM, STORY_SAFE_TOP, fitText, placePicture, shareLinks, wrapLines } from "../src/lib/share.ts";
 import { createI18n } from "../src/i18n/index.ts";
 import { placeSpoken, placeText, sectionName, whereLines } from "../src/lib/words.ts";
 import type { EventsFile, OpportunitiesFile, PreparedListing, SiteSettings } from "../src/lib/types.ts";
@@ -373,4 +374,68 @@ test("About page counts: listings plus opportunities; organizations and neighbor
   const twice = [{ ...l[0], org_name: "  Example   Pantry " }, { ...l[0], org_name: "example pantry", neighborhood_or_town: null }];
   assert.deepEqual(aboutCounts(twice, []), { listings: 2, organizations: 1, neighborhoods: l[0].neighborhood_or_town ? 1 : 0 });
   assert.deepEqual(aboutCounts([], []), { listings: 0, organizations: 0, neighborhoods: 0 });
+});
+
+// Share panel (decision 0027).
+
+test("share links: every address is well-formed and carries the listing's words, never the title in an email subject", () => {
+  const input = {
+    url: "https://volunteer.example.org/es/listing/abc/",
+    message: "Limpieza del parque junto al río, jueves 24 de octubre & más",
+    subject: "Una oportunidad de voluntariado",
+  };
+  const links = shareLinks(input);
+  assert.deepEqual(Object.keys(links).sort(), [...SHARE_TARGETS].sort());
+  for (const [target, href] of Object.entries(links)) {
+    const u = new URL(href);
+    if (target === "sms") assert.equal(u.protocol, "sms:");
+    else if (target === "email") assert.equal(u.protocol, "mailto:");
+    else assert.equal(u.protocol, "https:", target);
+    assert.doesNotMatch(href, /\s/, `${target}: no spaces`);
+  }
+  const query = (href: string) => new URLSearchParams(href.slice(href.indexOf("?") + 1));
+  assert.equal(query(links.sms).get("body"), `${input.message} ${input.url}`);
+  assert.equal(query(links.whatsapp).get("text"), `${input.message} ${input.url}`);
+  assert.equal(query(links.facebook).get("u"), input.url);
+  assert.equal(query(links.x).get("text"), input.message);
+  assert.equal(query(links.x).get("url"), input.url);
+  assert.equal(query(links.bluesky).get("text"), `${input.message} ${input.url}`);
+  assert.equal(query(links.email).get("subject"), input.subject);
+  assert.equal(query(links.email).get("body"), `${input.message}\n\n${input.url}`);
+  assert.ok(!query(links.email).get("subject")!.includes("Limpieza"), "the title never goes in the subject");
+  assert.equal(new URL(links.whatsapp).host, "wa.me");
+  assert.equal(new URL(links.bluesky).host, "bsky.app");
+});
+
+test("picture text wraps to the width and shrinks to fit, at English and Spanish lengths", () => {
+  const measure = (s: string) => s.length * 10; // 10 px a letter
+  assert.deepEqual(wrapLines("Host a supper with your own team", 120, measure), ["Host a", "supper with", "your own", "team"]);
+  // A word longer than a line is broken, never left running off the picture.
+  for (const line of wrapLines("Supercalifragilistic word", 80, measure)) assert.ok(measure(line) <= 80, line);
+  const measureAt = (s: string, size: number) => s.length * size * 0.5;
+  const es = "Limpieza del parque junto al río Schuylkill con el Centro Schuylkill de Educación Ambiental";
+  const fitted = fitText(es, 720, 6, [104, 92, 80, 70, 62], measureAt);
+  assert.ok(fitted.lines.length <= 6);
+  for (const line of fitted.lines) assert.ok(measureAt(line, fitted.size) <= 720, line);
+  // Too long even at the smallest size: cut with "…", still inside the width.
+  const huge = fitText(es.repeat(6), 720, 6, [104, 62], measureAt);
+  assert.equal(huge.lines.length, 6);
+  assert.ok(huge.lines[5].endsWith("…"));
+  for (const line of huge.lines) assert.ok(measureAt(line, huge.size) <= 720, line);
+  // Short text keeps the biggest size.
+  assert.equal(fitText("Food pantry", 720, 6, [104, 92], measureAt).size, 104);
+});
+
+test("picture: every word stays out of the top and bottom ~250 px Instagram covers, with space under the card", () => {
+  assert.ok(STORY_SAFE_TOP >= 250 && STORY_SAFE_BOTTOM <= 1920 - 250);
+  for (const cardHeight of [500, 800, 1000, 1100]) {
+    const p = placePicture(cardHeight);
+    assert.ok(p.fits, `${cardHeight} fits`);
+    assert.ok(p.nameY >= STORY_SAFE_TOP);
+    assert.ok(p.cardTop > p.nameY + 60, "the card sits under the site name");
+    assert.ok(p.footerY >= p.cardTop + cardHeight + 40, "a little space under the card");
+    assert.ok(p.footerY + 60 + 44 <= STORY_SAFE_BOTTOM, "the address ends inside the free area");
+  }
+  // A card too tall says so, so the picture is drawn again with smaller text.
+  assert.equal(placePicture(1400).fits, false);
 });

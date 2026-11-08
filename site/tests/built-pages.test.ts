@@ -330,8 +330,9 @@ test("Flexible page from the public sample: each card's tag, title, host, place,
         } else {
           assert.ok(!words.includes(tr.t("flexible.commitment", { commitment: "" }).trim()), "no empty time-asked line");
         }
-        // No date or time on a flexible card, and no heart or share.
-        assert.doesNotMatch(card, /<time|icon-clock|data-save-id|data-share-url/);
+        // No date or time on a flexible card and no heart; it has a share icon (decision 0027).
+        assert.doesNotMatch(card, /<time|icon-clock|data-save-id/);
+        assert.match(card, /data-share-url=/);
       }
       const note = html.match(/<p id="external-note"[^>]*>([^<]*)<\/p>/);
       assert.ok(note, "the note the links point at is on the page, once");
@@ -794,6 +795,93 @@ test("Kind note is a polite live region that is always on the page; Apply follow
     // The script never hides the note; it only changes its words.
     const script = readFileSync(join(site, "src/scripts/filters.ts"), "utf8");
     assert.doesNotMatch(script, /kindNote\.hidden/);
+  } finally {
+    b.done();
+  }
+});
+
+// ---- Share panel (decision 0027) ----
+
+test("share: an icon on every card and the listing page, one panel per page, nothing from outside", () => {
+  const b = build({});
+  try {
+    const sensitive = sample.events.find((e) => e.sensitive === true || e.type === "protest_action")!;
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const pages = [`${lang}/index.html`, `${lang}/flexible/index.html`, `${lang}/teams/index.html`, `${lang}/listing/${sensitive.id}/index.html`];
+      for (const page of pages) {
+        const html = b.read(page);
+        const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+        // Every card has a share icon; the listing page has its Share button.
+        const cards = [...main.matchAll(/<article class="card/g)].length;
+        const shares = [...main.matchAll(/<button[^>]*data-share-url="([^"]+)"[^>]*>/g)];
+        assert.ok(shares.length >= Math.max(cards, 1), `${page}: ${shares.length} share buttons for ${cards} cards`);
+        for (const m of shares) {
+          for (const attr of ["data-share-title", "data-share-when", "data-share-host", "aria-haspopup=\"dialog\""]) assert.ok(m[0].includes(attr), `${page}: ${attr}`);
+        }
+        // One panel, labelled, with the eight choices and a status line.
+        const dialog = html.slice(html.indexOf('<dialog id="share-panel"'), html.indexOf("</dialog>") + 9);
+        assert.match(dialog, /aria-labelledby="share-heading"/);
+        assert.ok(dialog.includes(tr.t("share.heading")));
+        const targets = [...dialog.matchAll(/data-share-target="([^"]+)"/g)].map((x) => x[1]);
+        assert.deepEqual(targets, ["sms", "whatsapp", "facebook", "x", "bluesky", "email"]);
+        assert.match(dialog, /data-share-copy/);
+        assert.match(dialog, /data-share-picture[^>]*aria-describedby="share-picture-hint"/);
+        assert.match(dialog, /role="status"/);
+        for (const key of ["sms", "whatsapp", "facebook", "x", "bluesky", "email", "copy", "instagram", "close"]) assert.ok(decode(dialog).includes(tr.t(`share.${key}`)), key);
+        // Web links open in a new tab, say so, and pass nothing back.
+        for (const a of dialog.matchAll(/<a[^>]*data-share-target="(whatsapp|facebook|x|bluesky)"[^>]*>[\s\S]*?<\/a>/g)) {
+          assert.match(a[0], /target="_blank"/);
+          assert.match(a[0], /rel="noopener noreferrer"/);
+          assert.ok(decode(a[0]).includes(tr.t("share.new_tab")));
+        }
+        // No outside script, image or font: only our own files.
+        assert.doesNotMatch(html, /<script[^>]*src="https?:/);
+        assert.doesNotMatch(html, /<img[^>]*src="https?:/);
+        assert.doesNotMatch(html, /<link[^>]*href="https?:\/\/(?!volunteer)[^"]*"[^>]*rel="(stylesheet|preload)"/);
+      }
+      // A flexible card shares the organization's page, which is where it links.
+      const flex = b.read(`${lang}/flexible/index.html`);
+      for (const o of oppSample.opportunities) {
+        const li = flex.slice(flex.indexOf(`<li data-id="${o.id}"`), flex.indexOf("</li>", flex.indexOf(`<li data-id="${o.id}"`)));
+        assert.ok(li.includes(`data-share-url="${o.signup_url}"`), `${lang}: ${o.id} shares its own link`);
+        assert.ok(li.includes(`data-share-when="${tr.t("flexible.tag")}"`), "Flexible instead of a date");
+      }
+      // A sensitive listing gets the same panel and the same share button (owner).
+      const page = b.read(`${lang}/listing/${sensitive.id}/index.html`);
+      assert.match(page, new RegExp(`data-share-url="/${lang}/listing/${sensitive.id}/"`));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("share scripts send nothing anywhere and store nothing", () => {
+  for (const file of ["src/scripts/share-panel.ts", "src/scripts/share-picture.ts", "src/lib/share.ts"]) {
+    const code = readFileSync(join(site, file), "utf8").replace(/\/\/.*$/gm, "");
+    for (const banned of ["fetch(", "XMLHttpRequest", "sendBeacon", "WebSocket", "localStorage", "sessionStorage", "indexedDB", "document.cookie", "new Image(", "@font-face", "import("]) {
+      assert.ok(!code.includes(banned), `${file}: no ${banned}`);
+    }
+  }
+});
+
+test("the saved share picture has a neutral file name, never the title (owner, Q75)", () => {
+  const script = readFileSync(join(site, "src/scripts/share-panel.ts"), "utf8");
+  const nameLine = script.split("\n").find((l) => l.includes("const name ="))!;
+  assert.ok(nameLine, "the file name is set in one place");
+  assert.doesNotMatch(nameLine, /shareTitle|title/i);
+  assert.match(script, /link\.download = name;/);
+  assert.match(script, /new File\(\[blob\], name,/);
+  const b = build({});
+  try {
+    for (const [lang, expected] of [["en", "volunteer-opportunity.png"], ["es", "oportunidad-de-voluntariado.png"]]) {
+      const html = b.read(`${lang}/index.html`);
+      const words = JSON.parse(decode(html.match(/<dialog id="share-panel"[^>]*data-words="([^"]*)"/)![1]));
+      assert.equal(words.fileName, expected);
+      // No listing's title, written as a file name would write it, is in the name.
+      const slug = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      for (const e of sample.events) assert.ok(!words.fileName.includes(slug(e.title)), e.title);
+    }
   } finally {
     b.done();
   }

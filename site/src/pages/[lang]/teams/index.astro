@@ -9,6 +9,7 @@
  * others link out to the organization's own page.
  */
 import ResultsHeading from "../../../components/ResultsHeading.astro";
+import SharePanel from "../../../components/SharePanel.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
@@ -84,6 +85,8 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                 <ListingCard
                   id={e.id}
                   href={paths.listing(lang, e.id)}
+                  shareLabel={t("listing.share")}
+                  shareUrl={paths.listing(lang, e.id)}
                   title={e.title}
                   titleLang={e.listing_language}
                   org={e.org_name}
@@ -106,6 +109,8 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                 <ListingCard
                   id={o.id}
                   href={o.signup_url}
+                  shareLabel={t("listing.share")}
+                  shareUrl={o.signup_url}
                   external
                   describedBy="external-note"
                   title={o.title}
@@ -131,12 +136,14 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
       )
     }
   </div>
+  <SharePanel lang={lang} />
 </Base>
 
 {
   any && (
     <script>
       import "../../../scripts/flexible-filters.ts";
+      import "../../../scripts/share-panel.ts";
     </script>
   )
 }

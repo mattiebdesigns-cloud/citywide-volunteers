@@ -7,6 +7,7 @@
  * Filters: part of the city, cause, how to join.
  */
 import ResultsHeading from "../../../components/ResultsHeading.astro";
+import SharePanel from "../../../components/SharePanel.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
@@ -63,6 +64,8 @@ function facts(o: (typeof opportunities)[number]) {
                 <ListingCard
                   id={o.id}
                   href={o.signup_url}
+                  shareLabel={t("listing.share")}
+                  shareUrl={o.signup_url}
                   external
                   describedBy="external-note"
                   title={o.title}
@@ -87,12 +90,14 @@ function facts(o: (typeof opportunities)[number]) {
       )
     }
   </div>
+  <SharePanel lang={lang} />
 </Base>
 
 {
   any && (
     <script>
       import "../../../scripts/flexible-filters.ts";
+      import "../../../scripts/share-panel.ts";
     </script>
   )
 }

@@ -64,6 +64,10 @@ The Filters button sits beside the page heading (heading left, button right; on 
 
 `/en/about/` and `/es/about/` (decision 0025): nine sections, each with one of pv-design's drawings (`src/components/ui/aboutArt.ts`), linked from the header and footer. The listing, organization and neighborhood counts come from this build's data (`src/lib/about.ts`). If `aboutArt.ts` lacks a drawing, the build stops; if the file is missing, only test builds (`PV_TEST_BUILD=1`) draw placeholders. It prints as a handout, one section never split across pages.
 
+### Share panel
+
+Every card (dated, flexible, team) and the listing page has a share icon (decision 0027). It opens one panel per page (`components/SharePanel.astro`, a native dialog): Text message, WhatsApp, Facebook, X, Bluesky, Email, Copy link and Instagram. Each is a plain address built in the browser (`src/lib/share.ts`); no outside script, SDK or image loads, and nothing is sent to us. A flexible card shares the organization's page, which is where the card links. Email subjects never hold the listing's title (PROJECT.md 8.1). Instagram draws a 1080 × 1920 picture of the card on the device (`scripts/share-picture.ts`) and opens the device's share sheet, or saves the picture where that is not possible.
+
 ### Link previews
 
 When someone shares a link on Facebook or a similar site, the post shows a picture, a title and a short description (decision 0014). Every page carries these tags (`og:*` and `twitter:card`) in its own language. The home page uses the site's name and `og.description`. A listing page uses exactly the home page's preview; only `og:url` points at the listing. No listing's title, date, organization or picture ever goes into a preview (owner, Q38). The pictures are `public/og/en.png` and `public/og/es.png`, 1200 × 630 px.

@@ -5,6 +5,7 @@
  * to the organization's own sign-up (sign-ups never happen here in Phase 1),
  * add to calendar, save, share, last checked, and report a problem.
  */
+import SharePanel from "../../../components/SharePanel.astro";
 import Base from "../../../layouts/Base.astro";
 import BusinessLedNote from "../../../components/ui/BusinessLedNote.astro";
 import Button from "../../../components/ui/Button.astro";
@@ -15,7 +16,7 @@ import SpotsBadge from "../../../components/ui/SpotsBadge.astro";
 import { buildIcs } from "../../../lib/ics.ts";
 import { paths, siteData, translator } from "../../../lib/site.ts";
 import type { PreparedListing } from "../../../lib/types.ts";
-import { joinLabel, splitAround, spotsLabel, timeText, typeLabel, whereLines } from "../../../lib/words.ts";
+import { joinLabel, placeText, splitAround, spotsLabel, timeText, typeLabel, whenText, whereLines } from "../../../lib/words.ts";
 
 export function getStaticPaths() {
   const { i18n, listings } = siteData();
@@ -230,8 +231,13 @@ const reportHref =
           title={e.title}
           titleLang={e.listing_language}
           visibleLabel={t("listing.share_short")}
+          aria-haspopup="dialog"
           data-share-url={paths.listing(lang, e.id)}
           data-share-title={e.title}
+          data-share-lang={e.listing_language}
+          data-share-when={whenText(tr, e)}
+          data-share-place={placeText(tr, e, settings)}
+          data-share-host={t("listing.hosted_by", { org: e.org_name })}
         />
       </div>
       <p
@@ -256,10 +262,12 @@ const reportHref =
       </p>
     </article>
   </div>
+  <SharePanel lang={lang} />
 </Base>
 
 <script>
   import "../../../scripts/actions.ts";
+  import "../../../scripts/share-panel.ts";
 </script>
 
 <style>

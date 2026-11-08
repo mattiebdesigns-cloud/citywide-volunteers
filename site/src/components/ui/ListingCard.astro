@@ -85,7 +85,7 @@ interface Props {
   saveLabel?: string;
   shareLabel?: string;
   saved?: boolean;
-  /** Full address of the detail page, for sharing. Heart and share show only when this and the labels are given. */
+  /** What the share icon shares (our listing page, or the organization's page for a flexible card). The share icon shows when this and shareLabel are given; the heart when saveLabel is given. */
   shareUrl?: string;
   /** Heading level for the title: 2 on a plain list, 3 under day headings. */
   headingLevel?: 2 | 3;
@@ -126,7 +126,13 @@ const {
 const Heading = headingLevel === 2 ? "h2" : "h3";
 const [hostBefore, hostAfter] = splitAround(hostedBy, "org");
 const factLines = facts.map((f) => ({ ...f, parts: splitAround(f.template, f.name) }));
-const actions = Boolean(saveLabel && shareLabel && shareUrl);
+// Share shows on every card that has an address to share (decision 0027);
+// the heart only where the listing can be saved (dated shifts).
+const canShare = Boolean(shareLabel && shareUrl);
+const canSave = Boolean(saveLabel);
+// What the share panel's picture shows: only what this card already shows.
+const shareWhen = when ?? flexibleLabel ?? "";
+const shareHost = `${hostBefore}${org}${hostAfter}`;
 // For a title that links out, the icon stays on the line with the last word.
 const titleHead = external ? title.replace(/\S+$/, "") : title;
 const titleTail = external ? title.slice(titleHead.length) : "";
@@ -198,17 +204,24 @@ const titleTail = external ? title.slice(titleHead.length) : "";
   }
 
   {
-    actions && (
+    (canSave || canShare) && (
       <div class="card__actions">
-        <IconButton icon="heart" label={saveLabel!} title={title} titleLang={titleLang} pressed={saved} data-save-id={id} />
-        <IconButton
-          icon="share"
-          label={shareLabel!}
-          title={title}
-          titleLang={titleLang}
-          data-share-url={shareUrl}
-          data-share-title={title}
-        />
+        {canSave && <IconButton icon="heart" label={saveLabel!} title={title} titleLang={titleLang} pressed={saved} data-save-id={id} />}
+        {canShare && (
+          <IconButton
+            icon="share"
+            label={shareLabel!}
+            title={title}
+            titleLang={titleLang}
+            aria-haspopup="dialog"
+            data-share-url={shareUrl}
+            data-share-title={title}
+            data-share-lang={titleLang}
+            data-share-when={shareWhen}
+            data-share-place={place ?? ""}
+            data-share-host={shareHost}
+          />
+        )}
       </div>
     )
   }

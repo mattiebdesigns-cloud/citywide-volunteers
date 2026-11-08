@@ -461,6 +461,27 @@
     },
     "print_address": "Encuéntrelo en línea: {url}"
   },
+  "share": {
+    "heading": "Compartir este anuncio",
+    "close": "Cerrar",
+    "message": "{title}, {when}",
+    "email_subject": "Una oportunidad de voluntariado",
+    "sms": "Mensaje de texto",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "x": "X",
+    "bluesky": "Bluesky",
+    "email": "Correo electrónico",
+    "copy": "Copiar enlace",
+    "instagram": "Instagram",
+    "instagram_hint": "Esto crea una imagen de esta tarjeta en su teléfono, lista para publicar en Instagram. No se nos envía nada.",
+    "new_tab": "(se abre en una pestaña nueva)",
+    "picture_making": "Creando la imagen…",
+    "picture_shared": "Imagen compartida.",
+    "picture_saved": "Imagen guardada. Abra Instagram y agréguela a su historia o publicación. Al publicarla, por favor agregue una descripción de la imagen (texto alternativo) para las personas que usan lectores de pantalla.",
+    "file_name": "oportunidad-de-voluntariado.png",
+    "picture_failed": "No se pudo crear la imagen."
+  },
   "og": {
     "headline": "Turnos de voluntariado en todo {city}",
     "tagline": "Encuentre uno cerca de usted.",

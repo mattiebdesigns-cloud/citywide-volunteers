@@ -26,7 +26,11 @@ export type IconName =
   | "globe"
   | "flag"
   | "info"
-  | "team";
+  | "team"
+  | "message"
+  | "mail"
+  | "link"
+  | "camera";
 
 // Stroked with currentColor, so an icon takes the colour of the text next to it.
 export const paths: Record<IconName, string> = {
@@ -59,4 +63,9 @@ export const paths: Record<IconName, string> = {
   info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r="0.6" fill="currentColor"/>',
   // Volunteer Team (decision 0020): three people side by side.
   team: '<circle cx="12" cy="7.5" r="2.5"/><path d="M7.5 18.5v-1a4.5 4.5 0 0 1 9 0v1"/><circle cx="5.5" cy="9.5" r="2"/><path d="M2.5 18.5V18a3 3 0 0 1 3.5-3"/><circle cx="18.5" cy="9.5" r="2"/><path d="M21.5 18.5V18a3 3 0 0 0-3.5-3"/>',
+  // Share panel (decision 0027): plain, generic shapes, no brand logos.
+  message: '<path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/><path d="M8 10h8M8 13h5"/>',
+  mail: '<rect x="3.5" y="6" width="17" height="12" rx="1.5"/><path d="m4 7 8 6 8-6"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  camera: '<rect x="3.5" y="7" width="17" height="12.5" rx="2"/><path d="M8.5 7 10 4.5h4L15.5 7"/><circle cx="12" cy="13.2" r="3.4"/>',
 };

@@ -461,6 +461,27 @@
     },
     "print_address": "Find it online: {url}"
   },
+  "share": {
+    "heading": "Share this listing",
+    "close": "Close",
+    "message": "{title}, {when}",
+    "email_subject": "A volunteer opportunity",
+    "sms": "Text message",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "x": "X",
+    "bluesky": "Bluesky",
+    "email": "Email",
+    "copy": "Copy link",
+    "instagram": "Instagram",
+    "instagram_hint": "This makes a picture of this card on your phone, ready to post on Instagram. Nothing is sent to us.",
+    "new_tab": "(opens in a new tab)",
+    "picture_making": "Making the picture…",
+    "picture_shared": "Picture shared.",
+    "picture_saved": "Picture saved. Open Instagram and add it to your story or post. When you post, please add a description of the picture (alt text) for people who use screen readers.",
+    "file_name": "volunteer-opportunity.png",
+    "picture_failed": "Could not make the picture."
+  },
   "og": {
     "headline": "Volunteer shifts across {city}",
     "tagline": "Find one near you.",

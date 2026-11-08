@@ -1,0 +1,163 @@
+---
+/**
+ * The share panel (decision 0027): one per page, opened by any button with
+ * data-share-url (every card's share icon, and the listing page's Share).
+ *
+ * A native <dialog> opened with showModal(): the browser keeps keyboard
+ * focus inside it and closes it on Escape; scripts/share-panel.ts puts focus
+ * back on the share button. Every choice is a plain link or a browser-only
+ * action: no outside script, SDK or image, and nothing is sent to us.
+ * Instagram draws a picture of the card on the device (scripts/share-picture.ts).
+ * Sensitive events get the same panel (owner, 2026-11-08).
+ */
+import Icon from "./ui/Icon.astro";
+import IconButton from "./ui/IconButton.astro";
+import { SHARE_TARGETS } from "../lib/share.ts";
+import { siteData, translator } from "../lib/site.ts";
+import type { IconName } from "./ui/icons";
+
+interface Props {
+  lang: string;
+}
+
+const { lang } = Astro.props;
+const { settings, siteUrl } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const icons: Record<string, IconName> = {
+  sms: "message",
+  whatsapp: "globe",
+  facebook: "globe",
+  x: "globe",
+  bluesky: "globe",
+  email: "mail",
+};
+// Words the script needs, all from the translation files.
+const words = {
+  message: t("share.message"),
+  subject: t("share.email_subject"),
+  copied: t("listing.share_copied"),
+  copyFailed: t("listing.share_failed"),
+  making: t("share.picture_making"),
+  shared: t("share.picture_shared"),
+  saved: t("share.picture_saved"),
+  pictureFailed: t("share.picture_failed"),
+  siteName: tr.setting(settings.site.name),
+  // The saved picture's file name: neutral, never the title (owner, Q75).
+  fileName: t("share.file_name"),
+  // For the picture: the site's address without https://, when the build knows it.
+  siteAddress: siteUrl.replace(/^https?:\/\//, ""),
+};
+---
+
+<dialog id="share-panel" class="share-panel" aria-labelledby="share-heading" data-words={JSON.stringify(words)}>
+  <div class="share-panel__top">
+    <h2 id="share-heading" class="share-panel__heading">{t("share.heading")}</h2>
+    <IconButton icon="close" label={t("share.close")} tone="plain" data-share-close />
+  </div>
+  <p class="share-panel__what" data-share-what></p>
+  <ul class="share-panel__list">
+    {
+      SHARE_TARGETS.map((target) => {
+        const web = target !== "sms" && target !== "email";
+        return (
+          <li>
+            <a class="share-panel__item" data-share-target={target} href="#" target={web ? "_blank" : undefined} rel={web ? "noopener noreferrer" : undefined}>
+              <Icon name={icons[target]} />
+              <span>{t(`share.${target}`)}</span>
+              {web && <span class="sr-only">{t("share.new_tab")}</span>}
+            </a>
+          </li>
+        );
+      })
+    }
+    <li>
+      <button type="button" class="share-panel__item" data-share-copy>
+        <Icon name="link" />
+        <span>{t("share.copy")}</span>
+      </button>
+    </li>
+    <li>
+      <button type="button" class="share-panel__item" data-share-picture aria-describedby="share-picture-hint">
+        <Icon name="camera" />
+        <span>{t("share.instagram")}</span>
+      </button>
+    </li>
+  </ul>
+  <p id="share-picture-hint" class="share-panel__hint muted">{t("share.instagram_hint")}</p>
+  <p class="share-panel__status" role="status" data-share-status></p>
+</dialog>
+
+<style>
+  .share-panel {
+    width: calc(100% - 2rem);
+    max-width: 26rem;
+    max-height: calc(100% - 2rem);
+    padding: var(--space-4);
+    border: var(--border) solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow);
+  }
+  .share-panel::backdrop {
+    background: rgb(23 32 46 / 0.55);
+  }
+  .share-panel__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .share-panel__heading {
+    margin: 0;
+    font-size: var(--text-h3);
+  }
+  .share-panel__what {
+    margin: var(--space-2) 0 var(--space-3);
+    font-weight: var(--weight-strong);
+    overflow-wrap: anywhere;
+  }
+  /* Two columns of 48 px rows; one column when a label is long. */
+  .share-panel__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .share-panel__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--tap);
+    padding: var(--space-2) var(--space-3);
+    border: var(--border) solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: var(--weight-strong);
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .share-panel__item:hover {
+    border-color: var(--color-primary);
+  }
+  .share-panel__item span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .share-panel__hint {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-min);
+  }
+  .share-panel__status {
+    min-height: 1.5em;
+    margin: var(--space-3) 0 0;
+    font-weight: var(--weight-strong);
+  }
+</style>
