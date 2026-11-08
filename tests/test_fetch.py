@@ -298,7 +298,11 @@ def test_different_sites_do_not_wait_for_each_other():
     [
         (403, {"server": "cloudflare"}, b"<html><title>Just a moment...</title></html>"),
         (503, {"cf-mitigated": "challenge"}, b""),
-        (200, {}, b"<html><script src='/cdn-cgi/challenge-platform/x.js'></script></html>"),
+        (
+            200,
+            {},
+            b"<html><script src='/cdn-cgi/challenge-platform/h/b/orchestrate/x.js'></script></html>",
+        ),
         (403, {}, b"Forbidden"),
         (401, {}, b""),
         (429, {"retry-after": "60"}, b""),
@@ -791,3 +795,169 @@ def test_no_fetch_record_for_standard_output(tmp_path, capsysbinary):
 def test_negative_crawl_delay_is_refused(tmp_path):
     code, site = _run({}, [PAGE, "--contact", CONTACT, "--crawl-delay", "-1"], WallClock())
     assert code == 2 and site.urls == []
+
+
+# -- bot-check pages that answer HTTP 200 (research: Penn Medicine) -----------------
+
+CHALLENGE_PAGES = {
+    "cloudflare-wait": b"<!DOCTYPE html><html><head><title>Just a moment...</title></head>"
+    b"<body><script src='/cdn-cgi/challenge-platform/h/b/orchestrate/x.js'></script></body></html>",
+    "cloudflare-block": b"<html><head><title>Attention Required! | Cloudflare</title></head></html>",
+    "akamai": b"<html><body><div id='sec-if-cpt-container'></div>"
+    b"<script src='/_sec/cp_challenge/sec-4-4.js'></script></body></html>",
+    "akamai-denied": b"<HTML><HEAD><TITLE>Access Denied</TITLE></HEAD><BODY>Reference #18.x"
+    b"<P>https://errors.edgesuite.net/18.x</BODY></HTML>",
+    "perimeterx": b"<html><body><div id='px-captcha'></div><p>Press &amp; Hold to confirm</p></body></html>",
+    "hcaptcha": b"<html><body><form><div class='h-captcha' data-sitekey='x'></div></form>"
+    b"<script src='https://hcaptcha.com/1/api.js'></script></body></html>",
+    "turnstile": b"<html><body><div class='cf-turnstile'></div>"
+    b"<script src='https://challenges.cloudflare.com/turnstile/v0/api.js'></script></body></html>",
+    "small-script": b"<html><head><script>var challenge = solve(window.token);</script></head>"
+    b"<body></body></html>",
+}
+
+
+@pytest.mark.parametrize("name", sorted(CHALLENGE_PAGES))
+def test_bot_check_on_http_200_is_blocked(name, tmp_path, capsys):
+    clock, out = WallClock(), tmp_path / "page.html"
+    pages = {ROBOTS: (404, {}, b""), PAGE: (200, {}, CHALLENGE_PAGES[name])}
+    argv = [PAGE, "--contact", CONTACT, "--out", str(out), "--state", str(tmp_path / "s.json")]
+    code, site = _run(pages, argv, clock)
+    assert code == fetch_module.EXIT_BLOCKED
+    assert not out.exists()  # the bot-check page is never saved as the page
+    assert "BLOCKED" in capsys.readouterr().err
+    assert site.urls.count(PAGE) == 1  # no retry
+
+
+def test_bot_check_on_robots_txt_blocks_the_site():
+    page = CHALLENGE_PAGES["cloudflare-wait"]
+    fetcher, site, _ = make({"https://org.example.org/robots.txt": (200, {}, page), FEED: OK})
+    with pytest.raises(Blocked, match="Cloudflare challenge instead of the page"):
+        fetcher.fetch(FEED)
+    assert FEED not in site.urls
+
+
+def test_bot_check_on_200_is_remembered_for_a_day(tmp_path):
+    clock, state = WallClock(), tmp_path / "state.json"
+    pages = {ROBOTS: (404, {}, b""), PAGE: (200, {}, CHALLENGE_PAGES["akamai"]), PAGE2: OK}
+    base = ["--contact", CONTACT, "--state", str(state)]
+    _run(pages, [PAGE, *base, "--out", str(tmp_path / "a")], clock)
+    assert "blocked_at" in json.loads(state.read_text())["https://org.example.org"]
+    clock.now += 600
+    code, site = _run(pages, [PAGE2, *base, "--out", str(tmp_path / "b")], clock)
+    assert code == 4 and site.urls == []
+
+
+def test_scraper_fetcher_treats_a_200_bot_check_as_blocked():
+    second = "https://org.example.org/other-feed/?ical=1"
+    page = CHALLENGE_PAGES["perimeterx"]
+    fetcher, site, _ = make(
+        {"https://org.example.org/robots.txt": robots(""), FEED: (200, {}, page), second: OK}
+    )
+    with pytest.raises(Blocked, match="PerimeterX"):
+        fetcher.fetch(FEED)
+    with pytest.raises(Blocked):
+        fetcher.fetch(second)
+    assert second not in site.urls
+
+
+def test_a_real_page_with_a_contact_form_captcha_is_fetched():
+    """A weak marker counts only on a small page; a full page with a form is fine."""
+    body = (
+        b"<html><body><h1>Volunteer with us</h1>"
+        + b"<p>Shifts every Saturday.</p>" * 1200
+        + b"<form><div class='h-captcha'></div></form>"
+        + b"<script src='https://hcaptcha.com/1/api.js'></script></body></html>"
+    )
+    assert len(body) > 20_000
+    fetcher, _, _ = make({"https://org.example.org/robots.txt": robots(""), FEED: (200, {}, body)})
+    assert fetcher.fetch(FEED).status == 200
+
+
+def test_a_feed_mentioning_captcha_is_not_a_bot_check():
+    feed = b"BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Verify you are human workshop\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    fetcher, _, _ = make({"https://org.example.org/robots.txt": robots(""), FEED: (200, {}, feed)})
+    assert fetcher.fetch(FEED).body == feed
+
+
+# -- licence gate: no false alarms on ordinary pages ------------------------------
+
+JSD = b"<script src='/cdn-cgi/challenge-platform/scripts/jsd/main.js'></script>"
+CONTACT_PAGE = (
+    b"<!doctype html><html><head><title>Contact Us | Example Sunday Meals</title>"
+    b"<script src='https://www.google.com/recaptcha/api.js' async defer></script></head><body>"
+    b"<h1>Contact Us</h1><p>We serve a free meal every Sunday at noon. Volunteers arrive at"
+    b" 10:30 to cook and set up, and stay until 2:00 to clean. Send us a note below and"
+    b" someone from the volunteer team will write back within a few days.</p>"
+    b"<form><input name='name'><textarea name='message'></textarea>"
+    b"<div class='g-recaptcha' data-sitekey='x'></div><button>Send</button></form>"
+    b"<footer>123 Example Street, Philadelphia</footer></body></html>"
+)
+
+
+def _fetches(body: bytes) -> bool:
+    fetcher, _, _ = make({"https://org.example.org/robots.txt": robots(""), FEED: (200, {}, body)})
+    try:
+        fetcher.fetch(FEED)
+    except Blocked:
+        return False
+    return True
+
+
+def test_small_normal_page_with_cloudflare_detection_script_is_fetched():
+    page = b"<html><head>" + JSD + b"</head><body><h1>Volunteer</h1><p>Shifts.</p></body></html>"
+    assert len(page) < 1000
+    assert _fetches(page)
+
+
+def test_small_contact_page_with_a_recaptcha_form_is_fetched():
+    assert len(CONTACT_PAGE) < 20_000
+    assert _fetches(CONTACT_PAGE)
+
+
+def test_a_page_that_is_mainly_a_captcha_is_blocked():
+    page = (
+        b"<html><head><title>Security check</title>"
+        b"<script src='https://www.google.com/recaptcha/api.js'></script></head><body>"
+        b"<h1>Please verify you are human</h1><div class='g-recaptcha'></div></body></html>"
+    )
+    assert not _fetches(page)
+
+
+def test_cloudflare_challenge_signs_still_block():
+    for sign in (
+        b"<script>window._cf_chl_opt={cvId:'3'};</script>",
+        b"<form id='challenge-form' action='/?__cf_chl_f_tk=x' class='cf-chl-widget'></form>",
+        b"<script src='/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1'></script>",
+    ):
+        page = (
+            b"<html><body><h1>Volunteer</h1>"
+            + b"<p>Real text.</p>" * 100
+            + sign
+            + b"</body></html>"
+        )
+        assert not _fetches(page), sign
+
+
+def test_ordinary_words_in_a_title_are_not_a_verify_heading():
+    """ "Department of Human Services" with a form captcha is a normal page."""
+    page = (
+        b"<html><head><title>Changes to Medicaid | Department of Human Services</title>"
+        b"<script src='https://www.google.com/recaptcha/api.js'></script></head><body>"
+        b"<h1>Human rights and Medicaid</h1><p>Starting in January, people who get Medicaid"
+        b" will be asked to show work or volunteer hours. This page explains who is affected"
+        b" and how to report hours.</p></body></html>"
+    )
+    assert _fetches(page)
+
+
+def test_short_page_with_cloudflare_inline_detection_loader_is_fetched():
+    loader = (
+        b"<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;"
+        b"var d=b.createElement('script');d.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';"
+        b"b.getElementsByTagName('head')[0].appendChild(d);}})();</script>"
+    )
+    page = b"<html><body><h1>Volunteer</h1><p>Join us on Saturday.</p>" + loader + b"</body></html>"
+    assert _fetches(page)
+    # Another inline challenge script on the same short page still counts.
+    assert not _fetches(page.replace(b"</body>", b"<script>var challenge=solve();</script></body>"))

@@ -13,8 +13,9 @@ What it promises (README ground rules 1 and 2):
   the fetcher's `min_delay_seconds` if higher, the site's robots.txt
   Crawl-delay, and the source entry's `crawl_delay_seconds`. A Crawl-delay it cannot read
   stops that site and is reported; it never guesses a delay.
-- When a site turns the bot away (a Cloudflare challenge, HTTP 401, 403 or
-  429, on robots.txt or on a page) it stops and raises `Blocked`. It never
+- When a site turns the bot away (HTTP 401, 403 or 429, or a bot-check page:
+  Cloudflare, Akamai, PerimeterX, hCaptcha, Turnstile, even when it answers
+  HTTP 200; on robots.txt or on a page) it stops and raises `Blocked`. It never
   retries, never tries another way in, and asks that site for nothing more
   for the rest of the run. Only a 404 or another 4xx on robots.txt means the
   site has none. A robots.txt that cannot be read (server error, network
@@ -157,13 +158,85 @@ def urllib_transport(url: str, headers: dict[str, str], timeout: float, max_byte
     return Response(url=url, status=status, headers=found, body=body)
 
 
-def _cloudflare_challenge(response: Response) -> bool:
+# Bot checks that can come back as HTTP 200. A strong sign is found only on a
+# challenge or block page, wherever it is near the top. Scripts that sites load
+# on ordinary pages (Cloudflare's detection script under
+# /cdn-cgi/challenge-platform/scripts/, a captcha on a contact form) are never
+# enough: a weak sign counts only when the page is mainly a challenge, meaning
+# very little visible text, or a title or heading that asks you to verify.
+_STRONG_MARKERS = {
+    b"<title>just a moment": "Cloudflare challenge",
+    b"window._cf_chl_opt": "Cloudflare challenge",
+    b"cf-chl-": "Cloudflare challenge",
+    b"/cdn-cgi/challenge-platform/h/": "Cloudflare challenge",
+    b"attention required! | cloudflare": "Cloudflare block page",
+    b"/_sec/cp_challenge": "Akamai bot check",
+    b"sec-if-cpt-container": "Akamai bot check",
+    b"errors.edgesuite.net": "Akamai block page",
+    b"px-captcha": "PerimeterX (HUMAN) bot check",
+    b"_pxcaptcha": "PerimeterX (HUMAN) bot check",
+}
+_WEAK_MARKERS = {
+    b"hcaptcha.com": "hCaptcha check",
+    b"h-captcha": "hCaptcha check",
+    b"challenges.cloudflare.com/turnstile": "Cloudflare Turnstile check",
+    b"cf-turnstile": "Cloudflare Turnstile check",
+    b"google.com/recaptcha": "reCAPTCHA check",
+    b"g-recaptcha": "reCAPTCHA check",
+    b"verify you are human": "a human check",
+    b"checking your browser": "a browser check",
+    b"press &amp; hold": "a human check",
+    b"press & hold": "a human check",
+}
+_LITTLE_TEXT = 150  # characters of visible text: a challenge page says a sentence or two
+_VERIFY_HEADING = re.compile(
+    r"verify (that )?you are (a )?human|are you (a )?(human|robot)|not a robot|"
+    r"human verification|security check|checking your browser|captcha|access denied|"
+    r"just a moment|one more step|bot check|attention required",
+    re.IGNORECASE,
+)
+_JSD_LOADER = b"/cdn-cgi/challenge-platform/scripts/jsd/"  # Cloudflare's ordinary loader
+_INLINE_SCRIPT = re.compile(rb"<script[^>]*>([^<]{0,4000})", re.IGNORECASE)
+_CHALLENGE_WORD = re.compile(rb"challenge|captcha", re.IGNORECASE)
+
+
+def _mainly_a_challenge(body: bytes) -> bool:
+    """Very little visible text, or a title or main heading that asks to verify."""
+    from pvscrapers import html  # local: html imports nothing from here
+
+    page = html.parse(body.decode("utf-8", errors="replace"))
+    body_node = page.find("body") or page
+    if len(body_node.text()) < _LITTLE_TEXT:
+        return True
+    headings = [n.text() for tag in ("title", "h1", "h2") for n in page.find_all(tag)]
+    return any(_VERIFY_HEADING.search(h) for h in headings)
+
+
+def _challenge(response: Response) -> str | None:
+    """Why this response is a bot check rather than the page, or None. Checked on
+    every status, 200 included."""
     if response.headers.get("cf-mitigated", "").lower() == "challenge":
-        return True
-    if response.status in (403, 503) and "cloudflare" in response.headers.get("server", "").lower():
-        return True
-    head = response.body[:4096].lower()
-    return b"challenge-platform" in head or b"<title>just a moment" in head
+        return "Cloudflare challenge"
+    server = response.headers.get("server", "").lower()
+    if response.status in (403, 503) and "cloudflare" in server:
+        return "Cloudflare challenge"
+    if response.status == 403 and "akamaighost" in server:
+        return "Akamai block page"
+    head = response.body[:32_768].lower()
+    for marker, name in _STRONG_MARKERS.items():
+        if marker in head:
+            return name
+    if not (head.lstrip()[:1] == b"<" or b"<html" in head[:1024]):
+        return None  # not a web page (a feed, robots.txt): only strong signs count
+    weak = next((name for marker, name in _WEAK_MARKERS.items() if marker in head), None)
+    if weak is None and any(
+        _CHALLENGE_WORD.search(m.group(1)) and _JSD_LOADER not in m.group(1)
+        for m in _INLINE_SCRIPT.finditer(head)
+    ):
+        weak = "a page that is little more than a challenge script"
+    if weak is not None and _mainly_a_challenge(response.body):
+        return weak
+    return None
 
 
 def _local_time(seconds: float) -> str:
@@ -349,8 +422,8 @@ class Fetcher:
 
     def _raise_if_refused(self, response: Response) -> None:
         reason = None
-        if _cloudflare_challenge(response):
-            reason = "Cloudflare challenge; our bot is not let in"
+        if (check := _challenge(response)) is not None:
+            reason = f"{check} instead of the page; our bot is not let in"
         elif response.status in (401, 403):
             reason = f"HTTP {response.status}; our bot is not let in"
         elif response.status == 429:

@@ -451,7 +451,7 @@
       "heading": "How to support",
       "organizations": "Organizations: tell us about your volunteer calendar so we can list your shifts. Later, you will be able to confirm volunteers' hours.",
       "sponsors": "Businesses and sponsors: the nonprofit that will run the site plans to offer sponsorship. Later, businesses will be able to offer volunteers coupons or event tickets.",
-      "office": "The City's Office of Volunteerism: share your own programs and calendar with us, so we can list them too.",
+      "office": "The City of {city}: please share your volunteer programs and calendar with us, so we can list them too.",
       "city": "City partners: help us reach more organizations and residents."
     },
     "contact": {

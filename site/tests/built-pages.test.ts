@@ -663,9 +663,13 @@ test("About page: nine sections in order, each with its drawing, heading and wor
       }
       // The new bullets: the calculator link with the rule's year from its settings, and the City line.
       assert.match(main, new RegExp(`<a href="/${lang}/medicaid-hours/"[^>]*>[^<]*2027`));
-      for (const key of ["why.one_place", "why.spanish", "support.office", "support.sponsors"]) {
+      for (const key of ["why.one_place", "why.spanish", "support.sponsors"]) {
         assert.ok(text(main).includes(tr.t(`about_page.${key}`)), key);
       }
+      // The city's name comes from the settings (the area the sections belong to).
+      const office = tr.t("about_page.support.office", { city: cityName(tr, settings) });
+      assert.ok(text(main).includes(office), office);
+      if (lang === "en") assert.ok(office.startsWith("The City of Philadelphia: please share your volunteer programs"));
       // Header and footer link here from every page.
       for (const page of [`${lang}/index.html`, `${lang}/flexible/index.html`, `${lang}/medicaid-hours/index.html`]) {
         const p = b.read(page);
