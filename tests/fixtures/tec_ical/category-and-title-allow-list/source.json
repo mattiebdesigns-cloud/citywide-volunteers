@@ -1,0 +1,14 @@
+{
+  "id": "example-watershed",
+  "org_name": "Example Watershed Partnership",
+  "scraper": "tec_ical",
+  "url": "https://watershed.example.org/calendar/?ical=1",
+  "area": "philadelphia",
+  "listing_language": "en",
+  "default_type": "service",
+  "default_join_method": "signup",
+  "default_cause": "parks-and-trees",
+  "sensitive": false,
+  "require_categories": ["Volunteer Opportunities"],
+  "require_titles": ["Volunteer", "Clean", "Plant"]
+}

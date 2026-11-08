@@ -84,5 +84,6 @@ export const paths = {
   listing: (lang: string, id: string) => `/${lang}/listing/${id}/`,
   flexible: (lang: string) => `/${lang}/flexible/`,
   teams: (lang: string) => `/${lang}/teams/`,
+  about: (lang: string) => `/${lang}/about/`,
   medicaid: (lang: string) => `/${lang}/medicaid-hours/`,
 };

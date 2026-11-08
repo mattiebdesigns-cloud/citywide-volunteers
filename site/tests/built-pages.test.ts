@@ -550,3 +550,117 @@ test("a Volunteer Team listing never also says 'Good for groups'; other listings
     b.done();
   }
 });
+
+// ---- About page (decision 0025) ----
+
+test("About page: nine sections in order, each with its drawing, heading and words", () => {
+  const b = build({ PV_SITE_URL: URL_ });
+  try {
+    const order = ["shifts", "near-you", "everyone", "private", "more", "rewards", "why", "support", "contact"];
+    // Figures from the data itself: calendar listings plus flexible opportunities.
+    const all = [...sample.events, ...oppSample.opportunities];
+    const norm = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+    const orgs = new Set(all.map((e) => norm(e.org_name)).filter(Boolean)).size;
+    const places = new Set(all.map((e) => norm(e.neighborhood_or_town)).filter(Boolean)).size;
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/about/index.html`);
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      assert.deepEqual([...main.matchAll(/data-art="([^"]+)"/g)].map((m) => m[1]), order);
+      assert.doesNotMatch(main, /data-placeholder/, "the real drawings, not placeholders");
+      for (const m of main.matchAll(/<div class="about-art"[^>]*>/g)) assert.match(m[0], /aria-hidden="true"/);
+      assert.equal([...main.matchAll(/<svg/g)].length, 9);
+      const h2 = [...main.matchAll(/<h2[^>]*>([^<]*)<\/h2>/g)].map((m) => decode(m[1]));
+      assert.deepEqual(h2, [
+        tr.t("about_page.shifts.heading"),
+        tr.t("about_page.near_you.heading"),
+        tr.t("about_page.everyone.heading"),
+        tr.t("about_page.private.heading"),
+        tr.t("about_page.more.heading"),
+        tr.t("about_page.rewards.heading"),
+        tr.t("about_page.why.heading"),
+        tr.t("about_page.support.heading"),
+        tr.t("about_page.contact.heading"),
+      ]);
+      const expected = tr.t("about_page.shifts.numbers", {
+        listings: tr.plural("about_page.shifts.listings", all.length),
+        organizations: tr.plural("about_page.shifts.organizations", orgs),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", places),
+      });
+      assert.ok(text(main).includes(expected), `${lang}: ${expected}`);
+      // Links to the calendar, the three other pages and the contact address.
+      for (const href of [`/${lang}/`, `/${lang}/flexible/`, `/${lang}/teams/`, `/${lang}/medicaid-hours/`, `mailto:${settings.site.contact_email}`]) {
+        assert.ok(main.includes(`href="${href}"`), `${lang}: link ${href}`);
+      }
+      // The new bullets: the calculator link with the rule's year from its settings, and the City line.
+      assert.match(main, new RegExp(`<a href="/${lang}/medicaid-hours/"[^>]*>[^<]*2027`));
+      for (const key of ["why.one_place", "why.spanish", "support.office", "support.sponsors"]) {
+        assert.ok(text(main).includes(tr.t(`about_page.${key}`)), key);
+      }
+      // Header and footer link here from every page.
+      for (const page of [`${lang}/index.html`, `${lang}/flexible/index.html`, `${lang}/medicaid-hours/index.html`]) {
+        const p = b.read(page);
+        assert.ok(p.slice(0, p.indexOf("<main")).includes(`href="/${lang}/about/"`), `header link on ${page}`);
+        assert.ok(p.slice(p.indexOf("<footer")).includes(`href="/${lang}/about/"`), `footer link on ${page}`);
+      }
+      // Previews are the site's own (Q38); the handout line names the page's address.
+      const tags = tagsIn(html);
+      assert.equal(one(tags, "og:title"), tr.setting(settings.site.name));
+      assert.equal(one(tags, "og:image"), `${URL_}/og/${lang}.png`);
+      assert.equal(one(tags, "og:url"), `${URL_}/${lang}/about/`);
+      assert.ok(text(main).includes(`${URL_}/${lang}/about/`));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("About page with no listings: no zero counts, a plain line instead", () => {
+  const [path, done] = oppFile({ generated_at: "2026-11-05T06:00:00-05:00", opportunities: [] });
+  const b = build({ PV_OPPORTUNITIES: path }, (file) => {
+    file.events = [];
+  });
+  try {
+    for (const lang of ["en", "es"]) {
+      const words = text(b.read(`${lang}/about/index.html`));
+      assert.ok(words.includes(i18n.translator(lang).t("about_page.shifts.numbers_none")));
+    }
+  } finally {
+    b.done();
+    done();
+  }
+});
+
+test("About page words: plain, no typed-in numbers, no 'just' or 'simply', prints section by section", () => {
+  const walk = (o: unknown): string[] =>
+    typeof o === "string" ? [o] : Object.values(o as Record<string, unknown>).flatMap(walk);
+  for (const lang of ["en", "es"]) {
+    const words = walk(JSON.parse(readFileSync(join(site, `src/i18n/${lang}.json`), "utf8")).about_page);
+    for (const w of words) {
+      assert.doesNotMatch(w, /\d/, `${lang}: no numbers typed into the words: ${w}`);
+      if (lang === "en") assert.doesNotMatch(w, /\b(just|simply|obviously)\b/i, w);
+    }
+  }
+  const page = readFileSync(join(site, "src/pages/[lang]/about/index.astro"), "utf8");
+  const print = page.slice(page.indexOf("@media print"));
+  assert.match(print, /\.about__section\s*\{[^}]*break-inside: avoid/);
+  assert.match(print, /body > \*:not\(main\)/);
+});
+
+test("the link to the page you are on is marked aria-current=page, in the header and footer", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const current = (page: string) =>
+        [...b.read(page).matchAll(/<a[^>]*aria-current="page"[^>]*href="([^"]+)"|<a[^>]*href="([^"]+)"[^>]*aria-current="page"/g)]
+          .map((m) => m[1] ?? m[2])
+          .filter((href) => !href.startsWith("/" + (lang === "en" ? "es" : "en") + "/")); // language switch marks its own
+      assert.deepEqual(current(`${lang}/about/index.html`), [`/${lang}/about/`, `/${lang}/about/`]);
+      assert.deepEqual(current(`${lang}/medicaid-hours/index.html`), [`/${lang}/medicaid-hours/`]);
+      assert.deepEqual(current(`${lang}/index.html`), [`/${lang}/`]);
+      assert.deepEqual(current(`${lang}/flexible/index.html`), []);
+    }
+  } finally {
+    b.done();
+  }
+});

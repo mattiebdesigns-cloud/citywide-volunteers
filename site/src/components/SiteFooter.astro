@@ -4,20 +4,33 @@ import { paths, translator } from "../lib/site.ts";
 
 interface Props {
   lang: string;
+  /** This page's path, so the link to it is marked aria-current="page". */
+  path?: string;
 }
 
-const { lang } = Astro.props;
+const { lang, path } = Astro.props;
+const current = (href: string) => (href === path ? "page" : undefined);
 const tr = translator(lang);
 ---
 
 <footer class="site-footer">
   <div class="page">
     <p class="muted">{tr.t("site.footer_sources")}</p>
-    <p><a class="site-footer__link" href={paths.medicaid(lang)}>{tr.t("medicaid.home_link")}</a></p>
+    <ul class="site-footer__links">
+      <li><a class="site-footer__link" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a></li>
+      <li>
+        <a class="site-footer__link" href={paths.medicaid(lang)} aria-current={current(paths.medicaid(lang))}>{tr.t("medicaid.home_link")}</a>
+      </li>
+    </ul>
   </div>
 </footer>
 
 <style>
+  .site-footer__links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
   /* 48 px tap target. */
   .site-footer__link {
     display: inline-flex;

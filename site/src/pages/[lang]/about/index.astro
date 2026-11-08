@@ -1,0 +1,198 @@
+---
+/**
+ * About page (decision 0025; PROJECT.md 2, 5, 10, 11.4): one page to scroll,
+ * nine sections in order, each a drawing, a heading and a few short lines.
+ * The owner can also send it to the City's Office of Volunteerism and to
+ * possible sponsors, so it prints as a handout (no section split across
+ * pages). Figures are worked out from this build's data (src/lib/about.ts),
+ * never typed in. No partners, quotes, dates or amounts; sensitive events
+ * are never named. No motion.
+ */
+import Base from "../../../layouts/Base.astro";
+import AboutArt from "../../../components/AboutArt.astro";
+import { aboutCounts } from "../../../lib/about.ts";
+import { MEDICAID } from "../../../lib/medicaid.ts";
+import { cityName } from "../../../lib/og.ts";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n, listings, opportunities, settings, siteUrl } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.about(code)]));
+const siteName = tr.setting(settings.site.name);
+const city = cityName(tr, settings);
+const counts = aboutCounts(listings, opportunities);
+const email = settings.site.contact_email;
+const numbers =
+  counts.listings > 0
+    ? t("about_page.shifts.numbers", {
+        listings: tr.plural("about_page.shifts.listings", counts.listings),
+        organizations: tr.plural("about_page.shifts.organizations", counts.organizations),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", counts.neighborhoods),
+      })
+    : t("about_page.shifts.numbers_none");
+const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}");
+---
+
+<Base lang={lang} title={t("about_page.title", { site_name: siteName })} alternates={alternates} path={paths.about(lang)}>
+  <div class="page about">
+    <h1>{t("about_page.title", { site_name: siteName })}</h1>
+    <p class="about__lead">{t("about_page.lead", { site_name: siteName, city })}</p>
+
+    <section class="about__section" aria-labelledby="about-shifts">
+      <AboutArt id="shifts" />
+      <h2 id="about-shifts">{t("about_page.shifts.heading")}</h2>
+      <p>{t("about_page.shifts.body", { city })}</p>
+      <p class="about__numbers" data-counts={`${counts.listings} ${counts.organizations} ${counts.neighborhoods}`}>{numbers}</p>
+      <p>{t("about_page.shifts.signup")}</p>
+      <p><a class="tap-link" href={paths.home(lang)}>{t("about_page.shifts.link")}</a></p>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-near-you">
+      <AboutArt id="near-you" />
+      <h2 id="about-near-you">{t("about_page.near_you.heading")}</h2>
+      <p>{t("about_page.near_you.body")}</p>
+      <p>{t("about_page.near_you.filters")}</p>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-everyone">
+      <AboutArt id="everyone" />
+      <h2 id="about-everyone">{t("about_page.everyone.heading")}</h2>
+      <ul>
+        <li>{t("about_page.everyone.free")}</li>
+        <li>{t("about_page.everyone.languages")}</li>
+        <li>{t("about_page.everyone.phone")}</li>
+        <li>{t("about_page.everyone.access")}</li>
+      </ul>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-private">
+      <AboutArt id="private" />
+      <h2 id="about-private">{t("about_page.private.heading")}</h2>
+      <ul>
+        <li>{t("about_page.private.account")}</li>
+        <li>{t("about_page.private.tracking")}</li>
+        <li>{t("about_page.private.filters")}</li>
+        <li>{t("about_page.private.sensitive")}</li>
+      </ul>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-more">
+      <AboutArt id="more" />
+      <h2 id="about-more">{t("about_page.more.heading")}</h2>
+      <ul class="about__links">
+        <li><a href={paths.flexible(lang)}>{t("about_page.more.flexible")}</a></li>
+        <li><a href={paths.teams(lang)}>{t("about_page.more.teams")}</a></li>
+        <li><a href={paths.medicaid(lang)}>{t("about_page.more.medicaid")}</a></li>
+      </ul>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-rewards">
+      <AboutArt id="rewards" />
+      <h2 id="about-rewards">{t("about_page.rewards.heading")}</h2>
+      <p>{t("about_page.rewards.points")}</p>
+      <p>{t("about_page.rewards.offers")}</p>
+      <p>{t("about_page.rewards.when")}</p>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-why">
+      <AboutArt id="why" />
+      <h2 id="about-why">{t("about_page.why.heading")}</h2>
+      <ul>
+        <li>{t("about_page.why.organizations")}</li>
+        <li>{t("about_page.why.residents")}</li>
+        <li>{t("about_page.why.city")}</li>
+        <li>{t("about_page.why.one_place")}</li>
+        <li>{t("about_page.why.spanish")}</li>
+        <li>
+          <a href={paths.medicaid(lang)}>{t("about_page.why.medicaid", { year: MEDICAID.startDate.slice(0, 4) })}</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-support">
+      <AboutArt id="support" />
+      <h2 id="about-support">{t("about_page.support.heading")}</h2>
+      <ul>
+        <li>{t("about_page.support.organizations")}</li>
+        <li>{t("about_page.support.sponsors")}</li>
+        <li>{t("about_page.support.office")}</li>
+        <li>{t("about_page.support.city")}</li>
+      </ul>
+    </section>
+
+    <section class="about__section" aria-labelledby="about-contact">
+      <AboutArt id="contact" />
+      <h2 id="about-contact">{t("about_page.contact.heading")}</h2>
+      <p>{t("about_page.contact.body")}</p>
+      <p>{emailBefore}<a class="about__email" href={`mailto:${email}`}>{email}</a>{emailAfter}</p>
+      {siteUrl && <p class="print-only">{t("about_page.print_address", { url: `${siteUrl}${paths.about(lang)}` })}</p>}
+    </section>
+  </div>
+</Base>
+
+<style>
+  .about {
+    max-width: 40rem;
+  }
+  .about__lead {
+    font-size: var(--text-lead);
+  }
+  .about__section {
+    margin-block: var(--space-6, 3rem);
+  }
+  .about__section h2 {
+    margin-top: var(--space-4);
+  }
+  .about__numbers {
+    font-size: var(--text-lead);
+    font-weight: var(--weight-strong);
+  }
+  .tap-link,
+  .about__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .about__links li + li {
+    margin-top: var(--space-2);
+  }
+  /* Inside a sentence, but still an easy tap (WCAG 2.5.8; the project asks 44 px). */
+  .about__email {
+    display: inline-block;
+    padding-block: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+  .print-only {
+    display: none;
+  }
+  /* A handout: only the page's own content, no section split across pages. */
+  @media print {
+    :global(body > *:not(main)),
+    :global(.skip-link) {
+      display: none !important;
+    }
+    :global(body) {
+      background: #fff;
+    }
+    .about {
+      max-width: none;
+      font-size: 12pt;
+    }
+    .about__section {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-block: 0 1.5rem;
+    }
+    .about__section :global(.about-art) {
+      max-width: 14rem;
+      margin-inline: 0;
+    }
+    .print-only {
+      display: block;
+    }
+  }
+</style>

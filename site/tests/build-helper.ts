@@ -25,7 +25,8 @@ export function astroBuild(dir: string, env: Record<string, string | undefined>)
   for (const k of ["PV_SITE_URL", "PV_TEST_BUILD", "PV_OPPORTUNITIES", "PV_EVENTS", "PV_SETTINGS"]) delete clean[k];
   execFileSync(join(site, "node_modules/.bin/astro"), ["build", "--outDir", out, "--silent"], {
     cwd: site,
-    env: { ...clean, ASTRO_TELEMETRY_DISABLED: "1", PV_CACHE_DIR: join(dir, "cache"), ...env },
+    // PV_ALLOW_PLACEHOLDER_ART: until pv-design's About drawings land (decision 0025).
+    env: { ...clean, ASTRO_TELEMETRY_DISABLED: "1", PV_CACHE_DIR: join(dir, "cache"), PV_ALLOW_PLACEHOLDER_ART: "1", ...env },
     stdio: "pipe",
   });
   return out;

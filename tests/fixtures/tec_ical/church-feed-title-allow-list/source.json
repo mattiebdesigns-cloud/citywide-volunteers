@@ -1,0 +1,15 @@
+{
+  "id": "example-church",
+  "org_name": "Example Church",
+  "scraper": "tec_ical",
+  "url": "https://church.example.org/events.ics",
+  "area": "philadelphia",
+  "listing_language": "en",
+  "default_type": "service",
+  "default_join_method": "drop_in",
+  "default_cause": "food",
+  "sensitive": false,
+  "default_address": "1 Example Street, Philadelphia, PA 19147",
+  "timezone": "America/New_York",
+  "require_titles": ["Lunch Packing", "St. Gabe"]
+}

@@ -14,16 +14,20 @@ interface Props {
   filters?: boolean;
   /** Passed to the language switch: remember nothing in browser storage. */
   noStorage?: boolean;
+  /** This page's path, so the link to it is marked aria-current="page". */
+  path?: string;
 }
 
-const { lang, alternates, filters = false, noStorage = false } = Astro.props;
+const { lang, alternates, filters = false, noStorage = false, path } = Astro.props;
+const current = (href: string) => (href === path ? "page" : undefined);
 const tr = translator(lang);
 const siteName = tr.setting(siteData().settings.site.name);
 ---
 
 <header class="site-header">
   <div class="page site-header__inner">
-    <p class="site-header__name"><a href={paths.home(lang)}>{siteName}</a></p>
+    <p class="site-header__name"><a href={paths.home(lang)} aria-current={current(paths.home(lang))}>{siteName}</a></p>
+    <a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a>
     <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
     {
       filters && (
@@ -73,6 +77,17 @@ const siteName = tr.setting(siteData().settings.site.name);
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
+  }
+  /* About page link (decision 0025), a 48 px tap target. */
+  .site-header__about {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  /* The link to the page you are on, shown the way the language switch shows it. */
+  .site-header__about[aria-current="page"] {
+    font-weight: var(--weight-strong);
+    text-decoration-thickness: 0.2em;
   }
   .site-header__beta {
     margin: 0 auto var(--space-2);

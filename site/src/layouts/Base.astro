@@ -65,11 +65,11 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
     <SvgSprite />
     {testBuild && <TestBanner text={tr.t("site.test_version")} />}
     <a class="skip-link" href="#main">{tr.t("site.skip_to_content")}</a>
-    <SiteHeader lang={lang} alternates={alternates} filters={filters} noStorage={noStorage} />
+    <SiteHeader lang={lang} alternates={alternates} filters={filters} noStorage={noStorage} path={path} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <SiteFooter lang={lang} />
+    <SiteFooter lang={lang} path={path} />
     {!noStorage && <script type="application/json" id="live-listings" set:html={live} />}
     {
       !noStorage && (

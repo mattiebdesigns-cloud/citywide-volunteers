@@ -24,6 +24,7 @@ import {
 } from "../src/lib/filter-logic.ts";
 import { buildIcs, escapeText, foldLine } from "../src/lib/ics.ts";
 import { pruneSaved } from "../src/lib/saved.ts";
+import { aboutCounts } from "../src/lib/about.ts";
 import { createI18n } from "../src/i18n/index.ts";
 import { placeSpoken, placeText, sectionName, whereLines } from "../src/lib/words.ts";
 import type { EventsFile, OpportunitiesFile, PreparedListing, SiteSettings } from "../src/lib/types.ts";
@@ -351,4 +352,16 @@ test("team fields: true only when the file says true; blank words count as none;
   const o = prepareOpportunities(blank, settings).find((x) => x.id === blank.opportunities[0].id)!;
   assert.equal(o.team_required, false);
   assert.equal(o.team_task, null);
+});
+
+// About page figures (decision 0025).
+
+test("About page counts: listings plus opportunities; organizations and neighborhoods counted once", () => {
+  const l = prepareListings(sample, settings, { now: before });
+  const o = prepareOpportunities(opportunities, settings);
+  const c = aboutCounts(l, o);
+  assert.equal(c.listings, l.length + o.length);
+  const twice = [{ ...l[0], org_name: "  Example   Pantry " }, { ...l[0], org_name: "example pantry", neighborhood_or_town: null }];
+  assert.deepEqual(aboutCounts(twice, []), { listings: 2, organizations: 1, neighborhoods: l[0].neighborhood_or_town ? 1 : 0 });
+  assert.deepEqual(aboutCounts([], []), { listings: 0, organizations: 0, neighborhoods: 0 });
 });

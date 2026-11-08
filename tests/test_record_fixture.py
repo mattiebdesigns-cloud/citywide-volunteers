@@ -265,3 +265,24 @@ def test_mec_excerpt_drops_the_organizer_and_descriptions():
     assert "D. Person" not in cleaned and "ld+json" not in cleaned
     assert "Work Day" in cleaned
     assert removed[".mec-shortcode-organizers"] == 1 and removed[".mec-event-description"] == 1
+
+
+def test_events_the_title_rule_drops_get_invented_titles():
+    """A church feed's other events can name people: only their times are kept."""
+    feed = (
+        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+        "BEGIN:VEVENT\r\nUID:real-1@church.example.org\r\nSUMMARY:Funeral for A. Person\r\n"
+        "DTSTART:20261120T150000Z\r\nURL:https://church.example.org/events/funeral-a-person/\r\n"
+        "LOCATION:Chapel\r\nX-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-TITLE=Chapel:geo:1,2\r\n"
+        "END:VEVENT\r\n"
+        "BEGIN:VEVENT\r\nUID:real-2@church.example.org\r\nSUMMARY:Lunch Packing for Those in Need\r\n"
+        "DTSTART:20261129T163000Z\r\nURL:https://church.example.org/events/lunch-packing/\r\n"
+        "END:VEVENT\r\nEND:VCALENDAR\r\n"
+    )
+    out, invented = record_fixture.invent_other_titles(feed, ["Lunch Packing", "St. Gabe"])
+    assert invented == 1
+    for gone in ("A. Person", "funeral", "Chapel", "real-1"):
+        assert gone not in out
+    assert "SUMMARY:Invented title 1 (not a volunteer event)" in out
+    assert "DTSTART:20261120T150000Z" in out  # the time stays
+    assert "SUMMARY:Lunch Packing for Those in Need" in out and "real-2" in out

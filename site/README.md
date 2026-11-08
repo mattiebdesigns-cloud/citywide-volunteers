@@ -56,6 +56,10 @@ A normal build's `robots.txt` lets every crawler in.
 
 `/en/medicaid-hours/` and `/es/medicaid-hours/` add up one month of work (or income), volunteering, a work program and school for Pennsylvania's Medicaid rule (decision 0022). It runs only in the browser: no form, no network request, no storage of any kind (the page leaves out the site's storage scripts), no analytics. Every figure, link and phone number is in `MEDICAID` in `src/lib/medicaid.ts`, with the date they were last checked; check them against Pennsylvania DHS before launch and whenever DHS publishes guidance. The checklist prints on its own and copies as plain text.
 
+### About page
+
+`/en/about/` and `/es/about/` (decision 0025): nine sections, each with one of pv-design's drawings (`src/components/ui/aboutArt.ts`), linked from the header and footer. The listing, organization and neighborhood counts come from this build's data (`src/lib/about.ts`). If `aboutArt.ts` lacks a drawing, the build stops; if the file is missing, only test builds (`PV_TEST_BUILD=1`) draw placeholders. It prints as a handout, one section never split across pages.
+
 ### Link previews
 
 When someone shares a link on Facebook or a similar site, the post shows a picture, a title and a short description (decision 0014). Every page carries these tags (`og:*` and `twitter:card`) in its own language. The home page uses the site's name and `og.description`. A listing page uses exactly the home page's preview; only `og:url` points at the listing. No listing's title, date, organization or picture ever goes into a preview (owner, Q38). The pictures are `public/og/en.png` and `public/og/es.png`, 1200 × 630 px.

@@ -33,6 +33,7 @@ Optional (used when the page does not say):
     spanish_spoken        true or false, else "unknown"
     training_required, clearances_required, group_friendly: true or false, else null
     neighborhood_or_town  text, else null
+    default_address       text, used only for an event that gives no address
     signup_url            used only when an event has no link of its own,
                           unless signup_url_always is true
     timezone              IANA zone, used only for a feed time with no zone
@@ -154,6 +155,7 @@ class SourceDefaults:
     signup_url_always: bool = False
     drop_titles: tuple[str, ...] = ()
     require_titles: tuple[str, ...] = ()
+    default_address: str | None = None
 
     @classmethod
     def from_source(cls, source: dict[str, Any]) -> SourceDefaults:
@@ -218,6 +220,9 @@ class SourceDefaults:
         drops = source.get("drop_titles") or []
         if not isinstance(drops, list) or not all(isinstance(c, str) and c.strip() for c in drops):
             raise SourceError(f"{bad}: drop_titles must be a list of words")
+        address = source.get("default_address")
+        if address is not None and (not isinstance(address, str) or not address.strip()):
+            raise SourceError(f"{bad}: default_address must be text")
         keeps = source.get("require_titles") or []
         if not isinstance(keeps, list) or not all(isinstance(c, str) and c.strip() for c in keeps):
             raise SourceError(f"{bad}: require_titles must be a list of words")
@@ -245,6 +250,7 @@ class SourceDefaults:
             signup_url_always=always,
             drop_titles=tuple(" ".join(c.split()) for c in drops),
             require_titles=tuple(" ".join(c.split()) for c in keeps),
+            default_address=" ".join(address.split()) if address else None,
         )
 
     def drop_title_match(self, title: str) -> str | None:
@@ -295,7 +301,7 @@ class SourceDefaults:
             "title": self.listing_title or title,
             "start": iso(start),
             "end": iso(end) if end is not None else None,
-            "address": address,
+            "address": address or self.default_address,
             "area": self.area,
             "neighborhood_or_town": self.neighborhood_or_town,
             "cause": self.cause,

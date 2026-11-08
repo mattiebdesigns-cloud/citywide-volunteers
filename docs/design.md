@@ -147,6 +147,28 @@ Small line icons drawn for this project, listed in `icons.ts` (needs `SvgSprite`
 
 `site/public/og/en.png` and `es.png`, 1200 x 630, about 85 KB each: the headline (white, 80 px heavy, 14.5:1) and tagline (coral, 42 px bold, 5.9:1) on the band navy `#15294a`, beside a stylized map of the city's eight sections (pale blues, Center City in coral, the Schuylkill as a gap, the Delaware as a line, five coral pins). No labels on the map: they would be unreadable in a Facebook thumbnail. Words stay inside x 72 to 612, y 70 to 560, away from edge crops. Words come from `og.headline` and `og.tagline`, with `{city}` from the area's name in the settings file. To redraw after a word change: `node scripts/render-og.mjs` in `site/` (template: `site/scripts/og/template.svg`; uses the Mac's Google Chrome, no packages, system fonts). The script shrinks the headline if a language runs long, and stops with an error if the words still do not fit, or if a picture is not 1200 x 630 or is over 300 KB.
 
+## About page drawings (decision 0025)
+
+Nine drawings for the About page, one per section, in `site/src/components/ui/aboutArt.ts`. Each is a finished inline `<svg>` string, 480 x 300, that fills the width of its box; use it with `<div class="about-art" set:html={aboutArt.shifts} />`. They look right from 360 px wide (on a phone) up to about 480 px; do not stretch them wider. Same style as the cause drawings and the link-preview map: navy shapes, coral shapes with an ink outline, white details, and a soft tinted blob behind.
+
+| Id | Section | What it shows |
+|---|---|---|
+| `shifts` | Every volunteer shift in one place | Six calendar cards, the front one coral |
+| `near-you` | Find one near you | The city's eight sections from the link-preview map, with five pins |
+| `everyone` | Built for everyone | A phone with an access figure, two speech bubbles (two languages) |
+| `private` | Safe and private | A shield with a padlock in front of a calendar |
+| `more` | More than one-off shifts | A clock (flexible), three people (Volunteer Teams), a calculator |
+| `rewards` | Coming next: Citywide Rewards | A star medal with ribbons, and a ticket |
+| `why` | Why support it | A heart held up by two open hands |
+| `support` | How to support | A shop and an organization's building tied together with a bow |
+| `contact` | Get in touch | An envelope with a letter and a heart seal |
+
+- **Decorative.** Each `<svg>` has `aria-hidden="true"`; the section's heading and text carry the meaning.
+- **No words in the drawings** (Q36). Speech bubbles and the letter show lines, not text, so nothing needs translating.
+- **Contrast.** Meaningful shapes are navy (8.0:1 on paper, 7.0:1 on the tint), ink (15.7:1), or coral with an ink outline (coral alone is only 2.4:1). The rivers on the map are `--art-water` (5.3:1). The tinted blobs (`--art-tint`, `--art-tint-2`) and the map's pale blues are decoration.
+- **No outside files.** No images, fonts or links; colours are written into each shape from the `--art-*` tokens, with the same colours as a fallback, so the drawings show even without the site's CSS.
+- **No people being served.** The only figures are plain silhouettes (the volunteer team) and an access symbol.
+
 ## Page layout (guidance for pv-calendar-site)
 
 - **Home:** test banner (test builds), header (site name left, language link right, written in its own language with `lang="es"`), the rewards line (white box, coral left edge), a row of day chips, "This week's picks" with a one-line note, then day headings ("Tonight", "Tomorrow", then dates) each with a `.stack` list of cards. The Filters button is fixed to the bottom of the screen; it opens a full-height sheet with the filter groups and a full-width "Show shifts" button at the bottom.

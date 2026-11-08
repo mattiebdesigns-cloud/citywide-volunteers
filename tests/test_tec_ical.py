@@ -354,3 +354,33 @@ def test_title_rules_drop_and_report():
     result = tec_ical.parse_with_report(feed, source, datetime(2026, 11, 5, tzinfo=UTC))
     assert [e["title"] for e in result.events] == ["Pond Planting Workday"]
     assert [d.reason for d in result.dropped] == ["title matches the source's drop rule: Picnic"]
+
+
+def test_default_address_fills_an_event_without_a_place():
+    from datetime import UTC, datetime
+
+    from pvscrapers.scrapers import tec_ical
+
+    feed = (
+        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:a\r\n"
+        "SUMMARY:Lunch Packing\r\nDTSTART:20261129T163000Z\r\nDTEND:20261129T173000Z\r\n"
+        "URL:https://church.example.org/events/a/\r\nEND:VEVENT\r\n"
+        "BEGIN:VEVENT\r\nUID:b\r\nSUMMARY:Lunch Packing\r\nDTSTART:20261227T163000Z\r\n"
+        "LOCATION:Parish Hall\\, 2 Example St\r\n"
+        "URL:https://church.example.org/events/b/\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    )
+    source = {
+        "id": "example-church",
+        "org_name": "Example Church",
+        "url": "https://church.example.org/events.ics",
+        "area": "philadelphia",
+        "listing_language": "en",
+        "default_type": "service",
+        "sensitive": False,
+        "timezone": "America/New_York",
+        "default_address": "1 Example Street, Philadelphia, PA 19147",
+    }
+    events = tec_ical.parse(feed, source, datetime(2026, 11, 8, tzinfo=UTC))
+    assert events[0]["address"] == "1 Example Street, Philadelphia, PA 19147"
+    assert events[0]["start"] == "2026-11-29T11:30:00-05:00"  # UTC shown in local time
+    assert events[1]["address"] == "Parish Hall, 2 Example St"  # the event's own place wins

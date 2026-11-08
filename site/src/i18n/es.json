@@ -371,6 +371,84 @@
     "phone_hr1": "Línea de preguntas del DHS sobre los cambios en Medicaid: {phone}",
     "home_link": "Calculadora de horas para Medicaid"
   },
+  "about_page": {
+    "nav": "Acerca de",
+    "title": "Acerca de {site_name}",
+    "lead": "{site_name} reúne turnos de voluntariado de todo {city} en un solo calendario gratuito, en inglés y español.",
+    "shifts": {
+      "heading": "Todos los turnos de voluntariado en un solo lugar",
+      "body": "Las organizaciones de todo {city} publican turnos de voluntariado en sus propios sitios web. Nosotros los reunimos en un solo calendario.",
+      "numbers": "Ahora el calendario tiene {listings} de {organizations} en {neighborhoods}.",
+      "numbers_none": "Los anuncios aparecen aquí en cuanto las organizaciones los publican.",
+      "listings": {
+        "one": "{count} oportunidad de voluntariado",
+        "other": "{count} oportunidades de voluntariado"
+      },
+      "organizations": {
+        "one": "{count} organización",
+        "other": "{count} organizaciones"
+      },
+      "neighborhoods": {
+        "one": "{count} barrio",
+        "other": "{count} barrios"
+      },
+      "signup": "Cada anuncio enlaza con la página de inscripción de la propia organización.",
+      "link": "Ver el calendario"
+    },
+    "near_you": {
+      "heading": "Encuentre uno cerca de usted",
+      "body": "Cada anuncio muestra su parte de la ciudad y su barrio.",
+      "filters": "Los filtros le ayudan a elegir un día, una hora del día y una causa."
+    },
+    "everyone": {
+      "heading": "Hecho para todos",
+      "free": "Es gratis.",
+      "languages": "En inglés y español.",
+      "phone": "Pensado primero para el teléfono.",
+      "access": "Hecho para funcionar con lectores de pantalla y con el teclado."
+    },
+    "private": {
+      "heading": "Seguro y privado",
+      "account": "No necesita una cuenta.",
+      "tracking": "No usamos cookies ni seguimiento publicitario.",
+      "filters": "Los filtros funcionan en su propio dispositivo, así que sus elecciones nunca nos llegan.",
+      "sensitive": "Algunos eventos necesitan un cuidado especial. Nunca compartimos quién podría ir, y nunca aparecen en informes."
+    },
+    "more": {
+      "heading": "Más que turnos de un solo día",
+      "flexible": "Oportunidades flexibles: programas en los que usted elige un horario con la organización.",
+      "teams": "Equipos de voluntarios: actividades que necesitan un equipo, no una sola persona.",
+      "medicaid": "Una calculadora de horas para Medicaid que suma un mes de trabajo, voluntariado y estudios."
+    },
+    "rewards": {
+      "heading": "Lo que viene: Citywide Rewards",
+      "points": "Planeamos agregar puntos e insignias por las horas de voluntariado confirmadas.",
+      "offers": "También planeamos ofertas de negocios locales que los voluntarios puedan canjear.",
+      "when": "Compartiremos los detalles cuando estén listos."
+    },
+    "why": {
+      "heading": "Por qué apoyarlo",
+      "organizations": "Las organizaciones llegan a nuevos voluntarios.",
+      "residents": "Los residentes encuentran maneras de ayudar cerca de ellos y, más adelante, una forma de llevar la cuenta de sus horas.",
+      "city": "Más personas de la ciudad hacen voluntariado.",
+      "one_place": "Un solo lugar al que la Ciudad puede enviar a los residentes.",
+      "spanish": "Todo está también en español.",
+      "medicaid": "Ayuda con la regla de horas de Medicaid de Pensilvania de {year}, con nuestra calculadora de horas."
+    },
+    "support": {
+      "heading": "Cómo apoyar",
+      "organizations": "Organizaciones: cuéntenos sobre su calendario de voluntariado para que podamos publicar sus turnos. Más adelante, podrán confirmar las horas de los voluntarios.",
+      "sponsors": "Negocios y patrocinadores: la organización sin fines de lucro que manejará el sitio planea ofrecer patrocinios. Más adelante, los negocios podrán ofrecer a los voluntarios cupones o entradas a eventos.",
+      "office": "Oficina de Voluntariado de la Ciudad: comparta con nosotros sus propios programas y su calendario, para que también podamos publicarlos.",
+      "city": "Socios de la ciudad: ayúdenos a llegar a más organizaciones y residentes."
+    },
+    "contact": {
+      "heading": "Contáctenos",
+      "body": "Pregunte sobre cómo publicar sus turnos, cómo apoyar el sitio o cualquier otra cosa.",
+      "email": "Escríbanos a {email}."
+    },
+    "print_address": "Encuéntrelo en línea: {url}"
+  },
   "og": {
     "headline": "Turnos de voluntariado en todo {city}",
     "tagline": "Encuentre uno cerca de usted.",

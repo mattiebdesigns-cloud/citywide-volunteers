@@ -371,6 +371,84 @@
     "phone_hr1": "DHS question line about the Medicaid changes: {phone}",
     "home_link": "Medicaid hours calculator"
   },
+  "about_page": {
+    "nav": "About",
+    "title": "About {site_name}",
+    "lead": "{site_name} puts volunteer shifts from across {city} in one free calendar, in English and Spanish.",
+    "shifts": {
+      "heading": "Every volunteer shift in one place",
+      "body": "Organizations across {city} post volunteer shifts on their own websites. We gather them into one calendar.",
+      "numbers": "Right now the calendar has {listings} from {organizations} in {neighborhoods}.",
+      "numbers_none": "Listings appear here as soon as organizations post them.",
+      "listings": {
+        "one": "{count} volunteer opportunity",
+        "other": "{count} volunteer opportunities"
+      },
+      "organizations": {
+        "one": "{count} organization",
+        "other": "{count} organizations"
+      },
+      "neighborhoods": {
+        "one": "{count} neighborhood",
+        "other": "{count} neighborhoods"
+      },
+      "signup": "Every listing links to the organization's own sign-up page.",
+      "link": "See the calendar"
+    },
+    "near_you": {
+      "heading": "Find one near you",
+      "body": "Each listing shows its part of the city and its neighborhood.",
+      "filters": "Filters help you choose a day, a time of day and a cause."
+    },
+    "everyone": {
+      "heading": "Built for everyone",
+      "free": "Free to use.",
+      "languages": "In English and Spanish.",
+      "phone": "Made for phones first.",
+      "access": "Built to work with screen readers and keyboards."
+    },
+    "private": {
+      "heading": "Safe and private",
+      "account": "You do not need an account.",
+      "tracking": "We use no cookies and no ad tracking.",
+      "filters": "Filters work on your own device, so your choices never reach us.",
+      "sensitive": "Some events need extra care. We never share who might go to them, and they never appear in reports."
+    },
+    "more": {
+      "heading": "More than one-off shifts",
+      "flexible": "Flexible opportunities: programs where you choose a time with the organization.",
+      "teams": "Volunteer Teams: activities that need a team, not one person.",
+      "medicaid": "A Medicaid hours calculator that adds up one month of work, volunteering and school."
+    },
+    "rewards": {
+      "heading": "Coming next: Citywide Rewards",
+      "points": "We plan to add points and badges for confirmed volunteer hours.",
+      "offers": "We also plan offers from local businesses that volunteers can redeem.",
+      "when": "We will share the details when they are ready."
+    },
+    "why": {
+      "heading": "Why support it",
+      "organizations": "Organizations reach new volunteers.",
+      "residents": "Residents find ways to help near them, and later a way to keep track of their hours.",
+      "city": "More people in the city volunteer.",
+      "one_place": "One place the City can point residents to.",
+      "spanish": "Everything is also in Spanish.",
+      "medicaid": "Help with Pennsylvania's {year} Medicaid hours rule, through our hours calculator."
+    },
+    "support": {
+      "heading": "How to support",
+      "organizations": "Organizations: tell us about your volunteer calendar so we can list your shifts. Later, you will be able to confirm volunteers' hours.",
+      "sponsors": "Businesses and sponsors: the nonprofit that will run the site plans to offer sponsorship. Later, businesses will be able to offer volunteers coupons or event tickets.",
+      "office": "The City's Office of Volunteerism: share your own programs and calendar with us, so we can list them too.",
+      "city": "City partners: help us reach more organizations and residents."
+    },
+    "contact": {
+      "heading": "Get in touch",
+      "body": "Ask about listing your shifts, supporting the site, or anything else.",
+      "email": "Write to us at {email}."
+    },
+    "print_address": "Find it online: {url}"
+  },
   "og": {
     "headline": "Volunteer shifts across {city}",
     "tagline": "Find one near you.",

@@ -154,6 +154,71 @@ CLEANERS = {
 }
 
 
+_INVENT_REMOVE = {
+    "SUMMARY",
+    "UID",
+    "URL",
+    "LOCATION",
+    "CATEGORIES",
+    "RRULE",
+    "EXDATE",
+    "RDATE",
+    "GEO",
+    "X-APPLE-STRUCTURED-LOCATION",
+}
+
+
+def invent_other_titles(text: str, require_titles: list[str]) -> tuple[str, int]:
+    """For a feed with a title allow-list (for example a church calendar), every
+    event the allow-list drops keeps only its dates and times: an invented title,
+    id and link, no place or categories. Their real titles can name people."""
+    words = [w.casefold() for w in require_titles]
+    out: list[str] = []
+    block: list[str] = []
+    inside = False
+    invented = 0
+    lines = text.replace("\r\n", "\n").split("\n")
+    for line in lines:
+        if line.strip() == "BEGIN:VEVENT":
+            inside, block = True, [line]
+            continue
+        if not inside:
+            out.append(line)
+            continue
+        block.append(line)
+        if line.strip() != "END:VEVENT":
+            continue
+        inside = False
+        unfolded = "\n".join(block).replace("\n ", "").replace("\n\t", "")
+        summary = next(
+            (x.split(":", 1)[1] for x in unfolded.split("\n") if x.upper().startswith("SUMMARY")),
+            "",
+        )
+        if any(w in " ".join(summary.split()).casefold() for w in words):
+            out += block
+            continue
+        invented += 1
+        kept: list[str] = []
+        skipping = False
+        for item in block:
+            if item[:1] in (" ", "\t"):
+                if not skipping:
+                    kept.append(item)
+                continue
+            name = re.split(r"[;:]", item, maxsplit=1)[0].upper()
+            skipping = name in _INVENT_REMOVE
+            if not skipping:
+                kept.append(item)
+            if name == "BEGIN" and item.strip() == "BEGIN:VEVENT":
+                kept += [
+                    f"UID:invented-{invented}@example.org",
+                    f"SUMMARY:Invented title {invented} (not a volunteer event)",
+                    f"URL:https://example.org/invented/{invented}/",
+                ]
+        out += kept
+    return "\r\n".join(out), invented
+
+
 class Refused(Exception):
     """The tool will not record this source."""
 
@@ -234,6 +299,12 @@ def record(
         how = "Fetched once with python -m pvscrapers.fetch, then cleaned with tests/record_fixture.py"
         fetched_at = proof["fetched_at"]
     cleaned, removed = cleaner(text)
+    if extension == ".ics" and source.get("require_titles"):
+        cleaned, invented = invent_other_titles(cleaned, list(source["require_titles"]))
+        if invented:
+            removed[
+                "titles, links and places of events the title rule drops (invented instead)"
+            ] = invented
 
     out.mkdir(parents=True, exist_ok=True)
     page.write_bytes(cleaned.encode("utf-8"))

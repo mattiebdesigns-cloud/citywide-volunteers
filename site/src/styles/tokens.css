@@ -63,6 +63,9 @@
   --art-fill: #1f4e8c;             /* main shapes (navy) */
   --art-fill-2: #f08a6c;           /* second shapes (coral) */
   --art-fill-3: #ffffff;           /* highlights */
+  --art-tint: #e4ecf7;             /* About drawings: soft blue blob behind (decoration only) */
+  --art-tint-2: #fde6dd;           /* About drawings: soft coral circle (decoration only) */
+  --art-water: #3a6aa8;            /* About map rivers: 5.3:1 on paper, 4.6:1 on the tint */
 
   /* ---- Type --------------------------------------------------------- */
   /* System fonts: nothing to download, so the first screen shows fast. */

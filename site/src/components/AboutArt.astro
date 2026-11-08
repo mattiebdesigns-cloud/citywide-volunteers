@@ -1,0 +1,64 @@
+---
+/**
+ * One drawing on the About page (decision 0025). The drawings are pv-design's:
+ * `aboutArt` in src/components/ui/aboutArt.ts, one whole decorative <svg>
+ * per section id.
+ *
+ * Missing drawings stop the build:
+ *  - if aboutArt.ts exists, every one of the nine ids must be in it;
+ *  - if aboutArt.ts is missing, a plain placeholder is drawn only when
+ *    PV_TEST_BUILD=1 or PV_ALLOW_PLACEHOLDER_ART=1; any other build stops.
+ *
+ * Decorative: the heading and words beside it say everything, so screen
+ * readers skip it.
+ */
+import { ABOUT_SECTIONS, type AboutSection } from "../lib/about.ts";
+
+interface Props {
+  id: AboutSection;
+}
+
+type ArtModule = { aboutArt?: Record<string, string> };
+// A glob, so a missing file is an empty result rather than a broken import.
+const found = Object.values(import.meta.glob<ArtModule>("./ui/aboutArt.ts", { eager: true }))[0];
+const placeholderAllowed = process.env.PV_TEST_BUILD === "1" || process.env.PV_ALLOW_PLACEHOLDER_ART === "1";
+
+if (found) {
+  const missing = ABOUT_SECTIONS.filter((id) => !found.aboutArt?.[id]);
+  if (missing.length) {
+    throw new Error(`src/components/ui/aboutArt.ts has no drawing for: ${missing.join(", ")} (About page, decision 0025)`);
+  }
+} else if (!placeholderAllowed) {
+  throw new Error(
+    "The About page drawings are missing: src/components/ui/aboutArt.ts does not exist (pv-design, decision 0025). " +
+      "Test builds (PV_TEST_BUILD=1) use placeholders.",
+  );
+}
+
+// Placeholder: a soft circle and a bar. Never in a production build.
+const placeholder =
+  '<svg viewBox="0 0 480 300" aria-hidden="true" focusable="false"><circle cx="240" cy="150" r="90" fill="#fff" opacity=".55"/><rect x="160" y="138" width="160" height="24" rx="12" fill="var(--art-fill-2)"/></svg>';
+
+const { id } = Astro.props;
+const drawing = found?.aboutArt?.[id] ?? placeholder;
+---
+
+<div class="about-art" data-art={id} data-placeholder={found ? undefined : "true"} aria-hidden="true" set:html={drawing} />
+
+<style>
+  .about-art {
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+  }
+  .about-art :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  @media (forced-colors: active) {
+    .about-art {
+      forced-color-adjust: none;
+    }
+  }
+</style>
