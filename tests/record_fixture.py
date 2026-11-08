@@ -168,11 +168,17 @@ _INVENT_REMOVE = {
 }
 
 
+def _invented_title(n: int) -> str:
+    return f"Invented title {n} (other event)"
+
+
 def invent_other_titles(text: str, require_titles: list[str]) -> tuple[str, int]:
     """For a feed with a title allow-list (for example a church calendar), every
     event the allow-list drops keeps only its dates and times: an invented title,
     id and link, no place or categories. Their real titles can name people."""
     words = [w.casefold() for w in require_titles]
+    if any(w in _invented_title(0).casefold() for w in words):
+        raise Refused("an invented title would match the source's title rule; change the wording")
     out: list[str] = []
     block: list[str] = []
     inside = False
@@ -212,7 +218,7 @@ def invent_other_titles(text: str, require_titles: list[str]) -> tuple[str, int]
             if name == "BEGIN" and item.strip() == "BEGIN:VEVENT":
                 kept += [
                     f"UID:invented-{invented}@example.org",
-                    f"SUMMARY:Invented title {invented} (not a volunteer event)",
+                    f"SUMMARY:{_invented_title(invented)}",
                     f"URL:https://example.org/invented/{invented}/",
                 ]
         out += kept

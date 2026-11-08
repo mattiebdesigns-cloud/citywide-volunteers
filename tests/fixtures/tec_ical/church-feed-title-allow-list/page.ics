@@ -5,7 +5,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
 UID:invented-1@example.org
-SUMMARY:Invented title 1 (not a volunteer event)
+SUMMARY:Invented title 1 (other event)
 URL:https://example.org/invented/1/
 DTSTAMP:20261108T065922Z
 DTSTART:20261204T000000Z
@@ -17,7 +17,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-2@example.org
-SUMMARY:Invented title 2 (not a volunteer event)
+SUMMARY:Invented title 2 (other event)
 URL:https://example.org/invented/2/
 DTSTAMP:20261108T065922Z
 DTSTART:20270122T000000Z
@@ -29,7 +29,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-3@example.org
-SUMMARY:Invented title 3 (not a volunteer event)
+SUMMARY:Invented title 3 (other event)
 URL:https://example.org/invented/3/
 DTSTAMP:20261108T065922Z
 DTSTART:20270219T000000Z
@@ -41,7 +41,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-4@example.org
-SUMMARY:Invented title 4 (not a volunteer event)
+SUMMARY:Invented title 4 (other event)
 URL:https://example.org/invented/4/
 DTSTAMP:20261108T065922Z
 DTSTART:20270318T230000Z
@@ -53,7 +53,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-5@example.org
-SUMMARY:Invented title 5 (not a volunteer event)
+SUMMARY:Invented title 5 (other event)
 URL:https://example.org/invented/5/
 DTSTAMP:20261108T065922Z
 DTSTART:20270415T230000Z
@@ -65,7 +65,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-6@example.org
-SUMMARY:Invented title 6 (not a volunteer event)
+SUMMARY:Invented title 6 (other event)
 URL:https://example.org/invented/6/
 DTSTAMP:20261108T065922Z
 DTSTART:20270520T230000Z
@@ -77,7 +77,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-7@example.org
-SUMMARY:Invented title 7 (not a volunteer event)
+SUMMARY:Invented title 7 (other event)
 URL:https://example.org/invented/7/
 DTSTAMP:20261108T065922Z
 DTSTART:20270617T230000Z
@@ -89,7 +89,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-8@example.org
-SUMMARY:Invented title 8 (not a volunteer event)
+SUMMARY:Invented title 8 (other event)
 URL:https://example.org/invented/8/
 DTSTAMP:20261108T065922Z
 DTSTART:20270715T230000Z
@@ -101,7 +101,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-9@example.org
-SUMMARY:Invented title 9 (not a volunteer event)
+SUMMARY:Invented title 9 (other event)
 URL:https://example.org/invented/9/
 DTSTAMP:20261108T065922Z
 DTSTART:20270819T230000Z
@@ -113,7 +113,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-10@example.org
-SUMMARY:Invented title 10 (not a volunteer event)
+SUMMARY:Invented title 10 (other event)
 URL:https://example.org/invented/10/
 DTSTAMP:20261108T065922Z
 DTSTART:20270916T230000Z
@@ -125,7 +125,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-11@example.org
-SUMMARY:Invented title 11 (not a volunteer event)
+SUMMARY:Invented title 11 (other event)
 URL:https://example.org/invented/11/
 DTSTAMP:20261108T065922Z
 DTSTART:20271021T230000Z
@@ -137,7 +137,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-12@example.org
-SUMMARY:Invented title 12 (not a volunteer event)
+SUMMARY:Invented title 12 (other event)
 URL:https://example.org/invented/12/
 DTSTAMP:20261108T065922Z
 DTSTART:20271119T000000Z
@@ -149,7 +149,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-13@example.org
-SUMMARY:Invented title 13 (not a volunteer event)
+SUMMARY:Invented title 13 (other event)
 URL:https://example.org/invented/13/
 DTSTAMP:20261108T065922Z
 DTSTART:20271217T000000Z
@@ -161,7 +161,7 @@ LAST-MODIFIED:20261022T124434
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-14@example.org
-SUMMARY:Invented title 14 (not a volunteer event)
+SUMMARY:Invented title 14 (other event)
 URL:https://example.org/invented/14/
 DTSTAMP:20261108T065922Z
 DTSTART:20261109T140000Z
@@ -173,7 +173,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-15@example.org
-SUMMARY:Invented title 15 (not a volunteer event)
+SUMMARY:Invented title 15 (other event)
 URL:https://example.org/invented/15/
 DTSTAMP:20261108T065922Z
 DTSTART:20261116T140000Z
@@ -185,7 +185,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-16@example.org
-SUMMARY:Invented title 16 (not a volunteer event)
+SUMMARY:Invented title 16 (other event)
 URL:https://example.org/invented/16/
 DTSTAMP:20261108T065922Z
 DTSTART:20261123T140000Z
@@ -197,7 +197,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-17@example.org
-SUMMARY:Invented title 17 (not a volunteer event)
+SUMMARY:Invented title 17 (other event)
 URL:https://example.org/invented/17/
 DTSTAMP:20261108T065922Z
 DTSTART:20261130T140000Z
@@ -209,7 +209,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-18@example.org
-SUMMARY:Invented title 18 (not a volunteer event)
+SUMMARY:Invented title 18 (other event)
 URL:https://example.org/invented/18/
 DTSTAMP:20261108T065922Z
 DTSTART:20261207T140000Z
@@ -221,7 +221,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-19@example.org
-SUMMARY:Invented title 19 (not a volunteer event)
+SUMMARY:Invented title 19 (other event)
 URL:https://example.org/invented/19/
 DTSTAMP:20261108T065922Z
 DTSTART:20261214T140000Z
@@ -233,7 +233,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-20@example.org
-SUMMARY:Invented title 20 (not a volunteer event)
+SUMMARY:Invented title 20 (other event)
 URL:https://example.org/invented/20/
 DTSTAMP:20261108T065922Z
 DTSTART:20261221T140000Z
@@ -245,7 +245,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-21@example.org
-SUMMARY:Invented title 21 (not a volunteer event)
+SUMMARY:Invented title 21 (other event)
 URL:https://example.org/invented/21/
 DTSTAMP:20261108T065922Z
 DTSTART:20261228T140000Z
@@ -257,7 +257,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-22@example.org
-SUMMARY:Invented title 22 (not a volunteer event)
+SUMMARY:Invented title 22 (other event)
 URL:https://example.org/invented/22/
 DTSTAMP:20261108T065922Z
 DTSTART:20270104T140000Z
@@ -269,7 +269,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-23@example.org
-SUMMARY:Invented title 23 (not a volunteer event)
+SUMMARY:Invented title 23 (other event)
 URL:https://example.org/invented/23/
 DTSTAMP:20261108T065922Z
 DTSTART:20270111T140000Z
@@ -281,7 +281,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-24@example.org
-SUMMARY:Invented title 24 (not a volunteer event)
+SUMMARY:Invented title 24 (other event)
 URL:https://example.org/invented/24/
 DTSTAMP:20261108T065922Z
 DTSTART:20270118T140000Z
@@ -293,7 +293,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-25@example.org
-SUMMARY:Invented title 25 (not a volunteer event)
+SUMMARY:Invented title 25 (other event)
 URL:https://example.org/invented/25/
 DTSTAMP:20261108T065922Z
 DTSTART:20270125T140000Z
@@ -305,7 +305,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-26@example.org
-SUMMARY:Invented title 26 (not a volunteer event)
+SUMMARY:Invented title 26 (other event)
 URL:https://example.org/invented/26/
 DTSTAMP:20261108T065922Z
 DTSTART:20270201T140000Z
@@ -317,7 +317,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-27@example.org
-SUMMARY:Invented title 27 (not a volunteer event)
+SUMMARY:Invented title 27 (other event)
 URL:https://example.org/invented/27/
 DTSTAMP:20261108T065922Z
 DTSTART:20270208T140000Z
@@ -329,7 +329,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-28@example.org
-SUMMARY:Invented title 28 (not a volunteer event)
+SUMMARY:Invented title 28 (other event)
 URL:https://example.org/invented/28/
 DTSTAMP:20261108T065922Z
 DTSTART:20270215T140000Z
@@ -341,7 +341,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-29@example.org
-SUMMARY:Invented title 29 (not a volunteer event)
+SUMMARY:Invented title 29 (other event)
 URL:https://example.org/invented/29/
 DTSTAMP:20261108T065922Z
 DTSTART:20270222T140000Z
@@ -353,7 +353,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-30@example.org
-SUMMARY:Invented title 30 (not a volunteer event)
+SUMMARY:Invented title 30 (other event)
 URL:https://example.org/invented/30/
 DTSTAMP:20261108T065922Z
 DTSTART:20270301T140000Z
@@ -365,7 +365,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-31@example.org
-SUMMARY:Invented title 31 (not a volunteer event)
+SUMMARY:Invented title 31 (other event)
 URL:https://example.org/invented/31/
 DTSTAMP:20261108T065922Z
 DTSTART:20270308T140000Z
@@ -377,7 +377,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-32@example.org
-SUMMARY:Invented title 32 (not a volunteer event)
+SUMMARY:Invented title 32 (other event)
 URL:https://example.org/invented/32/
 DTSTAMP:20261108T065922Z
 DTSTART:20270315T130000Z
@@ -389,7 +389,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-33@example.org
-SUMMARY:Invented title 33 (not a volunteer event)
+SUMMARY:Invented title 33 (other event)
 URL:https://example.org/invented/33/
 DTSTAMP:20261108T065922Z
 DTSTART:20270322T130000Z
@@ -401,7 +401,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-34@example.org
-SUMMARY:Invented title 34 (not a volunteer event)
+SUMMARY:Invented title 34 (other event)
 URL:https://example.org/invented/34/
 DTSTAMP:20261108T065922Z
 DTSTART:20270329T130000Z
@@ -413,7 +413,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-35@example.org
-SUMMARY:Invented title 35 (not a volunteer event)
+SUMMARY:Invented title 35 (other event)
 URL:https://example.org/invented/35/
 DTSTAMP:20261108T065922Z
 DTSTART:20270405T130000Z
@@ -425,7 +425,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-36@example.org
-SUMMARY:Invented title 36 (not a volunteer event)
+SUMMARY:Invented title 36 (other event)
 URL:https://example.org/invented/36/
 DTSTAMP:20261108T065922Z
 DTSTART:20270412T130000Z
@@ -437,7 +437,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-37@example.org
-SUMMARY:Invented title 37 (not a volunteer event)
+SUMMARY:Invented title 37 (other event)
 URL:https://example.org/invented/37/
 DTSTAMP:20261108T065922Z
 DTSTART:20270419T130000Z
@@ -449,7 +449,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-38@example.org
-SUMMARY:Invented title 38 (not a volunteer event)
+SUMMARY:Invented title 38 (other event)
 URL:https://example.org/invented/38/
 DTSTAMP:20261108T065922Z
 DTSTART:20270426T130000Z
@@ -461,7 +461,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-39@example.org
-SUMMARY:Invented title 39 (not a volunteer event)
+SUMMARY:Invented title 39 (other event)
 URL:https://example.org/invented/39/
 DTSTAMP:20261108T065922Z
 DTSTART:20270503T130000Z
@@ -473,7 +473,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-40@example.org
-SUMMARY:Invented title 40 (not a volunteer event)
+SUMMARY:Invented title 40 (other event)
 URL:https://example.org/invented/40/
 DTSTAMP:20261108T065922Z
 DTSTART:20270510T130000Z
@@ -485,7 +485,7 @@ LAST-MODIFIED:20261107T072327
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-41@example.org
-SUMMARY:Invented title 41 (not a volunteer event)
+SUMMARY:Invented title 41 (other event)
 URL:https://example.org/invented/41/
 DTSTAMP:20261108T065922Z
 DTSTART:20261108T160000Z
@@ -497,7 +497,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-42@example.org
-SUMMARY:Invented title 42 (not a volunteer event)
+SUMMARY:Invented title 42 (other event)
 URL:https://example.org/invented/42/
 DTSTAMP:20261108T065922Z
 DTSTART:20261115T160000Z
@@ -509,7 +509,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-43@example.org
-SUMMARY:Invented title 43 (not a volunteer event)
+SUMMARY:Invented title 43 (other event)
 URL:https://example.org/invented/43/
 DTSTAMP:20261108T065922Z
 DTSTART:20261122T160000Z
@@ -521,7 +521,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-44@example.org
-SUMMARY:Invented title 44 (not a volunteer event)
+SUMMARY:Invented title 44 (other event)
 URL:https://example.org/invented/44/
 DTSTAMP:20261108T065922Z
 DTSTART:20261129T160000Z
@@ -533,7 +533,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-45@example.org
-SUMMARY:Invented title 45 (not a volunteer event)
+SUMMARY:Invented title 45 (other event)
 URL:https://example.org/invented/45/
 DTSTAMP:20261108T065922Z
 DTSTART:20261206T160000Z
@@ -545,7 +545,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-46@example.org
-SUMMARY:Invented title 46 (not a volunteer event)
+SUMMARY:Invented title 46 (other event)
 URL:https://example.org/invented/46/
 DTSTAMP:20261108T065922Z
 DTSTART:20261213T160000Z
@@ -557,7 +557,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-47@example.org
-SUMMARY:Invented title 47 (not a volunteer event)
+SUMMARY:Invented title 47 (other event)
 URL:https://example.org/invented/47/
 DTSTAMP:20261108T065922Z
 DTSTART:20261220T160000Z
@@ -569,7 +569,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-48@example.org
-SUMMARY:Invented title 48 (not a volunteer event)
+SUMMARY:Invented title 48 (other event)
 URL:https://example.org/invented/48/
 DTSTAMP:20261108T065922Z
 DTSTART:20261227T160000Z
@@ -581,7 +581,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-49@example.org
-SUMMARY:Invented title 49 (not a volunteer event)
+SUMMARY:Invented title 49 (other event)
 URL:https://example.org/invented/49/
 DTSTAMP:20261108T065922Z
 DTSTART:20270103T160000Z
@@ -593,7 +593,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-50@example.org
-SUMMARY:Invented title 50 (not a volunteer event)
+SUMMARY:Invented title 50 (other event)
 URL:https://example.org/invented/50/
 DTSTAMP:20261108T065922Z
 DTSTART:20270110T160000Z
@@ -605,7 +605,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-51@example.org
-SUMMARY:Invented title 51 (not a volunteer event)
+SUMMARY:Invented title 51 (other event)
 URL:https://example.org/invented/51/
 DTSTAMP:20261108T065922Z
 DTSTART:20270117T160000Z
@@ -617,7 +617,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-52@example.org
-SUMMARY:Invented title 52 (not a volunteer event)
+SUMMARY:Invented title 52 (other event)
 URL:https://example.org/invented/52/
 DTSTAMP:20261108T065922Z
 DTSTART:20270124T160000Z
@@ -629,7 +629,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-53@example.org
-SUMMARY:Invented title 53 (not a volunteer event)
+SUMMARY:Invented title 53 (other event)
 URL:https://example.org/invented/53/
 DTSTAMP:20261108T065922Z
 DTSTART:20270131T160000Z
@@ -641,7 +641,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-54@example.org
-SUMMARY:Invented title 54 (not a volunteer event)
+SUMMARY:Invented title 54 (other event)
 URL:https://example.org/invented/54/
 DTSTAMP:20261108T065922Z
 DTSTART:20270207T160000Z
@@ -653,7 +653,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-55@example.org
-SUMMARY:Invented title 55 (not a volunteer event)
+SUMMARY:Invented title 55 (other event)
 URL:https://example.org/invented/55/
 DTSTAMP:20261108T065922Z
 DTSTART:20270214T160000Z
@@ -665,7 +665,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-56@example.org
-SUMMARY:Invented title 56 (not a volunteer event)
+SUMMARY:Invented title 56 (other event)
 URL:https://example.org/invented/56/
 DTSTAMP:20261108T065922Z
 DTSTART:20270221T160000Z
@@ -677,7 +677,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-57@example.org
-SUMMARY:Invented title 57 (not a volunteer event)
+SUMMARY:Invented title 57 (other event)
 URL:https://example.org/invented/57/
 DTSTAMP:20261108T065922Z
 DTSTART:20270228T160000Z
@@ -689,7 +689,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-58@example.org
-SUMMARY:Invented title 58 (not a volunteer event)
+SUMMARY:Invented title 58 (other event)
 URL:https://example.org/invented/58/
 DTSTAMP:20261108T065922Z
 DTSTART:20270307T160000Z
@@ -701,7 +701,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-59@example.org
-SUMMARY:Invented title 59 (not a volunteer event)
+SUMMARY:Invented title 59 (other event)
 URL:https://example.org/invented/59/
 DTSTAMP:20261108T065922Z
 DTSTART:20270314T150000Z
@@ -713,7 +713,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-60@example.org
-SUMMARY:Invented title 60 (not a volunteer event)
+SUMMARY:Invented title 60 (other event)
 URL:https://example.org/invented/60/
 DTSTAMP:20261108T065922Z
 DTSTART:20270321T150000Z
@@ -725,7 +725,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-61@example.org
-SUMMARY:Invented title 61 (not a volunteer event)
+SUMMARY:Invented title 61 (other event)
 URL:https://example.org/invented/61/
 DTSTAMP:20261108T065922Z
 DTSTART:20270328T150000Z
@@ -737,7 +737,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-62@example.org
-SUMMARY:Invented title 62 (not a volunteer event)
+SUMMARY:Invented title 62 (other event)
 URL:https://example.org/invented/62/
 DTSTAMP:20261108T065922Z
 DTSTART:20270404T150000Z
@@ -749,7 +749,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-63@example.org
-SUMMARY:Invented title 63 (not a volunteer event)
+SUMMARY:Invented title 63 (other event)
 URL:https://example.org/invented/63/
 DTSTAMP:20261108T065922Z
 DTSTART:20270411T150000Z
@@ -761,7 +761,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-64@example.org
-SUMMARY:Invented title 64 (not a volunteer event)
+SUMMARY:Invented title 64 (other event)
 URL:https://example.org/invented/64/
 DTSTAMP:20261108T065922Z
 DTSTART:20270418T150000Z
@@ -773,7 +773,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-65@example.org
-SUMMARY:Invented title 65 (not a volunteer event)
+SUMMARY:Invented title 65 (other event)
 URL:https://example.org/invented/65/
 DTSTAMP:20261108T065922Z
 DTSTART:20270425T150000Z
@@ -785,7 +785,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-66@example.org
-SUMMARY:Invented title 66 (not a volunteer event)
+SUMMARY:Invented title 66 (other event)
 URL:https://example.org/invented/66/
 DTSTAMP:20261108T065922Z
 DTSTART:20270502T150000Z
@@ -797,7 +797,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-67@example.org
-SUMMARY:Invented title 67 (not a volunteer event)
+SUMMARY:Invented title 67 (other event)
 URL:https://example.org/invented/67/
 DTSTAMP:20261108T065922Z
 DTSTART:20270509T150000Z
@@ -809,7 +809,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-68@example.org
-SUMMARY:Invented title 68 (not a volunteer event)
+SUMMARY:Invented title 68 (other event)
 URL:https://example.org/invented/68/
 DTSTAMP:20261108T065922Z
 DTSTART:20261108T150000Z
@@ -821,7 +821,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-69@example.org
-SUMMARY:Invented title 69 (not a volunteer event)
+SUMMARY:Invented title 69 (other event)
 URL:https://example.org/invented/69/
 DTSTAMP:20261108T065922Z
 DTSTART:20261115T150000Z
@@ -833,7 +833,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-70@example.org
-SUMMARY:Invented title 70 (not a volunteer event)
+SUMMARY:Invented title 70 (other event)
 URL:https://example.org/invented/70/
 DTSTAMP:20261108T065922Z
 DTSTART:20261122T150000Z
@@ -845,7 +845,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-71@example.org
-SUMMARY:Invented title 71 (not a volunteer event)
+SUMMARY:Invented title 71 (other event)
 URL:https://example.org/invented/71/
 DTSTAMP:20261108T065922Z
 DTSTART:20261129T150000Z
@@ -857,7 +857,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-72@example.org
-SUMMARY:Invented title 72 (not a volunteer event)
+SUMMARY:Invented title 72 (other event)
 URL:https://example.org/invented/72/
 DTSTAMP:20261108T065922Z
 DTSTART:20261206T150000Z
@@ -869,7 +869,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-73@example.org
-SUMMARY:Invented title 73 (not a volunteer event)
+SUMMARY:Invented title 73 (other event)
 URL:https://example.org/invented/73/
 DTSTAMP:20261108T065922Z
 DTSTART:20261213T150000Z
@@ -881,7 +881,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-74@example.org
-SUMMARY:Invented title 74 (not a volunteer event)
+SUMMARY:Invented title 74 (other event)
 URL:https://example.org/invented/74/
 DTSTAMP:20261108T065922Z
 DTSTART:20261220T150000Z
@@ -893,7 +893,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-75@example.org
-SUMMARY:Invented title 75 (not a volunteer event)
+SUMMARY:Invented title 75 (other event)
 URL:https://example.org/invented/75/
 DTSTAMP:20261108T065922Z
 DTSTART:20261227T150000Z
@@ -905,7 +905,7 @@ LAST-MODIFIED:20261107T072328
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-76@example.org
-SUMMARY:Invented title 76 (not a volunteer event)
+SUMMARY:Invented title 76 (other event)
 URL:https://example.org/invented/76/
 DTSTAMP:20261108T065922Z
 DTSTART:20270103T150000Z
@@ -917,7 +917,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-77@example.org
-SUMMARY:Invented title 77 (not a volunteer event)
+SUMMARY:Invented title 77 (other event)
 URL:https://example.org/invented/77/
 DTSTAMP:20261108T065922Z
 DTSTART:20270110T150000Z
@@ -929,7 +929,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-78@example.org
-SUMMARY:Invented title 78 (not a volunteer event)
+SUMMARY:Invented title 78 (other event)
 URL:https://example.org/invented/78/
 DTSTAMP:20261108T065922Z
 DTSTART:20270117T150000Z
@@ -941,7 +941,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-79@example.org
-SUMMARY:Invented title 79 (not a volunteer event)
+SUMMARY:Invented title 79 (other event)
 URL:https://example.org/invented/79/
 DTSTAMP:20261108T065922Z
 DTSTART:20270124T150000Z
@@ -953,7 +953,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-80@example.org
-SUMMARY:Invented title 80 (not a volunteer event)
+SUMMARY:Invented title 80 (other event)
 URL:https://example.org/invented/80/
 DTSTAMP:20261108T065922Z
 DTSTART:20270131T150000Z
@@ -965,7 +965,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-81@example.org
-SUMMARY:Invented title 81 (not a volunteer event)
+SUMMARY:Invented title 81 (other event)
 URL:https://example.org/invented/81/
 DTSTAMP:20261108T065922Z
 DTSTART:20270207T150000Z
@@ -977,7 +977,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-82@example.org
-SUMMARY:Invented title 82 (not a volunteer event)
+SUMMARY:Invented title 82 (other event)
 URL:https://example.org/invented/82/
 DTSTAMP:20261108T065922Z
 DTSTART:20270214T150000Z
@@ -989,7 +989,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-83@example.org
-SUMMARY:Invented title 83 (not a volunteer event)
+SUMMARY:Invented title 83 (other event)
 URL:https://example.org/invented/83/
 DTSTAMP:20261108T065922Z
 DTSTART:20270221T150000Z
@@ -1001,7 +1001,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-84@example.org
-SUMMARY:Invented title 84 (not a volunteer event)
+SUMMARY:Invented title 84 (other event)
 URL:https://example.org/invented/84/
 DTSTAMP:20261108T065922Z
 DTSTART:20270228T150000Z
@@ -1013,7 +1013,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-85@example.org
-SUMMARY:Invented title 85 (not a volunteer event)
+SUMMARY:Invented title 85 (other event)
 URL:https://example.org/invented/85/
 DTSTAMP:20261108T065922Z
 DTSTART:20270307T150000Z
@@ -1025,7 +1025,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-86@example.org
-SUMMARY:Invented title 86 (not a volunteer event)
+SUMMARY:Invented title 86 (other event)
 URL:https://example.org/invented/86/
 DTSTAMP:20261108T065922Z
 DTSTART:20270314T140000Z
@@ -1037,7 +1037,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-87@example.org
-SUMMARY:Invented title 87 (not a volunteer event)
+SUMMARY:Invented title 87 (other event)
 URL:https://example.org/invented/87/
 DTSTAMP:20261108T065922Z
 DTSTART:20270321T140000Z
@@ -1049,7 +1049,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-88@example.org
-SUMMARY:Invented title 88 (not a volunteer event)
+SUMMARY:Invented title 88 (other event)
 URL:https://example.org/invented/88/
 DTSTAMP:20261108T065922Z
 DTSTART:20270328T140000Z
@@ -1061,7 +1061,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-89@example.org
-SUMMARY:Invented title 89 (not a volunteer event)
+SUMMARY:Invented title 89 (other event)
 URL:https://example.org/invented/89/
 DTSTAMP:20261108T065922Z
 DTSTART:20270404T140000Z
@@ -1073,7 +1073,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-90@example.org
-SUMMARY:Invented title 90 (not a volunteer event)
+SUMMARY:Invented title 90 (other event)
 URL:https://example.org/invented/90/
 DTSTAMP:20261108T065922Z
 DTSTART:20270411T140000Z
@@ -1085,7 +1085,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-91@example.org
-SUMMARY:Invented title 91 (not a volunteer event)
+SUMMARY:Invented title 91 (other event)
 URL:https://example.org/invented/91/
 DTSTAMP:20261108T065922Z
 DTSTART:20270418T140000Z
@@ -1097,7 +1097,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-92@example.org
-SUMMARY:Invented title 92 (not a volunteer event)
+SUMMARY:Invented title 92 (other event)
 URL:https://example.org/invented/92/
 DTSTAMP:20261108T065922Z
 DTSTART:20270425T140000Z
@@ -1109,7 +1109,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-93@example.org
-SUMMARY:Invented title 93 (not a volunteer event)
+SUMMARY:Invented title 93 (other event)
 URL:https://example.org/invented/93/
 DTSTAMP:20261108T065922Z
 DTSTART:20270502T140000Z
@@ -1121,7 +1121,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-94@example.org
-SUMMARY:Invented title 94 (not a volunteer event)
+SUMMARY:Invented title 94 (other event)
 URL:https://example.org/invented/94/
 DTSTAMP:20261108T065922Z
 DTSTART:20270509T140000Z
@@ -1133,7 +1133,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-95@example.org
-SUMMARY:Invented title 95 (not a volunteer event)
+SUMMARY:Invented title 95 (other event)
 URL:https://example.org/invented/95/
 DTSTAMP:20261108T065922Z
 DTSTART:20261110T230000Z
@@ -1145,7 +1145,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-96@example.org
-SUMMARY:Invented title 96 (not a volunteer event)
+SUMMARY:Invented title 96 (other event)
 URL:https://example.org/invented/96/
 DTSTAMP:20261108T065922Z
 DTSTART:20261117T230000Z
@@ -1157,7 +1157,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-97@example.org
-SUMMARY:Invented title 97 (not a volunteer event)
+SUMMARY:Invented title 97 (other event)
 URL:https://example.org/invented/97/
 DTSTAMP:20261108T065922Z
 DTSTART:20261124T230000Z
@@ -1169,7 +1169,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-98@example.org
-SUMMARY:Invented title 98 (not a volunteer event)
+SUMMARY:Invented title 98 (other event)
 URL:https://example.org/invented/98/
 DTSTAMP:20261108T065922Z
 DTSTART:20261201T230000Z
@@ -1181,7 +1181,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-99@example.org
-SUMMARY:Invented title 99 (not a volunteer event)
+SUMMARY:Invented title 99 (other event)
 URL:https://example.org/invented/99/
 DTSTAMP:20261108T065922Z
 DTSTART:20261208T230000Z
@@ -1193,7 +1193,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-100@example.org
-SUMMARY:Invented title 100 (not a volunteer event)
+SUMMARY:Invented title 100 (other event)
 URL:https://example.org/invented/100/
 DTSTAMP:20261108T065922Z
 DTSTART:20270209T230000Z
@@ -1205,7 +1205,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-101@example.org
-SUMMARY:Invented title 101 (not a volunteer event)
+SUMMARY:Invented title 101 (other event)
 URL:https://example.org/invented/101/
 DTSTAMP:20261108T065922Z
 DTSTART:20270216T230000Z
@@ -1217,7 +1217,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-102@example.org
-SUMMARY:Invented title 102 (not a volunteer event)
+SUMMARY:Invented title 102 (other event)
 URL:https://example.org/invented/102/
 DTSTAMP:20261108T065922Z
 DTSTART:20270223T230000Z
@@ -1229,7 +1229,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-103@example.org
-SUMMARY:Invented title 103 (not a volunteer event)
+SUMMARY:Invented title 103 (other event)
 URL:https://example.org/invented/103/
 DTSTAMP:20261108T065922Z
 DTSTART:20270302T230000Z
@@ -1241,7 +1241,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-104@example.org
-SUMMARY:Invented title 104 (not a volunteer event)
+SUMMARY:Invented title 104 (other event)
 URL:https://example.org/invented/104/
 DTSTAMP:20261108T065922Z
 DTSTART:20270309T230000Z
@@ -1253,7 +1253,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-105@example.org
-SUMMARY:Invented title 105 (not a volunteer event)
+SUMMARY:Invented title 105 (other event)
 URL:https://example.org/invented/105/
 DTSTAMP:20261108T065922Z
 DTSTART:20270316T220000Z
@@ -1265,7 +1265,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-106@example.org
-SUMMARY:Invented title 106 (not a volunteer event)
+SUMMARY:Invented title 106 (other event)
 URL:https://example.org/invented/106/
 DTSTAMP:20261108T065922Z
 DTSTART:20270323T220000Z
@@ -1277,7 +1277,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-107@example.org
-SUMMARY:Invented title 107 (not a volunteer event)
+SUMMARY:Invented title 107 (other event)
 URL:https://example.org/invented/107/
 DTSTAMP:20261108T065922Z
 DTSTART:20270330T220000Z
@@ -1289,7 +1289,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-108@example.org
-SUMMARY:Invented title 108 (not a volunteer event)
+SUMMARY:Invented title 108 (other event)
 URL:https://example.org/invented/108/
 DTSTAMP:20261108T065922Z
 DTSTART:20270406T220000Z
@@ -1301,7 +1301,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-109@example.org
-SUMMARY:Invented title 109 (not a volunteer event)
+SUMMARY:Invented title 109 (other event)
 URL:https://example.org/invented/109/
 DTSTAMP:20261108T065922Z
 DTSTART:20270413T220000Z
@@ -1313,7 +1313,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-110@example.org
-SUMMARY:Invented title 110 (not a volunteer event)
+SUMMARY:Invented title 110 (other event)
 URL:https://example.org/invented/110/
 DTSTAMP:20261108T065922Z
 DTSTART:20270420T220000Z
@@ -1325,7 +1325,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-111@example.org
-SUMMARY:Invented title 111 (not a volunteer event)
+SUMMARY:Invented title 111 (other event)
 URL:https://example.org/invented/111/
 DTSTAMP:20261108T065922Z
 DTSTART:20270427T220000Z
@@ -1337,7 +1337,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-112@example.org
-SUMMARY:Invented title 112 (not a volunteer event)
+SUMMARY:Invented title 112 (other event)
 URL:https://example.org/invented/112/
 DTSTAMP:20261108T065922Z
 DTSTART:20270504T220000Z
@@ -1349,7 +1349,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-113@example.org
-SUMMARY:Invented title 113 (not a volunteer event)
+SUMMARY:Invented title 113 (other event)
 URL:https://example.org/invented/113/
 DTSTAMP:20261108T065922Z
 DTSTART:20270511T220000Z
@@ -1361,7 +1361,7 @@ LAST-MODIFIED:20261107T072329
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-114@example.org
-SUMMARY:Invented title 114 (not a volunteer event)
+SUMMARY:Invented title 114 (other event)
 URL:https://example.org/invented/114/
 DTSTAMP:20261108T065922Z
 DTSTART:20261202T140000Z
@@ -1485,7 +1485,7 @@ URL;VALUE=URI:https://www.old-swedes.org/events/lunch-packing-for-those-in-
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-115@example.org
-SUMMARY:Invented title 115 (not a volunteer event)
+SUMMARY:Invented title 115 (other event)
 URL:https://example.org/invented/115/
 DTSTAMP:20261108T065922Z
 DTSTART:20270124T200000Z
@@ -1497,7 +1497,7 @@ LAST-MODIFIED:20260703T182418
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-116@example.org
-SUMMARY:Invented title 116 (not a volunteer event)
+SUMMARY:Invented title 116 (other event)
 URL:https://example.org/invented/116/
 DTSTAMP:20261108T065922Z
 DTSTART:20270321T190000Z
@@ -1509,7 +1509,7 @@ LAST-MODIFIED:20260703T182557
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-117@example.org
-SUMMARY:Invented title 117 (not a volunteer event)
+SUMMARY:Invented title 117 (other event)
 URL:https://example.org/invented/117/
 DTSTAMP:20261108T065922Z
 DTSTART:20270502T190000Z
@@ -1521,7 +1521,7 @@ LAST-MODIFIED:20260714T102637
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-118@example.org
-SUMMARY:Invented title 118 (not a volunteer event)
+SUMMARY:Invented title 118 (other event)
 URL:https://example.org/invented/118/
 DTSTAMP:20261108T065922Z
 DTSTART:20270613T190000Z
@@ -1533,7 +1533,7 @@ LAST-MODIFIED:20260714T102617
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-119@example.org
-SUMMARY:Invented title 119 (not a volunteer event)
+SUMMARY:Invented title 119 (other event)
 URL:https://example.org/invented/119/
 DTSTAMP:20261108T065922Z
 DTSTART:20261212T170000Z
@@ -1545,7 +1545,7 @@ LAST-MODIFIED:20261104T111957
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-120@example.org
-SUMMARY:Invented title 120 (not a volunteer event)
+SUMMARY:Invented title 120 (other event)
 URL:https://example.org/invented/120/
 DTSTAMP:20261108T065922Z
 DTSTART:20261218T230000Z
@@ -1557,7 +1557,7 @@ LAST-MODIFIED:20261103T135122
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-121@example.org
-SUMMARY:Invented title 121 (not a volunteer event)
+SUMMARY:Invented title 121 (other event)
 URL:https://example.org/invented/121/
 DTSTAMP:20261108T065922Z
 DTSTART:20261113T000000Z
@@ -1569,7 +1569,7 @@ LAST-MODIFIED:20260714T101420
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-122@example.org
-SUMMARY:Invented title 122 (not a volunteer event)
+SUMMARY:Invented title 122 (other event)
 URL:https://example.org/invented/122/
 DTSTAMP:20261108T065922Z
 DTSTART:20270919T190000Z
@@ -1581,7 +1581,7 @@ LAST-MODIFIED:20260715T103322
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-123@example.org
-SUMMARY:Invented title 123 (not a volunteer event)
+SUMMARY:Invented title 123 (other event)
 URL:https://example.org/invented/123/
 DTSTAMP:20261108T065922Z
 DTSTART:20270912T190000Z
@@ -1593,7 +1593,7 @@ LAST-MODIFIED:20261013T154511
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-124@example.org
-SUMMARY:Invented title 124 (not a volunteer event)
+SUMMARY:Invented title 124 (other event)
 URL:https://example.org/invented/124/
 DTSTAMP:20261108T065922Z
 DTSTART:20261111T233000Z
@@ -1605,7 +1605,7 @@ LAST-MODIFIED:20261007T160155
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-125@example.org
-SUMMARY:Invented title 125 (not a volunteer event)
+SUMMARY:Invented title 125 (other event)
 URL:https://example.org/invented/125/
 DTSTAMP:20261108T065922Z
 DTSTART:20270808T190000Z
@@ -1617,7 +1617,7 @@ LAST-MODIFIED:20261019T114341
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-126@example.org
-SUMMARY:Invented title 126 (not a volunteer event)
+SUMMARY:Invented title 126 (other event)
 URL:https://example.org/invented/126/
 DTSTAMP:20261108T065922Z
 DTSTART:20271121T200000Z
@@ -1629,7 +1629,7 @@ LAST-MODIFIED:20260928T155240
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-127@example.org
-SUMMARY:Invented title 127 (not a volunteer event)
+SUMMARY:Invented title 127 (other event)
 URL:https://example.org/invented/127/
 DTSTAMP:20261108T065922Z
 DTSTART:20270110T200000Z
@@ -1641,7 +1641,7 @@ LAST-MODIFIED:20261013T103646
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-128@example.org
-SUMMARY:Invented title 128 (not a volunteer event)
+SUMMARY:Invented title 128 (other event)
 URL:https://example.org/invented/128/
 DTSTAMP:20261108T065922Z
 DTSTART:20270411T190000Z
@@ -1653,7 +1653,7 @@ LAST-MODIFIED:20261018T190119
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-129@example.org
-SUMMARY:Invented title 129 (not a volunteer event)
+SUMMARY:Invented title 129 (other event)
 URL:https://example.org/invented/129/
 DTSTAMP:20261108T065922Z
 DTSTART:20261021T170000Z
@@ -1665,7 +1665,7 @@ LAST-MODIFIED:20261105T114625
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-130@example.org
-SUMMARY:Invented title 130 (not a volunteer event)
+SUMMARY:Invented title 130 (other event)
 URL:https://example.org/invented/130/
 DTSTAMP:20261108T065922Z
 DTSTART:20270314T190000Z
@@ -1677,7 +1677,7 @@ LAST-MODIFIED:20261022T202954
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-131@example.org
-SUMMARY:Invented title 131 (not a volunteer event)
+SUMMARY:Invented title 131 (other event)
 URL:https://example.org/invented/131/
 DTSTAMP:20261108T065922Z
 DTSTART:20270207T200000Z
@@ -1689,7 +1689,7 @@ LAST-MODIFIED:20261029T172150
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-132@example.org
-SUMMARY:Invented title 132 (not a volunteer event)
+SUMMARY:Invented title 132 (other event)
 URL:https://example.org/invented/132/
 DTSTAMP:20261108T065922Z
 DTSTART:20261122T163000Z
@@ -1701,7 +1701,7 @@ LAST-MODIFIED:20261101T024423
 END:VEVENT
 BEGIN:VEVENT
 UID:invented-133@example.org
-SUMMARY:Invented title 133 (not a volunteer event)
+SUMMARY:Invented title 133 (other event)
 URL:https://example.org/invented/133/
 DTSTAMP:20261108T065922Z
 DTSTART:20261110T230000Z

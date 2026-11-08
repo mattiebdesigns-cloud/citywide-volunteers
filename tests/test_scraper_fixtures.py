@@ -7,7 +7,8 @@ Layout (tests/README.md): tests/fixtures/<scraper>/<case>/ holds
     dropped.json    the events it should drop, with the reason (optional)
     fetched.json    when the page was recorded ("fetched_at") and what was removed
 
-Checks: output matches expected.json and the event schema, is not empty, has
+Checks: output matches expected.json and the event schema, is not empty (unless
+the case holds empty-on-purpose.txt with a reason, and something was dropped), has
 unique ids, never holds a field outside the schema (so no attendee or sign-up
 data), and the recorded page holds no people fields.
 """
@@ -79,7 +80,14 @@ def test_every_scraper_has_a_fixture():
 def test_output_matches_expected(case: Path, no_network):
     scraper, source, fetched_at, text = _run(case)
     result = scraper.parse_with_report(text, source, fetched_at)
-    assert result.events, "the scraper found no listings on its recorded page"
+    reason = case / "empty-on-purpose.txt"
+    if reason.is_file():
+        # A feed with nothing to list today (the rule drops every event): kept to
+        # prove the drops; the reason is written down.
+        assert reason.read_text(encoding="utf-8").strip(), "empty-on-purpose.txt needs a reason"
+        assert not result.events and result.dropped
+    else:
+        assert result.events, "the scraper found no listings on its recorded page"
     assert result.events == _read_json(case / "expected.json")
     assert scraper.parse(text, source, fetched_at) == result.events
     if (case / "dropped.json").is_file():

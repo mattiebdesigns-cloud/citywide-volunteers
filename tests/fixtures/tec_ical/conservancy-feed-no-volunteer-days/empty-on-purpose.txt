@@ -1,0 +1,3 @@
+Recorded 2026-11-08 from a real conservancy feed with no volunteer days until spring.
+Every event in it is dropped by the source's title rule (each shown with an invented title),
+so the case proves the drops; it lists nothing on purpose.

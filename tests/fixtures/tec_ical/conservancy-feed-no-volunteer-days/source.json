@@ -1,0 +1,12 @@
+{
+  "id": "example-land-conservancy",
+  "org_name": "Example Land Conservancy",
+  "scraper": "tec_ical",
+  "url": "https://conservancy.example.org/events/?ical=1",
+  "area": "pa-suburbs",
+  "listing_language": "en",
+  "default_type": "service",
+  "default_cause": "parks-and-trees",
+  "sensitive": false,
+  "require_titles": ["Mulch Madness", "Cleanup", "Clean-up", "Frenzy", "Planting", "Volunteer"]
+}

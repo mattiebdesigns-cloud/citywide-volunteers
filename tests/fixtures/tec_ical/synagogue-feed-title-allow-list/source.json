@@ -1,0 +1,13 @@
+{
+  "id": "example-congregation",
+  "org_name": "Example Congregation",
+  "scraper": "tec_ical",
+  "url": "https://congregation.example.org/events/?ical=1",
+  "area": "philadelphia",
+  "listing_language": "en",
+  "default_type": "service",
+  "default_join_method": "application",
+  "default_cause": "food",
+  "sensitive": false,
+  "require_titles": ["Breaking Bread on Broad"]
+}

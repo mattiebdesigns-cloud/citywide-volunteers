@@ -1,0 +1,385 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Rodeph Shalom - ECPv6.18.2//NONSGML v1.0//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Rodeph Shalom
+X-ORIGINAL-URL:https://rodephshalom.org
+X-WR-CALDESC:Events for Rodeph Shalom
+REFRESH-INTERVAL;VALUE=DURATION:PT1H
+X-Robots-Tag:noindex
+X-PUBLISHED-TTL:PT1H
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20250309T070000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20251102T060000
+END:STANDARD
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20260308T070000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20261101T060000
+END:STANDARD
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0400
+TZNAME:EDT
+DTSTART:20270314T070000
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+TZNAME:EST
+DTSTART:20271107T060000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:invented-1@example.org
+SUMMARY:Invented title 1 (other event)
+URL:https://example.org/invented/1/
+DTSTART;TZID=America/New_York:20261108T093000
+DTEND;TZID=America/New_York:20261108T123000
+DTSTAMP:20260731T141714Z
+CREATED:20260730T191339Z
+LAST-MODIFIED:20260731T141714Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-2@example.org
+SUMMARY:Invented title 2 (other event)
+URL:https://example.org/invented/2/
+DTSTART;TZID=America/New_York:20261108T100000
+DTEND;TZID=America/New_York:20261108T120000
+DTSTAMP:20261005T182056Z
+CREATED:20260814T181553Z
+LAST-MODIFIED:20261005T182056Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-3@example.org
+SUMMARY:Invented title 3 (other event)
+URL:https://example.org/invented/3/
+DTSTART;TZID=America/New_York:20261108T110000
+DTEND;TZID=America/New_York:20261108T123000
+DTSTAMP:20261103T142417Z
+CREATED:20261103T142417Z
+LAST-MODIFIED:20261103T142417Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-4@example.org
+SUMMARY:Invented title 4 (other event)
+URL:https://example.org/invented/4/
+DTSTART;TZID=America/New_York:20261110T163000
+DTEND;TZID=America/New_York:20261110T173000
+DTSTAMP:20260731T165537Z
+CREATED:20260731T163619Z
+LAST-MODIFIED:20260731T165537Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-5@example.org
+SUMMARY:Invented title 5 (other event)
+URL:https://example.org/invented/5/
+DTSTART;TZID=America/New_York:20261110T183000
+DTEND;TZID=America/New_York:20261110T203000
+DTSTAMP:20261026T122948Z
+CREATED:20261016T123527Z
+LAST-MODIFIED:20261026T122948Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=America/New_York:20261111T070000
+DTEND;TZID=America/New_York:20261111T103000
+DTSTAMP:20250204T231722Z
+CREATED:20240917T224145Z
+LAST-MODIFIED:20250204T231722Z
+UID:10002014-1794380400-1794393000@rodephshalom.org
+SUMMARY:Breaking Bread on Broad Distribution
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+URL:https://rodephshalom.org/event/breaking-bread-on-broad-distribution-99/2026-11-11/
+LOCATION:Congregation Rodeph Shalom\, 615 North Broad Street\, Philadelphia\, PA\, 19123\, United States
+CATEGORIES:Social Justice
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-6@example.org
+SUMMARY:Invented title 6 (other event)
+URL:https://example.org/invented/6/
+DTSTART;TZID=America/New_York:20261111T163000
+DTEND;TZID=America/New_York:20261111T183000
+DTSTAMP:20260731T163828Z
+CREATED:20260731T163828Z
+LAST-MODIFIED:20260731T163828Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-7@example.org
+SUMMARY:Invented title 7 (other event)
+URL:https://example.org/invented/7/
+DTSTART;TZID=America/New_York:20261111T190000
+DTEND;TZID=America/New_York:20261111T203000
+DTSTAMP:20260902T123428Z
+CREATED:20260902T123428Z
+LAST-MODIFIED:20260902T123428Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-8@example.org
+SUMMARY:Invented title 8 (other event)
+URL:https://example.org/invented/8/
+DTSTART;TZID=America/New_York:20261112T081000
+DTEND;TZID=America/New_York:20261112T084000
+DTSTAMP:20251202T172130Z
+CREATED:20251001T174623Z
+LAST-MODIFIED:20251202T172130Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-9@example.org
+SUMMARY:Invented title 9 (other event)
+URL:https://example.org/invented/9/
+DTSTART;TZID=America/New_York:20261113T180000
+DTEND;TZID=America/New_York:20261113T193000
+DTSTAMP:20260908T135411Z
+CREATED:20260908T135411Z
+LAST-MODIFIED:20260908T135411Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-10@example.org
+SUMMARY:Invented title 10 (other event)
+URL:https://example.org/invented/10/
+DTSTART;TZID=America/New_York:20261114T091500
+DTEND;TZID=America/New_York:20261114T103000
+DTSTAMP:20260908T134324Z
+CREATED:20260908T134324Z
+LAST-MODIFIED:20260908T134324Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-11@example.org
+SUMMARY:Invented title 11 (other event)
+URL:https://example.org/invented/11/
+DTSTART;TZID=America/New_York:20261114T104500
+DTEND;TZID=America/New_York:20261114T121500
+DTSTAMP:20250114T205521Z
+CREATED:20240917T225439Z
+LAST-MODIFIED:20250114T205521Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-12@example.org
+SUMMARY:Invented title 12 (other event)
+URL:https://example.org/invented/12/
+DTSTART;TZID=America/New_York:20261115T093000
+DTEND;TZID=America/New_York:20261115T123000
+DTSTAMP:20260731T141714Z
+CREATED:20260730T191339Z
+LAST-MODIFIED:20260731T141714Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-13@example.org
+SUMMARY:Invented title 13 (other event)
+URL:https://example.org/invented/13/
+DTSTART;TZID=America/New_York:20261115T100000
+DTEND;TZID=America/New_York:20261115T120000
+DTSTAMP:20261005T182056Z
+CREATED:20260814T181553Z
+LAST-MODIFIED:20261005T182056Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-14@example.org
+SUMMARY:Invented title 14 (other event)
+URL:https://example.org/invented/14/
+DTSTART;TZID=America/New_York:20261117T163000
+DTEND;TZID=America/New_York:20261117T173000
+DTSTAMP:20260731T165537Z
+CREATED:20260731T163619Z
+LAST-MODIFIED:20260731T165537Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-15@example.org
+SUMMARY:Invented title 15 (other event)
+URL:https://example.org/invented/15/
+DTSTART;TZID=America/New_York:20261117T173000
+DTEND;TZID=America/New_York:20261117T190000
+DTSTAMP:20261019T150909Z
+CREATED:20260814T180327Z
+LAST-MODIFIED:20261019T150909Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-16@example.org
+SUMMARY:Invented title 16 (other event)
+URL:https://example.org/invented/16/
+DTSTART;TZID=America/New_York:20261117T183000
+DTEND;TZID=America/New_York:20261117T200000
+DTSTAMP:20261016T125606Z
+CREATED:20261016T125606Z
+LAST-MODIFIED:20261016T125606Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=America/New_York:20261118T070000
+DTEND;TZID=America/New_York:20261118T103000
+DTSTAMP:20250204T231722Z
+CREATED:20240917T224145Z
+LAST-MODIFIED:20250204T231722Z
+UID:10002015-1794985200-1794997800@rodephshalom.org
+SUMMARY:Breaking Bread on Broad Distribution
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+URL:https://rodephshalom.org/event/breaking-bread-on-broad-distribution-99/2026-11-18/
+LOCATION:Congregation Rodeph Shalom\, 615 North Broad Street\, Philadelphia\, PA\, 19123\, United States
+CATEGORIES:Social Justice
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-17@example.org
+SUMMARY:Invented title 17 (other event)
+URL:https://example.org/invented/17/
+DTSTART;TZID=America/New_York:20261118T163000
+DTEND;TZID=America/New_York:20261118T183000
+DTSTAMP:20260731T163828Z
+CREATED:20260731T163828Z
+LAST-MODIFIED:20260731T163828Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-18@example.org
+SUMMARY:Invented title 18 (other event)
+URL:https://example.org/invented/18/
+DTSTART;TZID=America/New_York:20261118T170000
+DTEND;TZID=America/New_York:20261118T183000
+DTSTAMP:20260902T123244Z
+CREATED:20260902T123244Z
+LAST-MODIFIED:20260902T123244Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-19@example.org
+SUMMARY:Invented title 19 (other event)
+URL:https://example.org/invented/19/
+DTSTART;TZID=America/New_York:20261118T180000
+DTEND;TZID=America/New_York:20261118T200000
+DTSTAMP:20261016T130043Z
+CREATED:20261016T130043Z
+LAST-MODIFIED:20261016T130043Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-20@example.org
+SUMMARY:Invented title 20 (other event)
+URL:https://example.org/invented/20/
+DTSTART;TZID=America/New_York:20261118T183000
+DTEND;TZID=America/New_York:20261118T200000
+DTSTAMP:20261105T133650Z
+CREATED:20261016T125835Z
+LAST-MODIFIED:20261105T133650Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-21@example.org
+SUMMARY:Invented title 21 (other event)
+URL:https://example.org/invented/21/
+DTSTART;TZID=America/New_York:20261118T190000
+DTEND;TZID=America/New_York:20261118T200000
+DTSTAMP:20261006T145524Z
+CREATED:20261006T145524Z
+LAST-MODIFIED:20261006T145524Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-22@example.org
+SUMMARY:Invented title 22 (other event)
+URL:https://example.org/invented/22/
+DTSTART;TZID=America/New_York:20261119T081000
+DTEND;TZID=America/New_York:20261119T084000
+DTSTAMP:20251202T172130Z
+CREATED:20251001T174623Z
+LAST-MODIFIED:20251202T172130Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-23@example.org
+SUMMARY:Invented title 23 (other event)
+URL:https://example.org/invented/23/
+DTSTART;TZID=America/New_York:20261119T190000
+DTEND;TZID=America/New_York:20261119T210000
+DTSTAMP:20260707T130756Z
+CREATED:20260707T130717Z
+LAST-MODIFIED:20260707T130756Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-24@example.org
+SUMMARY:Invented title 24 (other event)
+URL:https://example.org/invented/24/
+DTSTART;TZID=America/New_York:20261120T163000
+DTEND;TZID=America/New_York:20261120T173000
+DTSTAMP:20261001T184512Z
+CREATED:20260929T132227Z
+LAST-MODIFIED:20261001T184512Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-25@example.org
+SUMMARY:Invented title 25 (other event)
+URL:https://example.org/invented/25/
+DTSTART;TZID=America/New_York:20261120T170000
+DTEND;TZID=America/New_York:20261120T180000
+DTSTAMP:20261016T130226Z
+CREATED:20261016T130226Z
+LAST-MODIFIED:20261016T130226Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-26@example.org
+SUMMARY:Invented title 26 (other event)
+URL:https://example.org/invented/26/
+DTSTART;TZID=America/New_York:20261120T180000
+DTEND;TZID=America/New_York:20261120T193000
+DTSTAMP:20260908T135411Z
+CREATED:20260908T135411Z
+LAST-MODIFIED:20260908T135411Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-27@example.org
+SUMMARY:Invented title 27 (other event)
+URL:https://example.org/invented/27/
+DTSTART;TZID=America/New_York:20261121T091500
+DTEND;TZID=America/New_York:20261121T103000
+DTSTAMP:20260908T134324Z
+CREATED:20260908T134324Z
+LAST-MODIFIED:20260908T134324Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+BEGIN:VEVENT
+UID:invented-28@example.org
+SUMMARY:Invented title 28 (other event)
+URL:https://example.org/invented/28/
+DTSTART;TZID=America/New_York:20261121T104500
+DTEND;TZID=America/New_York:20261121T121500
+DTSTAMP:20250114T205521Z
+CREATED:20240917T225439Z
+LAST-MODIFIED:20250114T205521Z
+DESCRIPTION:(removed from this fixture; the scraper never reads descriptions)
+END:VEVENT
+END:VCALENDAR

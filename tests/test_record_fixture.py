@@ -283,6 +283,19 @@ def test_events_the_title_rule_drops_get_invented_titles():
     assert invented == 1
     for gone in ("A. Person", "funeral", "Chapel", "real-1"):
         assert gone not in out
-    assert "SUMMARY:Invented title 1 (not a volunteer event)" in out
+    assert "SUMMARY:Invented title 1 (other event)" in out
     assert "DTSTART:20261120T150000Z" in out  # the time stays
     assert "SUMMARY:Lunch Packing for Those in Need" in out and "real-2" in out
+
+
+def test_invented_titles_never_match_the_allow_list():
+    """An invented title must be dropped again by the same rule (a source may allow
+    "Volunteer", "Event" or "Other")."""
+    feed = (
+        "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:x\r\nSUMMARY:Gala\r\n"
+        "DTSTART:20261120T150000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    )
+    out, _ = record_fixture.invent_other_titles(feed, ["Volunteer", "Cleanup"])
+    assert "volunteer" not in out.casefold()
+    with pytest.raises(record_fixture.Refused, match="invented title would match"):
+        record_fixture.invent_other_titles(feed, ["Other"])
