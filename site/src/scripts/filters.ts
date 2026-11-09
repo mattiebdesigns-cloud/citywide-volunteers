@@ -3,6 +3,8 @@
 import { EMPTY_FILTERS, activeCount, matches, type CardFacts, type FilterState } from "../lib/filter-logic.ts";
 import { localParts } from "../lib/time.ts";
 import { readFilters, readSaved, writeFilters } from "./device.ts";
+import { searchMatches } from "../lib/search.ts";
+import { setupSearch } from "./search.ts";
 
 const panel = document.getElementById("filter-panel");
 const toggle = document.getElementById("filters-toggle") as HTMLButtonElement | null;
@@ -55,6 +57,8 @@ if (panel && toggle && list && countEl) {
   const pluralRules = new Intl.PluralRules(document.documentElement.lang);
 
   let state: FilterState = readFilters(EMPTY_FILTERS);
+  // The search box: its words stay in memory only, never in the stored filters.
+  const search = setupSearch(() => apply());
 
   function showState(): void {
     for (const field of selects) {
@@ -75,6 +79,7 @@ if (panel && toggle && list && countEl) {
     const flexible = state.kind === "flexible";
     for (const field of datedOnly) if (field !== dateField) field.hidden = flexible;
     if (dateField) dateField.hidden = flexible || state.day !== "pick_date";
+    search?.setKind(state.kind);
     // "Show shifts" / "Show opportunities" / "Show team activities".
     if (applyButton) {
       const label = flexible ? applyButton.dataset.labelFlexible : state.kind === "teams" ? applyButton.dataset.labelTeams : applyButton.dataset.labelDated;
@@ -98,9 +103,10 @@ if (panel && toggle && list && countEl) {
     const saved = readSaved();
     const now = Date.now();
     let shown = 0;
+    const query = search?.query() ?? "";
     for (const [li, facts] of cards) {
       const over = (overAt.get(li) ?? Infinity) < now; // built yesterday, already over today
-      const visible = !over && matches(facts, state, today, saved);
+      const visible = !over && matches(facts, state, today, saved) && searchMatches(li.dataset.search ?? "", query);
       li.hidden = !visible;
       if (visible) shown += 1;
     }
@@ -115,9 +121,11 @@ if (panel && toggle && list && countEl) {
       const name = kind === "flexible" ? "Flexible" : kind === "teams" ? "Teams" : "Dated";
       const main = noneEl.querySelector<HTMLElement>("[data-none-main]");
       const hint = noneEl.querySelector<HTMLElement>("[data-none-hint]");
-      if (main) main.textContent = noneEl.dataset[`${empty ? "empty" : "match"}${name}`] ?? "";
+      // Words were typed and nothing matches them: say it is the search.
+      const searching = !empty && query.trim() !== "";
+      if (main) main.textContent = (searching ? noneEl.dataset.searchNone : noneEl.dataset[`${empty ? "empty" : "match"}${name}`]) ?? "";
       if (hint) {
-        hint.textContent = noneEl.dataset[`hint${name}`] ?? "";
+        hint.textContent = (searching ? noneEl.dataset.searchHint : noneEl.dataset[`hint${name}`]) ?? "";
         hint.hidden = empty;
       }
     }

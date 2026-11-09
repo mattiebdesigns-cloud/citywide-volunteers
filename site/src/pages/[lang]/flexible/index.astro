@@ -8,11 +8,12 @@
  */
 import ResultsHeading from "../../../components/ResultsHeading.astro";
 import SharePanel from "../../../components/SharePanel.astro";
+import SearchBox from "../../../components/SearchBox.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import { placeSpoken, placeText } from "../../../lib/words.ts";
+import { cardSearchText, placeSpoken, placeText } from "../../../lib/words.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -45,6 +46,7 @@ function facts(o: (typeof opportunities)[number]) {
       any ? (
         <>
           <p id="external-note" class="muted">{t("listing.external_note")}</p>
+          <div class="results__bar">
           <p
             id="results-count"
             class="results__count"
@@ -54,13 +56,23 @@ function facts(o: (typeof opportunities)[number]) {
           >
             {tr.plural("flexible.count", opportunities.length)}
           </p>
-          <div id="results-none" class="results__none" hidden>
-            <p>{t("flexible.none_match")}</p>
-            <p class="muted">{t("flexible.none_match_hint")}</p>
+            <SearchBox lang={lang} kind="flexible" />
+          </div>
+          <div
+            id="results-none"
+            class="results__none"
+            hidden
+            data-match={t("flexible.none_match")}
+            data-hint={t("flexible.none_match_hint")}
+            data-search-none={t("search.none")}
+            data-search-hint={t("search.none_hint")}
+          >
+            <p data-none-main>{t("flexible.none_match")}</p>
+            <p class="muted" data-none-hint>{t("flexible.none_match_hint")}</p>
           </div>
           <ul id="listing-list" class="stack listing-list">
             {opportunities.map((o) => (
-              <li data-id={o.id} data-section={o.section ?? ""} data-cause={o.cause ?? ""} data-join={o.join_method}>
+              <li data-id={o.id} data-search={cardSearchText(tr, o, settings)} data-section={o.section ?? ""} data-cause={o.cause ?? ""} data-join={o.join_method}>
                 <ListingCard
                   id={o.id}
                   href={o.signup_url}

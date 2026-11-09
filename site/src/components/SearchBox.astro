@@ -1,0 +1,119 @@
+---
+/**
+ * Search box next to the results count (owner, 2026-11-08). Matches as you
+ * type, in the browser only: the words are never sent, never stored, never
+ * put in the address. There is no form and the field has no name, so
+ * pressing Enter submits nothing. Hidden until the page's filter script
+ * runs, because without JavaScript it could not work.
+ *
+ * The label follows the Kind filter on the home page ("Search shifts",
+ * "Search opportunities", "Search team activities"); pass one label on
+ * pages with a single kind.
+ */
+import Icon from "./ui/Icon.astro";
+import { translator } from "../lib/site.ts";
+
+interface Props {
+  lang: string;
+  /** "dated" (follows Kind), "flexible" or "teams". */
+  kind?: "dated" | "flexible" | "teams";
+}
+
+const { lang, kind = "dated" } = Astro.props;
+const tr = translator(lang);
+const t = tr.t;
+const labels = {
+  dated: t("search.label_dated"),
+  flexible: t("search.label_flexible"),
+  teams: t("search.label_teams"),
+};
+---
+
+<div class="search" data-search hidden>
+  <label class="sr-only" for="results-search" data-search-label>{labels[kind]}</label>
+  <input
+    id="results-search"
+    class="search__input"
+    type="search"
+    autocomplete="off"
+    spellcheck="false"
+    enterkeyhint="search"
+    placeholder={labels[kind]}
+    data-label-dated={labels.dated}
+    data-label-flexible={labels.flexible}
+    data-label-teams={labels.teams}
+    data-fixed-kind={kind === "dated" ? undefined : kind}
+  />
+  <button type="button" class="search__clear" data-search-clear hidden>
+    <Icon name="close" />
+    <span class="sr-only">{t("search.clear")}</span>
+  </button>
+</div>
+
+<style>
+  /* The count and the search on one row; on phones the search wraps under. */
+  :global(.results__bar) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+    margin-block: var(--space-2) var(--space-3);
+  }
+  :global(.results__bar .results__count) {
+    margin: 0;
+  }
+  .search {
+    position: relative;
+    flex: 1 1 15rem;
+    max-width: 22rem;
+    min-width: 0;
+  }
+  .search[hidden] {
+    display: none;
+  }
+  .search__input {
+    width: 100%;
+    min-height: var(--tap);
+    padding: var(--space-2) calc(var(--tap) + var(--space-1)) var(--space-2) var(--space-3);
+    border: var(--border) solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: var(--text-body);
+  }
+  .search__input::placeholder {
+    color: var(--color-ink-muted);
+    opacity: 1;
+  }
+  .search__input:hover {
+    border-color: var(--color-ink);
+  }
+  /* Our own clear button, the same in every browser. */
+  .search__input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .search__clear {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    min-height: var(--tap);
+    border: 0;
+    background: none;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .search__clear[hidden] {
+    display: none;
+  }
+  /* Phones: under the count, full width. */
+  @media (max-width: 30rem) {
+    .search {
+      flex-basis: 100%;
+      max-width: none;
+    }
+  }
+</style>

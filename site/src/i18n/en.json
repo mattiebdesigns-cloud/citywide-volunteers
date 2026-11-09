@@ -482,6 +482,14 @@
     "file_name": "volunteer-opportunity.png",
     "picture_failed": "Could not make the picture."
   },
+  "search": {
+    "label_dated": "Search shifts",
+    "label_flexible": "Search opportunities",
+    "label_teams": "Search team activities",
+    "clear": "Clear search",
+    "none": "No results for this search.",
+    "none_hint": "Try other words, or clear the search."
+  },
   "og": {
     "headline": "Volunteer shifts across {city}",
     "tagline": "Find one near you.",

@@ -25,6 +25,7 @@ import {
 import { buildIcs, escapeText, foldLine } from "../src/lib/ics.ts";
 import { pruneSaved } from "../src/lib/saved.ts";
 import { aboutCounts } from "../src/lib/about.ts";
+import { normalizeSearch, searchMatches } from "../src/lib/search.ts";
 import { SHARE_TARGETS, STORY_SAFE_BOTTOM, STORY_SAFE_TOP, fitText, placePicture, shareLinks, wrapLines } from "../src/lib/share.ts";
 import { createI18n } from "../src/i18n/index.ts";
 import { placeSpoken, placeText, sectionName, whereLines } from "../src/lib/words.ts";
@@ -438,4 +439,23 @@ test("picture: every word stays out of the top and bottom ~250 px Instagram cove
   }
   // A card too tall says so, so the picture is drawn again with smaller text.
   assert.equal(placePicture(1400).fits, false);
+});
+
+// Search (owner, 2026-11-08).
+
+test("search: ignores case and accents, needs every word, empty matches all", () => {
+  assert.equal(normalizeSearch("  Café   ÁRBOL niño "), "cafe arbol nino");
+  const card = "cafe comunitario en el norte de filadelfia comida inscribirse antes";
+  assert.ok(searchMatches(card, "café"));
+  assert.ok(searchMatches(card, "CAFE"));
+  assert.ok(searchMatches(card, "Filadelfia comida"));
+  assert.ok(!searchMatches(card, "filadelfia parques"), "every word must match");
+  assert.ok(searchMatches(card, ""));
+  assert.ok(searchMatches(card, "   "));
+  assert.ok(searchMatches("Árbol", "arbol") && searchMatches("arbol", "Árbol"));
+});
+
+test("search words are never part of the stored filters", () => {
+  assert.ok(!("search" in EMPTY_FILTERS) && !("query" in EMPTY_FILTERS));
+  assert.ok(!("search" in EMPTY_FLEXIBLE_FILTERS));
 });

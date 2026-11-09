@@ -1,5 +1,6 @@
 // The words shown for one listing, in one language. Every word comes from the
 // translation files (PROJECT.md 5); organization text goes in as placeholders.
+import { searchText } from "./search.ts";
 import type { Translator } from "../i18n/index.ts";
 import { spotsStatus } from "./prepare.ts";
 import type { PreparedListing, SiteSettings } from "./types.ts";
@@ -111,4 +112,23 @@ export function splitAround(text: string, name: string): [string, string] {
   const mark = `{${name}}`;
   const at = text.indexOf(mark);
   return at === -1 ? [`${text} `, ""] : [text.slice(0, at), text.slice(at + mark.length)];
+}
+
+/**
+ * What a card is searched by, in the page's language (owner, 2026-11-08):
+ * title, organization, neighborhood, section, cause and how to join.
+ */
+export function cardSearchText(
+  tr: Translator,
+  e: Place & Pick<PreparedListing, "title" | "org_name" | "cause" | "join_method">,
+  settings: Pick<SiteSettings, "sections">,
+): string {
+  return searchText([
+    e.title,
+    e.org_name,
+    e.neighborhood_or_town,
+    sectionName(tr, settings, e.section),
+    tr.causeName(e.cause),
+    tr.t(`filters.join.${e.join_method}`),
+  ]);
 }

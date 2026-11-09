@@ -9,6 +9,8 @@ import {
   type FlexibleFilterState,
 } from "../lib/filter-logic.ts";
 import { FLEXIBLE_FILTERS_KEY, readFilters, writeFilters } from "./device.ts";
+import { searchMatches } from "../lib/search.ts";
+import { setupSearch } from "./search.ts";
 
 const panel = document.getElementById("filter-panel");
 const toggle = document.getElementById("filters-toggle") as HTMLButtonElement | null;
@@ -29,6 +31,8 @@ if (panel && toggle && list && countEl) {
   const number = new Intl.NumberFormat(lang);
 
   let state: FlexibleFilterState = readFilters(EMPTY_FLEXIBLE_FILTERS, storageKey);
+  // The search box: its words stay in memory only, never in the stored filters.
+  const search = setupSearch(() => apply());
 
   function showState(): void {
     for (const field of selects) {
@@ -50,16 +54,25 @@ if (panel && toggle && list && countEl) {
 
   function apply(): void {
     let shown = 0;
+    const query = search?.query() ?? "";
     const now = Date.now();
     for (const [li, facts] of cards) {
       // A dated shift that ended after the page was built is hidden, as on the home page.
       const over = Number(li.dataset.overAt ?? Infinity) < now;
-      const visible = !over && flexibleMatches(facts, state);
+      const visible = !over && flexibleMatches(facts, state) && searchMatches(li.dataset.search ?? "", query);
       li.hidden = !visible;
       if (visible) shown += 1;
     }
     countEl!.textContent = plural(countEl!, shown);
-    if (noneEl) noneEl.hidden = shown > 0;
+    if (noneEl) {
+      noneEl.hidden = shown > 0;
+      // Words typed and nothing matches: say it is the search.
+      const searching = query.trim() !== "";
+      const main = noneEl.querySelector<HTMLElement>("[data-none-main]");
+      const hint = noneEl.querySelector<HTMLElement>("[data-none-hint]");
+      if (main) main.textContent = (searching ? noneEl.dataset.searchNone : noneEl.dataset.match) ?? main.textContent;
+      if (hint) hint.textContent = (searching ? noneEl.dataset.searchHint : noneEl.dataset.hint) ?? hint.textContent;
+    }
     const active = flexibleActiveCount(state);
     if (countBadge) {
       countBadge.hidden = active === 0;

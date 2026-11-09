@@ -886,3 +886,57 @@ test("the saved share picture has a neutral file name, never the title (owner, Q
     b.done();
   }
 });
+
+// ---- Search (owner, 2026-11-08) ----
+
+test("search box beside the count on home, Flexible and Teams; every card has its search words in the page's language", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      for (const [page, label] of [
+        [`${lang}/index.html`, "search.label_dated"],
+        [`${lang}/flexible/index.html`, "search.label_flexible"],
+        [`${lang}/teams/index.html`, "search.label_teams"],
+      ]) {
+        const html = b.read(page);
+        const bar = html.slice(html.indexOf('<div class="results__bar"'), html.indexOf('id="results-none"'));
+        assert.ok(bar.indexOf('id="results-count"') < bar.indexOf('id="results-search"'), `${page}: count, then search`);
+        const input = bar.match(/<input[^>]*id="results-search"[^>]*>/)![0];
+        assert.match(input, /type="search"/);
+        assert.match(input, /autocomplete="off"/);
+        assert.doesNotMatch(input, /\sname=/, "no name: nothing to submit");
+        assert.match(bar, new RegExp(`<label[^>]*for="results-search"[^>]*>${tr.t(label)}</label>`));
+        assert.match(bar, /<div class="search"[^>]*data-search[^>]*hidden/, "hidden until the script runs");
+        assert.ok(decode(bar).includes(tr.t("search.clear")), "the clear button has a name");
+        assert.doesNotMatch(html, /<form/);
+      }
+      // Each card's search words: title, organization, neighborhood, cause, how to join, in this language.
+      const home = b.read(`${lang}/index.html`);
+      const e = sample.events[0];
+      const li = home.match(new RegExp(`<li data-id="${e.id}"[^>]*>`))![0];
+      const words = decode(li.match(/data-search="([^"]*)"/)![1]);
+      const norm = (x: string) => x.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+      for (const part of [e.title, e.org_name, e.neighborhood_or_town!, tr.causeName(e.cause), tr.t(`filters.join.${e.join_method}`)]) {
+        assert.ok(words.includes(norm(part)), `${lang}: ${part}`);
+      }
+      assert.ok(decode(home).includes(`data-search-none="${tr.t("search.none")}"`));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("search script sends nothing, stores nothing, never changes the address", () => {
+  for (const file of ["src/scripts/search.ts", "src/lib/search.ts"]) {
+    const code = readFileSync(join(site, file), "utf8").replace(/\/\/.*$/gm, "");
+    for (const banned of ["fetch(", "XMLHttpRequest", "sendBeacon", "localStorage", "sessionStorage", "indexedDB", "cookie", "pushState", "replaceState", "location"]) {
+      assert.ok(!code.includes(banned), `${file}: no ${banned}`);
+    }
+  }
+  // The filter scripts store only the filters, never the search words.
+  for (const file of ["src/scripts/filters.ts", "src/scripts/flexible-filters.ts"]) {
+    const code = readFileSync(join(site, file), "utf8");
+    for (const call of code.matchAll(/writeFilters\(([^)]*)\)/g)) assert.doesNotMatch(call[1], /search|query/, `${file}: ${call[0]}`);
+  }
+});

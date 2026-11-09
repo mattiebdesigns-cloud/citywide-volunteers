@@ -482,6 +482,14 @@
     "file_name": "oportunidad-de-voluntariado.png",
     "picture_failed": "No se pudo crear la imagen."
   },
+  "search": {
+    "label_dated": "Buscar turnos",
+    "label_flexible": "Buscar oportunidades",
+    "label_teams": "Buscar actividades en equipo",
+    "clear": "Borrar la búsqueda",
+    "none": "No hay resultados para esta búsqueda.",
+    "none_hint": "Pruebe con otras palabras o borre la búsqueda."
+  },
   "og": {
     "headline": "Turnos de voluntariado en todo {city}",
     "tagline": "Encuentre uno cerca de usted.",

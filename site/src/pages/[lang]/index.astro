@@ -10,11 +10,12 @@
  */
 import ResultsHeading from "../../components/ResultsHeading.astro";
 import SharePanel from "../../components/SharePanel.astro";
+import SearchBox from "../../components/SearchBox.astro";
 import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
 import { languagePaths, paths, siteData, translator } from "../../lib/site.ts";
-import { businessLabel, joinLabel, placeSpoken, placeText, spotsLabel, typeLabel, whenText } from "../../lib/words.ts";
+import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, spotsLabel, typeLabel, whenText } from "../../lib/words.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -41,6 +42,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
+    <div class="results__bar">
     <p
       id="results-count"
       class="results__count"
@@ -54,6 +56,8 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
     >
       {tr.plural("results.count", listings.length)}
     </p>
+    <SearchBox lang={lang} />
+    </div>
     <div
       id="results-none"
       class="results__none"
@@ -67,6 +71,8 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
       data-empty-teams={t("teams.none")}
       data-match-teams={t("teams.none_match")}
       data-hint-teams={t("flexible.none_match_hint")}
+      data-search-none={t("search.none")}
+      data-search-hint={t("search.none_hint")}
     >
       <p data-none-main>{listings.length > 0 ? t("results.none") : t("results.empty")}</p>
       <p class="muted" data-none-hint hidden={listings.length === 0}>{t("results.none_hint")}</p>
@@ -92,6 +98,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
             data-activity={(e.activity ?? []).join(" ")}
             data-team={String(e.team_required === true)}
             data-kind="dated"
+            data-search={cardSearchText(tr, e, settings)}
             data-over-at={e.overAt}
           >
             <ListingCard
@@ -126,6 +133,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
           <li
             data-id={o.id}
             data-kind="flexible"
+            data-search={cardSearchText(tr, o, settings)}
             data-area={o.area}
             data-cause={o.cause ?? ""}
             data-type={o.type}
