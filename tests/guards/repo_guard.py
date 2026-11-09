@@ -8,7 +8,7 @@ Two checks:
 1. Public-repo leak check. Every path in the public repo, now and anywhere
    in its history, must be on the public repo's allow list (its CLAUDE.md
    "What belongs here"). As a second layer, a block list names the private
-   folders (config/, supabase/, support/, outreach/, web/ and more), private
+   folders (config/, supabase/, support/, outreach/, web/, metrics/ and more), private
    source lists and .env files, wherever they turn up. When the private repo
    is available it also compares contents: no file of the private repo may
    have an exact copy anywhere in the public repo's history, except the few
@@ -59,7 +59,7 @@ PUBLIC_ALLOWED_PATTERNS = (re.compile(r"^docs/[^/]+\.schema\.json$"),)
 
 # Layer 2: the block list, checked first, so it wins inside allowed folders.
 # Folders that exist only in the private repo (PROJECT.md 3 and 13, rule 7).
-PRIVATE_TOP_FOLDERS = ("config", "supabase", "support", "outreach", "web")
+PRIVATE_TOP_FOLDERS = ("config", "supabase", "support", "outreach", "web", "metrics")
 # Private paths below the top level. docs/sources/ is the per-source research,
 # which together is a source list. Campaign fixtures stay private (PROJECT.md 8).
 PRIVATE_SUB_FOLDERS = (
