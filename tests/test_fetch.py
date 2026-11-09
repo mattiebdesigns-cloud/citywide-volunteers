@@ -6,7 +6,10 @@ fake clock records every wait.
 
 from __future__ import annotations
 
+import builtins
 import json
+import ssl
+from pathlib import Path
 
 import pytest
 
@@ -961,3 +964,91 @@ def test_short_page_with_cloudflare_inline_detection_loader_is_fetched():
     assert _fetches(page)
     # Another inline challenge script on the same short page still counts.
     assert not _fetches(page.replace(b"</body>", b"<script>var challenge=solve();</script></body>"))
+
+
+# -- certificates (decision 0030, amended) -------------------------------------
+# No network: these look at the SSL context the real transport would use.
+
+
+@pytest.fixture
+def fresh_certificates():
+    fetch_module.certificates.cache_clear()
+    yield fetch_module.certificates
+    fetch_module.certificates.cache_clear()
+
+
+def test_certificates_come_from_the_system_store_via_truststore(fresh_certificates):
+    truststore = pytest.importorskip("truststore")
+    found = fresh_certificates()
+    assert found.system_store is True
+    assert isinstance(found.context, truststore.SSLContext)
+    assert "own certificate store" in found.note
+
+
+def test_certificate_checking_is_always_required(fresh_certificates):
+    context = fresh_certificates().context
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert context.check_hostname is True
+
+
+def test_without_truststore_it_falls_back_to_python_checks_and_says_so(
+    fresh_certificates, monkeypatch
+):
+    real_import = builtins.__import__
+
+    def no_truststore(name, *args, **kwargs):
+        if name == "truststore":
+            raise ImportError("not installed")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_truststore)
+    found = fresh_certificates()
+    assert found.system_store is False
+    assert isinstance(found.context, ssl.SSLContext)
+    assert found.context.verify_mode == ssl.CERT_REQUIRED
+    assert found.context.check_hostname is True
+    assert "Python's own certificate list" in found.note
+
+
+def test_when_the_system_store_cannot_be_used_it_falls_back(fresh_certificates, monkeypatch):
+    truststore = pytest.importorskip("truststore")
+
+    def broken(*args, **kwargs):
+        raise OSError("no certificate store on this system")
+
+    monkeypatch.setattr(truststore, "SSLContext", broken)
+    found = fresh_certificates()
+    assert found.system_store is False
+    assert found.context.verify_mode == ssl.CERT_REQUIRED
+    assert found.context.check_hostname is True
+
+
+def test_the_real_transport_uses_these_certificate_checks(fresh_certificates, monkeypatch):
+    seen = []
+    real_build = fetch_module.urllib.request.build_opener
+
+    def spy(*handlers):
+        seen.extend(handlers)
+        return real_build(*handlers)
+
+    def no_network(*args, **kwargs):
+        raise OSError("tests never touch the network")
+
+    monkeypatch.setattr(fetch_module.urllib.request, "build_opener", spy)
+    monkeypatch.setattr(fetch_module.urllib.request.OpenerDirector, "open", no_network)
+    with pytest.raises(FetchError):
+        fetch_module.urllib_transport("https://org.example.org/", {}, 5, 1000)
+    https = [h for h in seen if isinstance(h, fetch_module.urllib.request.HTTPSHandler)]
+    assert len(https) == 1
+    assert https[0]._context is fresh_certificates().context
+
+
+def test_no_code_turns_certificate_checking_off():
+    source = Path(fetch_module.__file__).read_text(encoding="utf-8")
+    for forbidden in (
+        "verify=False",
+        "CERT_NONE",
+        "check_hostname = False",
+        "_create_unverified_context",
+    ):
+        assert forbidden not in source, forbidden

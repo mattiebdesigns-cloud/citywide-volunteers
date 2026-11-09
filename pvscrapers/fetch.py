@@ -50,7 +50,17 @@ failed (an HTTP error, the network); 2 a usage or settings problem; 3 robots.txt
 disallows an address (nothing fetched from it); 4 a site turned the bot away
 (robots.txt or a page answered 401, 403, 429 or a challenge; nothing more is
 asked of that site). With several addresses, the highest of these is returned. Reading YAML settings needs PyYAML, which the private repo's environment
-has; this package itself still uses the standard library only.
+has.
+
+Certificates (decision 0030, amended): every https certificate is fully
+checked, always. The checks use the computer's own certificate store through
+the `truststore` library (MIT), the package's one dependency, so a site that
+leaves out part of its certificate chain can be read where the operating
+system completes it (macOS and Windows do). A wrong name, an expired or a
+self-signed certificate still fails. Where truststore is missing or cannot
+work, the fetcher uses Python's own certificate checks instead (just as strict,
+but they cannot complete a broken chain) and says so on screen. Checking is
+never turned off.
 """
 
 from __future__ import annotations
@@ -58,6 +68,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import ssl
 import sys
 import time
 import urllib.error
@@ -66,6 +77,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.message import Message
+from functools import cache
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -140,8 +152,53 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None  # the fetcher follows redirects itself, checking robots.txt each time
 
 
+@dataclass(frozen=True)
+class Certificates:
+    """How https certificates are checked this run (decision 0030, amended)."""
+
+    context: ssl.SSLContext
+    system_store: bool  # True: the operating system's store, through truststore
+    note: str  # one line for the screen
+
+
+def _require_full_verification(context: ssl.SSLContext) -> ssl.SSLContext:
+    """Every certificate checked, and its name matched to the site. Never relaxed."""
+    context.verify_mode = ssl.CERT_REQUIRED
+    context.check_hostname = True
+    if context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname:
+        raise RuntimeError("certificate checking could not be switched on")
+    return context
+
+
+@cache
+def certificates() -> Certificates:
+    """The certificate checks every request uses: the operating system's store
+    through truststore where it works, else Python's own (equally strict)."""
+    try:
+        import truststore  # MIT; uses macOS, Windows or Linux's own certificate store
+
+        context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except (ImportError, OSError, RuntimeError, ValueError, AttributeError) as error:
+        # truststore missing, or this system's certificate store cannot be used
+        return Certificates(
+            context=_require_full_verification(ssl.create_default_context()),
+            system_store=False,
+            note=(
+                "Certificates: checked with Python's own certificate list "
+                f"(the computer's store is not available here: {type(error).__name__}). "
+                "A site that leaves out part of its certificate chain will fail."
+            ),
+        )
+    return Certificates(
+        context=_require_full_verification(context),
+        system_store=True,
+        note="Certificates: checked with this computer's own certificate store (truststore).",
+    )
+
+
 def urllib_transport(url: str, headers: dict[str, str], timeout: float, max_bytes: int) -> Response:
-    opener = urllib.request.build_opener(_NoRedirect)
+    https = urllib.request.HTTPSHandler(context=certificates().context)
+    opener = urllib.request.build_opener(_NoRedirect, https)
     request = urllib.request.Request(url, headers=headers, method="GET")
     try:
         response = opener.open(request, timeout=timeout)
@@ -607,6 +664,7 @@ def main(
     saved = _read_state(state_path)
     fetcher.carry_over(saved)
     print(f"User-Agent: {fetcher.user_agent}", file=err)
+    print(certificates().note, file=err)
     worst = EXIT_OK
     try:
         for index, url in enumerate(args.urls, start=1):

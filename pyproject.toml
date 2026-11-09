@@ -5,8 +5,13 @@ description = "Scrapers and shared event format for a city's volunteer calendar.
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
-# pvscrapers uses only the Python standard library (pv-scrapers).
-dependencies = []
+# pvscrapers uses the Python standard library plus one package (pv-scrapers).
+dependencies = [
+    # MIT. Checks https certificates with the computer's own certificate store
+    # (decision 0030, amended). Optional at run time: without it the fetcher
+    # falls back to Python's own certificate checks and says so.
+    "truststore>=0.10",
+]
 
 # Test and lint tools (pv-testing). All MIT licensed.
 [dependency-groups]
