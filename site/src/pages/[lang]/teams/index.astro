@@ -16,7 +16,7 @@ import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
 import { TEAMS_FILTERS_KEY } from "../../../scripts/device.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import { cardSearchText, joinLabel, placeSpoken, placeText, whenText } from "../../../lib/words.ts";
+import { cardSearchText, joinLabel, placeSpoken, placeText, requirementFacts, whenText } from "../../../lib/words.ts";
 import type { Opportunity, PreparedListing } from "../../../lib/types.ts";
 
 export const getStaticPaths = languagePaths;
@@ -38,6 +38,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
   if (o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
   if (o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
+  out.push(...requirementFacts(tr, o));
   if ("commitment" in o && o.commitment) {
     out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
   }

@@ -102,6 +102,24 @@ export function spotsLabel(
     : { label: tr.plural("listing.spots_left_on", status.count, { date: tr.formatDate(e.last_seen_at) }) };
 }
 
+/** One short fact line on a card; `{name}` in the template is where `value` goes. */
+export type CardFact = { template: string; name: string; value: string; lang?: string };
+
+/**
+ * Training and background-check lines for a card, shown only when the
+ * organization's page says they are required (owner Q81, 2026-11-09). The
+ * same facts the listing page shows, so a card never hides a requirement.
+ */
+export function requirementFacts(
+  tr: Translator,
+  o: Pick<PreparedListing, "training_required" | "clearances_required">,
+): CardFact[] {
+  const out: CardFact[] = [];
+  if (o.training_required === true) out.push({ template: tr.t("listing.training_required"), name: "", value: "" });
+  if (o.clearances_required === true) out.push({ template: tr.t("listing.clearances_required"), name: "", value: "" });
+  return out;
+}
+
 /**
  * Splits a translated sentence around one placeholder, so the page can put
  * the value in its own element, e.g. an organization's name marked with its

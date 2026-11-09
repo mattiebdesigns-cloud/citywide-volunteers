@@ -15,7 +15,7 @@ import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
 import { languagePaths, paths, siteData, translator } from "../../lib/site.ts";
-import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, spotsLabel, typeLabel, whenText } from "../../lib/words.ts";
+import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, requirementFacts, spotsLabel, typeLabel, whenText } from "../../lib/words.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -31,6 +31,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
   if (o.team_required && o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
   if (o.team_required && o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
+  out.push(...requirementFacts(tr, o));
   if (o.commitment) out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
   return out;
 }

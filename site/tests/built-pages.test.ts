@@ -426,6 +426,52 @@ test("Flexible cards: long names and long time-asked text wrap; nothing is cut o
   assert.doesNotMatch(rule[1], /nowrap|ellipsis|line-clamp/);
 });
 
+test("Flexible, Teams and home cards: background-check and training lines show when required (owner Q81)", () => {
+  const file = structuredClone(oppSample);
+  const team = file.opportunities.find((o) => o.team_required === true)!;
+  const plain = file.opportunities.find((o) => o !== team)!;
+  for (const o of file.opportunities) {
+    o.clearances_required = false;
+    o.training_required = false;
+  }
+  team.clearances_required = true;
+  team.training_required = true;
+  plain.clearances_required = true;
+  const [path, done] = oppFile(file);
+  // A dated Volunteer Team listing too, for the Teams page.
+  let datedId = "";
+  const b = build({ PV_OPPORTUNITIES: path }, (events) => {
+    const d = events.events.find((e) => e.team_required === true)!;
+    d.clearances_required = true;
+    d.training_required = false;
+    datedId = d.id;
+  });
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const checks = tr.t("listing.clearances_required");
+      const training = tr.t("listing.training_required");
+      const flexible = b.read(`${lang}/flexible/index.html`);
+      const home = b.read(`${lang}/index.html`);
+      for (const html of [flexible, home]) {
+        assert.ok(text(oppCard(html, plain.id)).includes(checks), `${plain.id}: background checks`);
+        assert.ok(!text(oppCard(html, plain.id)).includes(training), `${plain.id}: no training line when not required`);
+        assert.ok(text(oppCard(html, team.id)).includes(checks) && text(oppCard(html, team.id)).includes(training));
+        for (const o of file.opportunities.filter((x) => x !== plain && x !== team)) {
+          assert.ok(!text(oppCard(html, o.id)).includes(checks), `${o.id}: no background-check line when not required`);
+        }
+      }
+      const teams = b.read(`${lang}/teams/index.html`);
+      assert.ok(text(oppCard(teams, team.id)).includes(checks) && text(oppCard(teams, team.id)).includes(training));
+      assert.ok(text(oppCard(teams, datedId)).includes(checks), "dated team card: background checks");
+      assert.ok(!text(oppCard(teams, datedId)).includes(training), "dated team card: no training line");
+    }
+  } finally {
+    b.done();
+    done();
+  }
+});
+
 // ---- Volunteer Teams (decision 0020) ----
 
 test("Volunteer Teams page: dated and arranged team activities, each with the tag, size, task, host, place and join", () => {

@@ -13,7 +13,7 @@ import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import { cardSearchText, placeSpoken, placeText } from "../../../lib/words.ts";
+import { cardSearchText, placeSpoken, placeText, requirementFacts, type CardFact } from "../../../lib/words.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -25,8 +25,9 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
 const any = opportunities.length > 0;
 
 function facts(o: (typeof opportunities)[number]) {
-  const out: Array<{ template: string; name: string; value: string; lang?: string }> = [];
+  const out: CardFact[] = [];
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
+  out.push(...requirementFacts(tr, o));
   if (o.commitment) {
     out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
   }
