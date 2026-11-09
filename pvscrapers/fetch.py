@@ -131,7 +131,42 @@ class RobotsCheck:
 
     url: str  # the robots.txt address finally read (after redirects)
     read_at: datetime  # wall-clock time, UTC
-    status: int  # 200: rules found; 4xx: no robots.txt, so everything is allowed (RFC 9309)
+    status: int  # 200: a file came back; 4xx: no robots.txt, so everything is allowed (RFC 9309)
+    # What the answer held, in one word (see ROBOTS_FOUND): "rules", "web_page",
+    # "empty" or "missing". Report only; the rules obeyed are the same either way.
+    found: str = "rules"
+
+    @property
+    def summary(self) -> str:
+        """What robots.txt held, in plain words, for the command and the run report."""
+        return ROBOTS_FOUND[self.found]
+
+
+# What a robots.txt answer held, for the run report. Only "rules" means real
+# robots.txt lines were read; every other answer allows everything (RFC 9309).
+ROBOTS_FOUND = {
+    "rules": "rules found",
+    "web_page": "no rules (answered with a web page, not rules), so all allowed",
+    "empty": "no rules (the file holds no robots.txt lines), so all allowed",
+    "missing": "no robots.txt, so all allowed",
+}
+_HTML_START = re.compile(
+    rb"\A(?:\xef\xbb\xbf)?\s*<(?:!doctype\s+html|html|head|body|!--)", re.IGNORECASE
+)
+
+
+def _robots_found(response: Response, rules: RobotsRules) -> str:
+    """Name what a robots.txt answer held. Changes nothing the fetcher obeys."""
+    if response.status != 200:
+        return "missing"
+    if rules.lines_read:
+        return "rules"
+    content_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type in ("text/html", "application/xhtml+xml") or _HTML_START.match(
+        response.body[:512]
+    ):
+        return "web_page"
+    return "empty"
 
 
 # A transport sends one GET request and returns the response without following
@@ -464,7 +499,9 @@ class Fetcher:
         else:
             raise FetchError(url, f"robots.txt could not be read (HTTP {response.status})")
         self._robots[origin] = rules
-        self._robots_checked[origin] = RobotsCheck(url, self.wall_clock(), response.status)
+        self._robots_checked[origin] = RobotsCheck(
+            url, self.wall_clock(), response.status, _robots_found(response, rules)
+        )
         self._carried_delay.pop(origin, None)  # this run's robots.txt decides from now on
         return rules
 
@@ -589,6 +626,7 @@ def fetch_record(fetcher: Fetcher, asked: str, response: Response, crawl_delay: 
             "url": check.url if check else None,
             "read_at": check.read_at.isoformat(timespec="seconds") if check else None,
             "status": check.status if check else None,
+            "found": check.found if check else None,
             "verdict": "allowed",  # a disallowed address is never fetched
         },
         "delay_seconds": fetcher.delay_seconds(response.url, extra_delay_seconds=crawl_delay),
@@ -698,10 +736,9 @@ def _fetch_one(fetcher: Fetcher, url: str, index: int, args: argparse.Namespace)
 
     check = fetcher.robots_check(response.url)
     if check is not None:
-        found = "rules found" if check.status == 200 else "none, so all allowed"
         print(
             f"robots.txt: {check.url} read {check.read_at.isoformat(timespec='seconds')} "
-            f"(HTTP {check.status}, {found}); delay {fetcher.delay_seconds(response.url):g} s",
+            f"(HTTP {check.status}, {check.summary}); delay {fetcher.delay_seconds(response.url):g} s",
             file=err,
         )
     if args.out_dir:

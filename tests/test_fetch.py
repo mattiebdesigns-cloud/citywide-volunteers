@@ -490,7 +490,7 @@ def test_command_reads_contact_from_settings(tmp_path, capsys):
     )
     assert code == 0
     assert CONTACT in site.requests[0][1]["User-Agent"]
-    assert "HTTP 404, none, so all allowed" in shown.err
+    assert "HTTP 404, no robots.txt, so all allowed" in shown.err
 
 
 def test_command_reads_yaml_settings_when_pyyaml_is_there(tmp_path, capsys):
@@ -781,6 +781,7 @@ def test_saved_page_gets_a_fetch_record(tmp_path):
     assert record["url"] == PAGE and record["final_url"] == PAGE2 and record["status"] == 200
     assert record["bot"] == f"{BOT_NAME}/{__version__}"
     assert record["robots_txt"]["status"] == 200 and record["robots_txt"]["verdict"] == "allowed"
+    assert record["robots_txt"]["found"] == "rules"
     assert record["delay_seconds"] == 5.0 and record["source_crawl_delay_seconds"] == 5.0
     assert clock.waits == [5.0, 5.0]  # the source's own delay was kept
     assert record["fetched_at"] == fetch_module._iso(clock.now)
@@ -1052,3 +1053,76 @@ def test_no_code_turns_certificate_checking_off():
         "_create_unverified_context",
     ):
         assert forbidden not in source, forbidden
+
+
+# -- what robots.txt held, said plainly (licence gate follow-up, 2026-11-09) ----
+# "rules found" only when real robots.txt lines were read. A robots.txt that
+# redirects to a web page (a real site sends /robots.txt to a search page) or is
+# empty holds no rules: everything is allowed, exactly as before (RFC 9309).
+
+SEARCH = "https://org.example.org/search.aspx"
+HTML_PAGE = b"<!DOCTYPE html>\n<html><head><title>Search</title></head><body>Hi</body></html>"
+
+
+@pytest.mark.parametrize(
+    ("answer", "found"),
+    [
+        ((200, {"content-type": "text/plain"}, b"User-agent: *\nDisallow: /x/\n"), "rules"),
+        ((200, {}, b"Sitemap: https://org.example.org/sitemap.xml\n"), "rules"),
+        ((200, {"content-type": "text/html; charset=utf-8"}, HTML_PAGE), "web_page"),
+        ((200, {}, b"\xef\xbb\xbf  \n<html><body>Not here</body></html>"), "web_page"),
+        ((200, {"content-type": "text/plain"}, b""), "empty"),
+        ((200, {"content-type": "text/plain"}, b"# nothing to see\n\n"), "empty"),
+        ((404, {}, b"not found"), "missing"),
+        ((410, {}, b""), "missing"),
+    ],
+)
+def test_robots_check_names_what_the_answer_held(answer, found):
+    fetcher, _, _ = make({ROBOTS: answer, PAGE: OK})
+    fetcher.fetch(PAGE)
+    assert fetcher.robots_check(PAGE).found == found
+    assert fetcher.robots_check(PAGE).summary == fetch_module.ROBOTS_FOUND[found]
+
+
+def test_robots_redirect_to_a_web_page_is_not_called_rules(tmp_path, capsys):
+    pages = {
+        ROBOTS: (302, {"location": SEARCH}, b""),
+        SEARCH: (200, {"content-type": "text/html"}, HTML_PAGE),
+        PAGE: OK,
+    }
+    out = tmp_path / "page.ics"
+    code, site, _, shown = _cli(pages, [PAGE, "--contact", CONTACT, "--out", str(out)], capsys)
+    assert code == 0
+    assert site.urls == [ROBOTS, SEARCH, PAGE]  # same requests as before the wording fix
+    assert "rules found" not in shown.err
+    assert f"robots.txt: {SEARCH} read " in shown.err
+    assert "(HTTP 200, no rules (answered with a web page, not rules), so all allowed)" in shown.err
+    record = json.loads(out.with_name(out.name + ".fetch.json").read_text())
+    assert record["robots_txt"]["url"] == SEARCH
+    assert record["robots_txt"]["status"] == 200
+    assert record["robots_txt"]["found"] == "web_page"
+    assert record["robots_txt"]["verdict"] == "allowed"
+
+
+def test_robots_with_rules_still_says_rules_found(capsys):
+    pages = {ROBOTS: robots("User-agent: *\nDisallow: /private/\n"), PAGE: OK}
+    code, _, _, shown = _cli(pages, [PAGE, "--contact", CONTACT], capsys)
+    assert code == 0 and "(HTTP 200, rules found)" in shown.err
+
+
+def test_web_page_robots_obeys_whatever_lines_it_holds():
+    # Behaviour is unchanged: the page is still parsed as RFC 9309 says. A page
+    # that happens to carry robots lines is obeyed and reported as rules.
+    page = b"<html><body><pre>\nUser-agent: *\nDisallow: /private/\n</pre></body></html>"
+    fetcher, site, _ = make({ROBOTS: (200, {"content-type": "text/html"}, page), PAGE: OK})
+    fetcher.fetch(PAGE)
+    assert fetcher.robots_check(PAGE).found == "rules"
+    with pytest.raises(DisallowedByRobots):
+        fetcher.fetch("https://org.example.org/private/x")
+    assert "https://org.example.org/private/x" not in site.urls
+
+
+def test_robots_parser_counts_only_robots_lines():
+    assert rules("").lines_read == 0
+    assert rules("<html><body>Title: hi</body></html>").lines_read == 0
+    assert rules("User-agent: *\nDisallow:\nCrawl-delay: 2\nSitemap: /s.xml\n").lines_read == 4

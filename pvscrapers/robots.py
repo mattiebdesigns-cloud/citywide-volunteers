@@ -23,6 +23,8 @@ import re
 from dataclasses import dataclass, field
 from urllib.parse import urlsplit
 
+_KNOWN_KEYS = frozenset({"user-agent", "allow", "disallow", "crawl-delay", "sitemap"})
+
 
 @dataclass
 class _Group:
@@ -48,6 +50,10 @@ class RobotsRules:
     unreadable_crawl_delay: str | None = None
     allow_all: bool = False
     disallow_all: bool = False
+    # How many robots.txt lines were recognised (User-agent, Allow, Disallow,
+    # Crawl-delay, Sitemap). Only for the run report: 0 means the answer held
+    # no rules at all (an empty file, or a web page sent instead).
+    lines_read: int = 0
 
     @classmethod
     def allowing_everything(cls) -> RobotsRules:
@@ -64,12 +70,15 @@ class RobotsRules:
         site_wide_delay: float | None = None
         site_wide_unreadable: str | None = None
         last_was_agent = False
+        lines_read = 0
         for raw in text.splitlines():
             line = raw.split("#", 1)[0].strip()
             if ":" not in line:
                 continue
             key, value = (part.strip() for part in line.split(":", 1))
             key = key.lower()
+            if key in _KNOWN_KEYS:
+                lines_read += 1
             if key == "user-agent":
                 if current is None or not last_was_agent:
                     current = _Group()
@@ -112,6 +121,7 @@ class RobotsRules:
             rules=[rule for g in mine for rule in g.rules],
             crawl_delay=max(delays) if delays else None,
             unreadable_crawl_delay=unreadable[0] if unreadable else None,
+            lines_read=lines_read,
         )
 
     def allowed(self, url: str) -> bool:
