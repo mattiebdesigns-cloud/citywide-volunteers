@@ -1,0 +1,40 @@
+---
+/**
+ * Lines under a list card that only make sense while the map is on (decision
+ * 0035): "Approximate area" for a pin at an area's center, or "Get directions"
+ * with its note for a pin at an exact published address (owner Q119; this moved
+ * here from the pin's details box, which the owner replaced with a title flag,
+ * 2026-11-10). Hidden until the map is on; map-view.ts fills in the directions
+ * link only then, so nothing points outside the site until the person taps.
+ */
+import { translator } from "../lib/site.ts";
+import { mapPoint, templateParts } from "../lib/map.ts";
+import { listingText } from "../i18n/listing-text.ts";
+import type { Opportunity, PreparedListing } from "../lib/types.ts";
+
+interface Props {
+  lang: string;
+  item: PreparedListing | Opportunity;
+}
+
+const { lang, item } = Astro.props;
+const t = translator(lang).t;
+const point = mapPoint(item);
+const address = item.address?.trim();
+// Each link has its own name for screen readers: "Get directions to <title>" (accessibility gate),
+// with the title as the card shows it, in its own language.
+const title = listingText(item, "title", lang);
+const to = templateParts(t("map.directions_to"), { title: { text: title?.text ?? item.title, lang: title?.lang ?? item.listing_language } });
+---
+
+{point?.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
+{
+  point && !point.approximate && address && (
+    <p class="map-directions" data-map-directions hidden>
+      <a class="map-directions__link" rel="noopener noreferrer" referrerpolicy="no-referrer"
+        >{t("map.directions")}<span class="sr-only"> {to.map((part) => (part.lang ? <span lang={part.lang}>{part.text}</span> : part.text))}</span></a
+      >
+      <span class="muted"> {t("map.directions_note")}</span>
+    </p>
+  )
+}

@@ -52,6 +52,7 @@ const labels = {
 
 <style>
   /* The count and the search on one row; on phones the search wraps under. */
+  /* The count on the left, the List | Map switch on the right, one line. */
   :global(.results__bar) {
     display: flex;
     flex-wrap: wrap;
@@ -62,6 +63,10 @@ const labels = {
   }
   :global(.results__bar .results__count) {
     margin: 0;
+  }
+  /* The search box on its own line, under the count and the List | Map switch (owner, 2026-11-10). */
+  :global(.results__searchrow) {
+    margin-block: 0 var(--space-3);
   }
   .search {
     position: relative;

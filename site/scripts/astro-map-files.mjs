@@ -3,16 +3,22 @@
 //
 // - MapLibre's worker script and stylesheet, copied from node_modules, so the
 //   map code never loads anything from another site.
-// - The street map pieces (PMTiles files) and their description
-//   (basemap.json), only when PV_BASEMAP names a basemap.json made by
-//   scripts/cut-basemap.mjs. Each piece is checked against the size and
-//   SHA-256 written there, so a half-copied or swapped file stops the build.
-//   The pieces hold OpenStreetMap data (ODbL): they are never kept in this
-//   repo, only copied into dist/ at build time.
+// - The street map, only when PV_BASEMAP names a basemap.json made by
+//   scripts/cut-basemap.mjs. Each piece (PMTiles file) is checked against the
+//   size and SHA-256 written there, so a half-copied or swapped file stops the
+//   build. Then every tile in the pieces is written out as its own small file,
+//   dist/map/tiles/<z>/<x>/<y>.mvt (gzip bytes), so the map needs no HTTP range
+//   requests: the live host (Workers static assets) answers a range request
+//   with the whole file (owner chose this fix, 2026-11-10). The pieces
+//   themselves are copied too, only as whole-file downloads for the ODbL notice
+//   on /map-data. All of it is OpenStreetMap data (ODbL): never kept in this
+//   repo, only written into dist/ at build time.
 //
 // Without PV_BASEMAP the map still works, with pins on a plain background.
 import { createHash } from "node:crypto";
-import { copyFileSync, createReadStream, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { closeSync, copyFileSync, createReadStream, existsSync, mkdirSync, openSync, readFileSync, readSync, statSync, writeFileSync } from "node:fs";
+import { gzipSync } from "node:zlib";
+import { PMTiles } from "pmtiles";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -46,6 +52,93 @@ export function readBasemap(path = process.env.PV_BASEMAP_PATH) {
   return { manifest, folder };
 }
 
+/** A PMTiles source that reads a local file (no network, no range requests). */
+class LocalFile {
+  constructor(path) {
+    this.path = path;
+  }
+  getKey() {
+    return this.path;
+  }
+  async getBytes(offset, length) {
+    const fd = openSync(this.path, "r");
+    try {
+      const buf = Buffer.alloc(length);
+      const read = readSync(fd, buf, 0, length, offset);
+      return { data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + read) };
+    } finally {
+      closeSync(fd);
+    }
+  }
+}
+
+function openPieces(basemap) {
+  return basemap.manifest.parts.map((p) => new PMTiles(new LocalFile(join(basemap.folder, p.file))));
+}
+
+/** Tile x and y at zoom z for a point (same as src/lib/map.ts tileXY). */
+export function tileXY(lon, lat, z) {
+  const n = 2 ** z;
+  const rad = (Math.max(-85.05112878, Math.min(85.05112878, lat)) * Math.PI) / 180;
+  const x = Math.floor(((lon + 180) / 360) * n);
+  const y = Math.floor(((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n);
+  return { x: Math.min(n - 1, Math.max(0, x)), y: Math.min(n - 1, Math.max(0, y)) };
+}
+
+/** Every tile position a piece covers, as the browser asks for them (src/lib/map.ts partFor). */
+export function* pieceTiles(part) {
+  const [w, s, e, n] = part.bbox;
+  for (let z = part.minzoom; z <= part.maxzoom; z++) {
+    const a = tileXY(w, n, z);
+    const b = tileXY(e, s, z);
+    for (let x = a.x; x <= b.x; x++) for (let y = a.y; y <= b.y; y++) yield { z, x, y };
+  }
+}
+
+/** One tile as gzip bytes, from the first piece that holds it (the browser's rule), or null. */
+async function readTile(parts, archives, z, x, y) {
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (z < p.minzoom || z > p.maxzoom) continue;
+    const a = tileXY(p.bbox[0], p.bbox[3], z);
+    const b = tileXY(p.bbox[2], p.bbox[1], z);
+    if (x < a.x || x > b.x || y < a.y || y > b.y) continue;
+    const tile = await archives[i].getZxy(z, x, y);
+    return tile ? gzipSync(Buffer.from(tile.data), { level: 9 }) : null;
+  }
+  return null;
+}
+
+/**
+ * Writes every tile of the street map as <dir>/<z>/<x>/<y>.mvt (gzip bytes).
+ * A tile on the edge of two pieces is written once, from the first piece,
+ * as the browser would read it. Stops if any file would pass 25 MiB.
+ */
+export async function exportTiles(basemap, dir) {
+  const archives = openPieces(basemap);
+  const parts = basemap.manifest.parts;
+  const seen = new Set();
+  let files = 0;
+  let bytes = 0;
+  let largest = 0;
+  for (const part of parts) {
+    for (const { z, x, y } of pieceTiles(part)) {
+      const key = `${z}/${x}/${y}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const data = await readTile(parts, archives, z, x, y);
+      if (!data) continue;
+      if (data.length > 25 * 1024 * 1024) throw new Error(`Tile ${key} is over 25 MiB`);
+      mkdirSync(join(dir, String(z), String(x)), { recursive: true });
+      writeFileSync(join(dir, String(z), String(x), `${y}.mvt`), data);
+      files += 1;
+      bytes += data.length;
+      largest = Math.max(largest, data.length);
+    }
+  }
+  return { files, bytes, largest };
+}
+
 function sha256(file) {
   return new Promise((ok, fail) => {
     const hash = createHash("sha256");
@@ -57,12 +150,24 @@ export default function mapFiles() {
   return {
     name: "pv-map-files",
     hooks: {
-      // While developing (npm run dev), serve the same files at the same addresses.
+      // While developing (npm run dev), serve the same files at the same addresses;
+      // tiles are read from the pieces when asked for, not written out.
       "astro:server:setup": ({ server }) => {
         const worker = join(maplibreDir, "dist/maplibre-gl-worker.mjs");
         const basemap = readBasemap();
-        server.middlewares.use((req, res, next) => {
+        const archives = basemap ? openPieces(basemap) : [];
+        server.middlewares.use(async (req, res, next) => {
           const url = (req.url ?? "").split("?")[0];
+          const tile = /^\/map\/tiles\/(\d+)\/(\d+)\/(\d+)\.mvt$/.exec(url);
+          if (tile && basemap) {
+            const bytes = await readTile(basemap.manifest.parts, archives, +tile[1], +tile[2], +tile[3]);
+            if (!bytes) {
+              res.statusCode = 404;
+              return res.end();
+            }
+            res.setHeader("Content-Type", "application/octet-stream");
+            return res.end(bytes);
+          }
           let file = null;
           if (url === `/map/${workerFileName()}`) file = worker;
           else if (url === `/map/${cssFileName()}`) file = join(maplibreDir, "dist/maplibre-gl.css");
@@ -72,18 +177,6 @@ export default function mapFiles() {
           }
           if (!file) return next();
           res.setHeader("Content-Type", file.endsWith(".mjs") ? "text/javascript" : file.endsWith(".css") ? "text/css" : "application/octet-stream");
-          // The map reads the street map in pieces (HTTP range requests), as a static host serves them.
-          const range = /^bytes=(\d+)-(\d*)$/.exec(String(req.headers.range ?? ""));
-          if (range) {
-            const size = statSync(file).size;
-            const start = Number(range[1]);
-            const end = Math.min(range[2] ? Number(range[2]) : size - 1, size - 1);
-            res.statusCode = 206;
-            res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
-            res.setHeader("Content-Length", String(end - start + 1));
-            createReadStream(file, { start, end }).pipe(res);
-            return;
-          }
           createReadStream(file).pipe(res);
         });
       },
@@ -99,8 +192,11 @@ export default function mapFiles() {
           const from = join(basemap.folder, part.file);
           const digest = await sha256(from);
           if (digest !== part.sha256) throw new Error(`${part.file} does not match the SHA-256 in basemap.json: cut it again`);
+          // Whole-file download for the ODbL notice on /map-data; the map itself never reads it.
           copyFileSync(from, join(out, "map/tiles", part.file));
         }
+        const done = await exportTiles(basemap, join(out, "map/tiles"));
+        console.log(`[pv-map-files] street map: ${done.files} tile files, ${(done.bytes / 1e6).toFixed(1)} MB, largest ${(done.largest / 1e3).toFixed(0)} KB`);
       },
     },
   };

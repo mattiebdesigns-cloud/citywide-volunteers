@@ -15,6 +15,9 @@ import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
 import OriginalText from "../../../components/OriginalText.astro";
+import MapCardLines from "../../../components/MapCardLines.astro";
+import PageTabs from "../../../components/PageTabs.astro";
+import MapSwitch from "../../../components/MapSwitch.astro";
 import MapView from "../../../components/MapView.astro";
 import { mapAttrs } from "../../../lib/map-build.ts";
 import { TEAMS_FILTERS_KEY } from "../../../scripts/device.ts";
@@ -52,10 +55,11 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
 }
 ---
 
-<Base lang={lang} title={t("teams.title")} alternates={alternates} path={paths.teams(lang)}>
+<Base lang={lang} title={t("teams.title")} alternates={alternates} path={paths.teams(lang)} mapCredits>
   <div class="page results">
     <p class="teams__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
     <ResultsHeading lang={lang} text={t("teams.title")} filters={any} />
+    <PageTabs lang={lang} current="teams" />
     <p>{t("teams.intro")}</p>
   </div>
   {
@@ -80,8 +84,9 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
           >
             {tr.plural("teams.count", items.length)}
           </p>
-            <SearchBox lang={lang} kind="teams" />
+            <MapSwitch lang={lang} />
           </div>
+          <div class="results__searchrow"><SearchBox lang={lang} kind="teams" /></div>
           <MapView lang={lang} mode="all" kind="teams" />
           <div
             id="results-none"
@@ -104,7 +109,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                 data-cause={e.cause ?? ""}
                 data-join={e.join_method}
                 data-over-at={e.overAt}
-                {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), when: whenText(tr, e) })}
+                {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), time: whenText(tr, e), when: whenText(tr, e) })}
               >
                 <ListingCard
                   id={e.id}
@@ -128,7 +133,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   joinLabel={joinLabel(tr, e)}
                   headingLevel={2}
                 />
-                {e.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
+                <MapCardLines lang={lang} item={e} />
               </li>
             ))}
             {arranged.map((o) => (
@@ -164,7 +169,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   headingLevel={2}
                 />
                 <OriginalText lang={lang} item={o} />
-                {o.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
+                <MapCardLines lang={lang} item={o} />
               </li>
             ))}
           </ul>

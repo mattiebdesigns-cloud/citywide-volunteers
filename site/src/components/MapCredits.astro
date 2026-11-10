@@ -1,0 +1,79 @@
+---
+/**
+ * The map credits (decision 0035; licence gate conditions; owner, 2026-11-10:
+ * "all of that needs to be at the footer"). Shown in the site footer on every
+ * page that has a map: Protomaps and OpenStreetMap, the Census credit and
+ * notice, and the ESA WorldCover land-cover credit. Required English wording
+ * keeps lang="en", with the Spanish translation on its own line on Spanish
+ * pages; "/" is read as a full stop (SpokenSlash). The map itself keeps a short
+ * "© OpenStreetMap" in its corner.
+ */
+import SpokenSlash from "./SpokenSlash.astro";
+import { paths, translator } from "../lib/site.ts";
+import { templateParts } from "../lib/map.ts";
+
+interface Props {
+  lang: string;
+}
+
+const { lang } = Astro.props;
+const tr = translator(lang);
+const t = tr.t;
+// "Map: Protomaps © OpenStreetMap contributors".
+const credit = templateParts(t("map.credit"), {
+  protomaps: { text: "Protomaps", lang: "en" },
+  osm: { text: "OpenStreetMap", lang: "en" },
+});
+const creditLinks: Record<string, string> = {
+  Protomaps: "https://protomaps.com/",
+  OpenStreetMap: "https://www.openstreetmap.org/copyright",
+};
+// "Area centers: US Census Bureau", and the Census Bureau's own notice.
+const censusCredit = templateParts(t("map.credit_census"), { census: { text: t("map.census_name"), lang: "en" } });
+const censusTranslation = tr.lang === "en" ? null : t("map.census_notice_translation");
+// The land-cover layer's credit (ESA WorldCover, CC BY 4.0).
+const esaTranslation = tr.lang === "en" ? null : t("map.credit_esa_translation");
+---
+
+<div class="map-credits" data-map-credits>
+  <p class="map-credits__line">
+    {
+      credit.map((part) =>
+        creditLinks[part.text] ? (
+          <a href={creditLinks[part.text]} lang={part.lang} rel="noopener noreferrer">{part.text}</a>
+        ) : (
+          part.text
+        ),
+      )
+    }
+    <span aria-hidden="true"> · </span>
+    <a href={paths.mapData(lang)}>{t("map.about_data")}</a>
+  </p>
+  <p class="map-credits__line" data-map-census>
+    {censusCredit.map((part) => (part.lang ? <span lang={part.lang}>{part.text}</span> : part.text))}
+    <br />
+    <span lang="en">{t("map.census_notice")}</span>
+    {censusTranslation && <><br />{censusTranslation}</>}
+  </p>
+  <p class="map-credits__line">
+    <SpokenSlash text={t("map.credit_esa")} lang="en" data-map-esa="" />
+    {esaTranslation && <><br /><SpokenSlash text={esaTranslation} /></>}
+  </p>
+</div>
+
+<style>
+  .map-credits {
+    flex-basis: 100%;
+    font-size: var(--text-min, 1rem);
+  }
+  .map-credits__line {
+    margin: 0 0 var(--space-2);
+  }
+  /* Links stay in the sentence; 1.5 line height + 2 × 0.625rem = 44 px tall. */
+  .map-credits a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding-block: 0.625rem;
+    line-height: 1.5;
+  }
+</style>

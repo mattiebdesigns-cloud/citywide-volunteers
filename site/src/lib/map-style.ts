@@ -26,13 +26,13 @@ export interface StyleOptions {
   origin: string;
   /** The street map's highest zoom level, or null when this build has no street map. */
   maxzoom: number | null;
-  /** Dark colours; left out, it follows the device's dark-mode setting. */
+  /** Dark colours; left out, it follows the page's Dark mode switch. */
   dark?: boolean;
 }
 
-/** True when the device asks for dark mode (never in a build or a test without a window). */
-export function prefersDark(): boolean {
-  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
+/** True when the page is in Dark mode (the footer switch; never in a build or a test without a page). */
+export function pageIsDark(): boolean {
+  return typeof document !== "undefined" && document.documentElement.dataset.theme === "dark";
 }
 
 /**
@@ -54,7 +54,7 @@ export function darkFlavor(): Flavor {
 }
 
 /** The style: street map (when there is one) under nothing else; pins are added by the map code. */
-export function mapStyle({ lang, origin, maxzoom, dark = prefersDark() }: StyleOptions): StyleSpecification {
+export function mapStyle({ lang, origin, maxzoom, dark = pageIsDark() }: StyleOptions): StyleSpecification {
   const flavor = dark ? darkFlavor() : namedFlavor("light");
   if (maxzoom === null) {
     return {

@@ -21,7 +21,7 @@ export function mapAttrs(
   tr: Translator,
   item: PreparedListing | Opportunity,
   settings: Pick<SiteSettings, "sections">,
-  opts: { href: string; when?: string },
+  opts: { href: string; time?: string; when?: string },
 ): Record<string, string> {
   const point = mapPoint(item);
   if (!point) return {};
@@ -33,15 +33,19 @@ export function mapAttrs(
     "data-lon": String(point.lon),
     "data-map-title": title?.text ?? item.title,
     "data-map-lang": title?.lang ?? item.listing_language,
-    "data-map-place": placeSpoken(tr, item, settings) || placeText(tr, item, settings),
+    // The card's own place line (decision 0013), as it shows on screen and as screen readers hear it.
+    "data-map-place": placeText(tr, item, settings),
     "data-map-href": opts.href,
   };
+  const spoken = placeSpoken(tr, item, settings);
+  if (spoken) attrs["data-map-place-spoken"] = spoken;
   if (point.approximate) attrs["data-approx"] = "true";
-  // Directions use the address the organization published; an approximate area has none to give.
-  else if (item.address?.trim()) attrs["data-map-address"] = item.address.trim();
+  // The published address, shown in the details like the listing page; directions are never
+  // offered for an approximate area (directionsUrl in lib/map.ts).
+  if (item.address?.trim()) attrs["data-map-address"] = item.address.trim();
+  // The pin's name uses the short time; the details use the card's own date and time line.
+  if (opts.time) attrs["data-map-time"] = opts.time;
   if (opts.when) attrs["data-map-when"] = opts.when;
-  // A machine-translated title says so in the map's details too (decision 0036; accessibility gate).
-  if (title?.translated) attrs["data-map-translated"] = "true";
   return attrs;
 }
 
@@ -63,7 +67,10 @@ export interface MapConfig {
   basemap: null | {
     maxzoom: number;
     bbox: [number, number, number, number];
-    parts: Array<{ url: string; minzoom: number; maxzoom: number; bbox: [number, number, number, number] }>;
+    /** The tile files' address pattern, on this site. */
+    tiles: string;
+    /** Which zooms and areas have tiles, so the map asks only for files that exist. */
+    parts: Array<{ minzoom: number; maxzoom: number; bbox: [number, number, number, number] }>;
   };
 }
 
@@ -83,7 +90,8 @@ export function mapConfig(
       ? {
           maxzoom: basemap.maxzoom,
           bbox: basemap.bbox,
-          parts: basemap.parts.map((p) => ({ url: `/map/tiles/${p.file}`, minzoom: p.minzoom, maxzoom: p.maxzoom, bbox: p.bbox })),
+          tiles: "/map/tiles/{z}/{x}/{y}.mvt",
+          parts: basemap.parts.map((p) => ({ minzoom: p.minzoom, maxzoom: p.maxzoom, bbox: p.bbox })),
         }
       : null,
   };

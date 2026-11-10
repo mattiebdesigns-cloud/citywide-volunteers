@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { astroBuild, buildFolder, removeFolder } from "./build-helper.ts";
+import { zxyToTileId } from "pmtiles";
 import {
   checkManifest,
   clampDay,
@@ -143,6 +144,33 @@ test("approximate pin names never end with a doubled full stop (Spanish times en
   assert.equal(parts[0].lang, "es");
 });
 
+test("a pin: first press shows a title flag, the second jumps to its card; Escape closes; nothing in the address (owner, 2026-11-10)", () => {
+  const engine = code("src/scripts/map-engine.ts");
+  assert.match(engine, /if \(button\.dataset\.flag === "open"\) \{\s*hooks\.onJump\(place\);/);
+  assert.doesNotMatch(engine, /aria-expanded/, "no expanded state on pins (accessibility gate)");
+  assert.match(engine, /hooks\.onFlag\(\)/, "the 'press again' hint is announced");
+  assert.match(engine, /function placeFlag/, "the flag is kept inside the map frame");
+  assert.match(engine, /flag\.className = "pv-flag";/);
+  assert.match(engine, /ev\.key === "Escape"/);
+  const view = code("src/scripts/map-view.ts");
+  const jump = view.slice(view.indexOf("function jumpTo"), view.indexOf("function showDirections"));
+  assert.match(jump, /scrollIntoView/);
+  assert.match(jump, /\.focus\(/);
+  assert.doesNotMatch(jump, /location|history|hash|Storage|fetch/);
+  // The flag stays inside the frame (slides near an edge, goes under the pin at the top) and above the zoom buttons.
+  const view2 = readFileSync(join(site, "src/components/MapView.astro"), "utf8");
+  assert.match(view2, /translateX\(calc\(-50% \+ var\(--flag-dx, 0px\)\)\)/);
+  assert.match(view2, /:global\(\.pv-flag\[data-below="true"\]\)/);
+  assert.match(view2, /:global\(\.pv-pin\[data-flag="open"\]\) \{\s*z-index: 5;/);
+  // "Skip the map" is in the page, hidden until it has keyboard focus (owner: "Hide until tabbed").
+  assert.match(view2, /\.map__skip \{\s*position: absolute;[\s\S]*?clip: rect\(0 0 0 0\);/);
+  assert.match(view2, /\.map__skip:focus \{[\s\S]*?outline: 3px solid var\(--color-focus\);/);
+  // Each directions link has its own name: "Get directions to <title>", the title in its own language.
+  assert.match(readFileSync(join(site, "src/components/MapCardLines.astro"), "utf8"), /t\("map\.directions_to"\)/);
+  // The details box is gone.
+  assert.doesNotMatch(readFileSync(join(site, "src/components/MapView.astro"), "utf8"), /data-map-detail/);
+});
+
 test("pins outside the visible map leave the Tab order (accessibility gate fix 1)", () => {
   assert.ok(isOnScreen({ x: 10, y: 10 }, 360, 480, 8));
   assert.ok(!isOnScreen({ x: 4, y: 10 }, 360, 480, 8), "cut off at the edge");
@@ -151,7 +179,7 @@ test("pins outside the visible map leave the Tab order (accessibility gate fix 1
   // The engine applies it to every button after each move.
   const engine = code("src/scripts/map-engine.ts");
   assert.match(engine, /button\.tabIndex = isOnScreen\(at, width, height, 8\) \? 0 : -1;/);
-  assert.match(engine, /map\.on\("moveend", \(\) => drawButtons\(\)\);/);
+  assert.match(engine, /map\.on\("moveend", \(\) => \{\s*drawButtons\(\);/);
 });
 
 test("every class the map scripts make is styled globally, so script-made buttons get their size and focus ring (fix 3)", () => {
@@ -163,7 +191,8 @@ test("every class the map scripts make is styled globally, so script-made button
     for (const m of c.matchAll(/el\("[a-z0-9]+", [^,()]+, "([^"]+)"\)/g)) m[1].split(/\s+/).forEach((x) => made.add(x));
     for (const m of c.matchAll(/pinButton\(\s*(?:place\.approximate \? )?"([^"]+)"(?: : "([^"]+)")?/g)) [m[1], m[2] ?? ""].join(" ").split(/\s+/).filter(Boolean).forEach((x) => made.add(x));
   }
-  for (const x of ["pv-pin", "pv-pin--cluster", "pv-pin--approx", "pv-pin__shape", "map__text-button", "map-detail__item", "is-map-selected"]) {
+  for (const m of code("src/scripts/map-engine.ts").matchAll(/flag\.className = "([^"]+)"/g)) made.add(m[1]);
+  for (const x of ["pv-pin", "pv-pin--cluster", "pv-pin--approx", "pv-pin__shape", "pv-flag", "is-map-selected"]) {
     assert.ok(made.has(x), `found ${x} in the scripts`);
   }
   const component = readFileSync(join(site, "src/components/MapView.astro"), "utf8");
@@ -197,10 +226,11 @@ test("directions carry only the address (or the point), never the title, organiz
   // The function takes only the place: no title, organization or id can get in.
   const signature = code("src/lib/map.ts").match(/export function directionsUrl\(([\s\S]*?)\): string \| null/)![1];
   assert.doesNotMatch(signature, /title|org|id\b/);
-  // The link is plain, with no referrer, and only made when a pin is opened.
+  // The link is plain, with no referrer; its address is filled in only while the map is on.
+  const lines = readFileSync(join(site, "src/components/MapCardLines.astro"), "utf8");
+  assert.match(lines, /<a class="map-directions__link" rel="noopener noreferrer" referrerpolicy="no-referrer"/);
+  assert.doesNotMatch(lines, /href=/, "no address in the page until the map is on");
   const view = code("src/scripts/map-view.ts");
-  assert.match(view, /a\.rel = "noopener noreferrer";/);
-  assert.match(view, /a\.referrerPolicy = "no-referrer";/);
   assert.doesNotMatch(view, /prefetch|preload|window\.open|\.click\(\)/);
 });
 
@@ -336,7 +366,8 @@ test("map libraries: MapLibre and pmtiles only; never Mapbox GL", () => {
 
 test("map scripts send nothing about a listing, store nothing, never change the address", () => {
   for (const file of ["src/scripts/map-view.ts", "src/scripts/map-engine.ts", "src/lib/map.ts", "src/lib/map-style.ts"]) {
-    const c = code(file);
+    // The engine's one fetch is for street map tile files on this site (checked below); nothing else fetches.
+    const c = code(file).replace(/const res = await fetch\(basemap\.tiles[\s\S]*?credentials: "omit",\s*\}\);/, "");
     for (const banned of [
       "XMLHttpRequest",
       "sendBeacon",
@@ -363,6 +394,8 @@ test("map scripts send nothing about a listing, store nothing, never change the 
   assert.deepEqual(view0.match(/location\.hash[^\n]*/g), ["location.hash === MAP_HASH && !switcher.hidden) {"]);
   assert.doesNotMatch(view0 + code("src/scripts/map-engine.ts"), /location\.hash\s*=[^=]|\.hash\s*=[^=]/);
   const engine = code("src/scripts/map-engine.ts");
+  assert.equal((engine.match(/fetch\(/g) ?? []).length, 1, "one fetch, for tile files only");
+  assert.match(engine, /fetch\(basemap\.tiles\.replace/);
   assert.match(engine, /hash: false/, "the map never writes its position into the address");
   assert.match(engine, /attributionControl: false/);
   assert.match(engine, /cooperativeGestures: true/, "one finger scrolls the page (accessibility condition 5)");
@@ -395,7 +428,10 @@ test("every map word is in English and Spanish, plurals included", () => {
   assert.match(en.map.cluster.dated.other, /^\{count\} shifts here; zoom in to see them$/);
   assert.match(en.map.day.previous, /\{date\}/);
   assert.match(en.map.day.next, /\{date\}/);
-  assert.equal(en.map.directions_note, "Opens your maps app. That service will see this address.");
+  assert.equal(en.map.directions_note, "Opens your maps app. That service will see this shift's address.");
+  assert.match(en.map.directions_to, /\{title\}/);
+  assert.match(es.map.directions_to, /\{title\}/);
+  assert.ok(en.map.pin_hint && es.map.pin_hint);
   assert.match(en.map.near_me_note, /stays on your device/);
   assert.match(en.map.near_me_note, /from our server/, "honest: the map loads the area from our server (privacy condition 1)");
   assert.doesNotMatch(en.map.near_me_note + es.map.near_me_note, /never sent|nunca se env/i);
@@ -477,8 +513,13 @@ test("built pages: List | Map switch, the day map on home, maps with no day on F
       assert.ok(decode(home).includes(tr.map.zoom_in) && decode(home).includes(tr.map.zoom_out) && decode(home).includes(tr.map.near_me));
       assert.ok(decode(home).includes(tr.map.near_me_note));
       assert.match(home, /data-map-status role="status"/, "the day's count is announced politely");
-      // The credit, in a corner of the map, from the translation files, with both links.
-      const credit = home.match(/<p class="map__credit"[^>]*>[\s\S]*?<\/p>/)![0];
+      // The credits are in the site footer (owner, 2026-11-10), from the translation files, with both links;
+      // the map itself keeps a short "© OpenStreetMap" in its corner (OSM's attribution guidelines).
+      const footer = home.slice(home.indexOf("<footer"), home.indexOf("</footer>"));
+      const credit = footer.slice(footer.indexOf("data-map-credits"));
+      assert.ok(credit.length > 0 && home.indexOf("data-map-credits") > home.indexOf('id="listing-list"'), "credits below the listings");
+      const corner = home.match(/<p class="map__corner-credit"[^>]*>[\s\S]*?<\/p>/)![0];
+      assert.match(corner, /© <a href="https:\/\/www\.openstreetmap\.org\/copyright" lang="en"[^>]*>OpenStreetMap<\/a>/);
       assert.match(credit, /href="https:\/\/www\.openstreetmap\.org\/copyright"[^>]*>OpenStreetMap</);
       assert.match(credit, /href="https:\/\/protomaps\.com\/"[^>]*>Protomaps</);
       assert.match(credit, new RegExp(`href="/${code}/map-data/"`));
@@ -516,13 +557,18 @@ test("built pages: List | Map switch, the day map on home, maps with no day on F
       assert.deepEqual(mapNames(liFor(home, sens.id)), mapNames(liFor(home, exact.id)));
       assert.doesNotMatch(liFor(home, sens.id), /sensitive/i);
       assert.match(liFor(home, approx.id), /data-approx="true"/);
-      assert.doesNotMatch(liFor(home, approx.id), /data-map-address/, "no directions for an approximate area");
+      // An approximate area gets no directions, even when its listing has a street address (pv-schema finding):
+      // its card has the "Approximate area" line and no directions line.
+      const approxBlock = home.slice(home.indexOf(liFor(home, approx.id)), home.indexOf("</li>", home.indexOf(liFor(home, approx.id))));
+      assert.doesNotMatch(approxBlock, /data-map-directions/);
+      const exactBlock = home.slice(home.indexOf(liFor(home, exact.id)), home.indexOf("</li>", home.indexOf(liFor(home, exact.id))));
+      assert.match(decode(exactBlock), new RegExp(`<p class="map-directions"[^>]*data-map-directions hidden[^>]*>[\\s\\S]*?${tr.map.directions}[\\s\\S]*?${tr.map.directions_note.replace(/\./g, "\\.")}`));
       assert.doesNotMatch(liFor(home, none.id), /data-lat/);
       // "Approximate area" in words on the list entry too, shown while the map is on.
       const approxCard = home.slice(home.indexOf(liFor(home, approx.id)), home.indexOf("</li>", home.indexOf(liFor(home, approx.id))));
       assert.match(decode(approxCard), new RegExp(`data-map-approx-line hidden[^>]*>${tr.map.approximate}</p>`));
       // Pin names: "{title}, {time}" with the time on the card.
-      assert.match(liFor(home, exact.id), /data-map-when="[^"]+"/);
+      assert.match(liFor(home, exact.id), /data-map-time="[^"]+"/);
       // The pin's title is the one the card shows: the Spanish machine translation on /es/ (decision 0036).
       const shownTitle = code === "es" ? "Turno de prueba en español" : exact.title;
       assert.ok(decode(liFor(home, exact.id)).includes(`data-map-title="${shownTitle}"`), code);
@@ -546,7 +592,7 @@ test("built pages: List | Map switch, the day map on home, maps with no day on F
       assert.equal(words.maplibre["Map.Title"], tr.map.canvas);
       // Decision 0036 display (accessibility gate fixes 1-4).
       // (1) The map knows when a title is a machine translation, to say so in its details.
-      assert.equal(liFor(home, exact.id).includes('data-map-translated="true"'), code === "es", `${code}: map translated flag`);
+      // (1) A machine-translated title says so on its card; the map's flag shows only the title.
       // (3) A flexible card with translated words keeps the original one tap away, marked with its own language.
       const flexCard = flexible.slice(flexible.indexOf(liFor(flexible, sampleOpp.opportunities[0].id)));
       const disclosure = decode(flexCard.slice(0, flexCard.indexOf("</li>")));
@@ -605,13 +651,73 @@ test("built pages: List | Map switch, the day map on home, maps with no day on F
   }
 });
 
-test("a street map file named by PV_BASEMAP is checked, copied into the build, and listed with its ODbL notice", () => {
+/**
+ * A tiny real PMTiles v3 file, written by hand (no map data: the tiles are
+ * made-up bytes), so the build can read it like a real street map piece.
+ */
+function tinyPmtiles(tiles: Array<{ z: number; x: number; y: number; data: Buffer }>): Buffer {
+  const varint = (n: number) => {
+    const out: number[] = [];
+    while (n >= 0x80) {
+      out.push((n & 0x7f) | 0x80);
+      n = Math.floor(n / 128);
+    }
+    out.push(n);
+    return out;
+  };
+  const entries = tiles.map((t) => ({ id: zxyToTileId(t.z, t.x, t.y), data: t.data })).sort((a, b) => a.id - b.id);
+  let offset = 0;
+  const placed = entries.map((e) => ({ ...e, offset: (offset += e.data.length) - e.data.length }));
+  const dir: number[] = [...varint(placed.length)];
+  let last = 0;
+  for (const e of placed) dir.push(...varint(e.id - last)), (last = e.id);
+  for (const _ of placed) dir.push(...varint(1));
+  for (const e of placed) dir.push(...varint(e.data.length));
+  placed.forEach((e, i) => dir.push(...varint(i > 0 && e.offset === placed[i - 1].offset + placed[i - 1].data.length ? 0 : e.offset + 1)));
+  const root = Buffer.from(dir);
+  const meta = Buffer.from("{}");
+  const data = Buffer.concat(placed.map((e) => e.data));
+  const h = Buffer.alloc(127);
+  h.write("PMTiles", 0, "ascii");
+  h.writeUInt8(3, 7);
+  const u64 = (at: number, v: number) => h.writeBigUInt64LE(BigInt(v), at);
+  u64(8, 127);
+  u64(16, root.length);
+  u64(24, 127 + root.length);
+  u64(32, meta.length);
+  u64(40, 0);
+  u64(48, 0);
+  u64(56, 127 + root.length + meta.length);
+  u64(64, data.length);
+  u64(72, placed.length);
+  u64(80, placed.length);
+  u64(88, placed.length);
+  h.writeUInt8(1, 96); // clustered
+  h.writeUInt8(1, 97); // directories not compressed
+  h.writeUInt8(1, 98); // tiles not compressed
+  h.writeUInt8(1, 99); // vector tiles
+  h.writeUInt8(Math.min(...tiles.map((t) => t.z)), 100);
+  h.writeUInt8(Math.max(...tiles.map((t) => t.z)), 101);
+  h.writeInt32LE(-761500000, 102);
+  h.writeInt32LE(394500000, 106);
+  h.writeInt32LE(-743800000, 110);
+  h.writeInt32LE(406100000, 114);
+  return Buffer.concat([h, root, meta, data]);
+}
+
+test("a street map named by PV_BASEMAP is checked, written out as small tile files (no range requests), and listed with its ODbL notice", async () => {
   const dir = buildFolder();
   try {
     const input = fixture(dir);
     const maps = join(dir, "basemap");
     mkdirSync(maps);
-    const bytes = Buffer.from("not a real map, only for the copy test");
+    // Two made-up tiles inside the region and one outside it (never written).
+    const inside = [
+      { z: 0, x: 0, y: 0, data: Buffer.from("tile 0/0/0") },
+      { ...tileXY(-75.16, 39.95, 10), z: 10, data: Buffer.from("tile in Philadelphia at zoom 10") },
+    ];
+    const outside = { ...tileXY(-80, 35, 10), z: 10, data: Buffer.from("outside the region") };
+    const bytes = tinyPmtiles([...inside, outside]);
     writeFileSync(join(maps, "basemap-20261109-0.pmtiles"), bytes);
     const manifest: BasemapManifest = {
       build: "20261109",
@@ -625,18 +731,32 @@ test("a street map file named by PV_BASEMAP is checked, copied into the build, a
     };
     writeFileSync(join(maps, "basemap.json"), JSON.stringify(manifest));
     const out = astroBuild(dir, { PV_EVENTS: input.events, PV_OPPORTUNITIES: input.opportunities, PV_BASEMAP: join(maps, "basemap.json") });
-    assert.deepEqual(readFileSync(join(out, "map/tiles/basemap-20261109-0.pmtiles")), bytes);
+    // Each tile is its own small file, gzip bytes of the tile.
+    const { gunzipSync } = await import("node:zlib");
+    for (const t of inside) {
+      const file = join(out, `map/tiles/${t.z}/${t.x}/${t.y}.mvt`);
+      assert.ok(existsSync(file), file);
+      assert.deepEqual(gunzipSync(readFileSync(file)), t.data);
+    }
+    assert.ok(!existsSync(join(out, `map/tiles/10/${outside.x}/${outside.y}.mvt`)), "nothing outside the region");
+    // The map asks for those files; the whole piece is only a download for the notice.
     const home = readFileSync(join(out, "en/index.html"), "utf8");
     const config = JSON.parse(decode(home.match(/data-config="([^"]*)"/)![1]));
-    assert.deepEqual(config.basemap.parts.map((p: { url: string }) => p.url), ["/map/tiles/basemap-20261109-0.pmtiles"]);
+    assert.equal(config.basemap.tiles, "/map/tiles/{z}/{x}/{y}.mvt");
+    assert.deepEqual(config.basemap.parts, [{ minzoom: 0, maxzoom: 12, bbox: [-76.15, 39.45, -74.38, 40.61] }]);
+    assert.deepEqual(readFileSync(join(out, "map/tiles/basemap-20261109-0.pmtiles")), bytes);
     for (const code of ["en", "es"]) {
       const data = decode(readFileSync(join(out, `${code}/map-data/index.html`), "utf8"));
       assert.ok(data.includes("20261109.pmtiles (4.15.2)"), "names the build");
       assert.ok(data.includes('href="/map/tiles/basemap-20261109-0.pmtiles" download'), "the file can be downloaded (ODbL 4.6)");
       assert.ok(data.includes(manifest.commands[0]), "the command is published");
     }
+    // The browser never asks for a byte range, and never reads the whole piece.
+    const engine = code("src/scripts/map-engine.ts");
+    assert.doesNotMatch(engine, /PMTiles|Range|\.pmtiles/);
+    assert.match(engine, /credentials: "omit"/);
     // A piece that does not match its SHA-256 stops the build.
-    writeFileSync(join(maps, "basemap-20261109-0.pmtiles"), Buffer.from("NOT a real map, only for the copy test"));
+    writeFileSync(join(maps, "basemap-20261109-0.pmtiles"), Buffer.concat([bytes, Buffer.from("x")]).subarray(1));
     assert.throws(
       () => astroBuild(join(dir, "again"), { PV_EVENTS: input.events, PV_BASEMAP: join(maps, "basemap.json") }),
       (err: { stderr?: Buffer }) => /SHA-256/.test(String(err.stderr ?? err)),

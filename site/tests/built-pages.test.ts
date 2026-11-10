@@ -548,21 +548,16 @@ test("calendar: Volunteer Team tag on cards and listing pages", () => {
   }
 });
 
-test("home page: Kind filter, flexible cards in the list (hidden until chosen), Flexible and Team links under Filters", () => {
+test("home page: Kind filter, flexible cards in the list (hidden until chosen), By Date, Flexible and Team row under the heading", () => {
   const b = build({});
   try {
     for (const lang of ["en", "es"]) {
       const tr = i18n.translator(lang);
       const home = b.read(`${lang}/index.html`);
       const main = home.slice(home.indexOf("<main"), home.indexOf("</main>"));
-      // Under the Filters button: "Flexible Shifts" and "Team Shifts" side by side (owner, 2026-11-10); no calculator link at the top.
+      // The By Date · Flexible Shifts · Team Shifts row (tested in the header test); no calculator link at the top.
       const top = main.slice(0, main.indexOf('id="listing-list"'));
       const outsidePanel = top.replace(/<section id="filter-panel"[\s\S]*?<\/section>/, "");
-      const links = outsidePanel.slice(outsidePanel.indexOf("filters-toggle"));
-      assert.deepEqual(
-        [...links.matchAll(/<a href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], decode(m[2])]).slice(0, 2),
-        [[`/${lang}/flexible/`, tr.t("home.flexible_link")], [`/${lang}/teams/`, tr.t("home.teams_link")]],
-      );
       assert.ok(!outsidePanel.includes(`href="/${lang}/medicaid-hours/"`), `${lang}: no calculator link at the top`);
       // Kind comes first in the panel, with the three choices and the two page links.
       const panel = home.slice(home.indexOf('id="filter-panel"'), home.indexOf("</section>", home.indexOf('id="filter-panel"')));
@@ -603,42 +598,43 @@ test("home page: Kind filter, flexible cards in the list (hidden until chosen), 
   }
 });
 
-test("header: About and the calculator at the top right (owner, 2026-11-10: Flexible and Teams moved under Filters); footer holds only where listings come from (owner, 2026-11-10)", () => {
+test("header as before (1715dec): logo, About, languages; footer: calculator, Dark mode switch, sources; By Date · Flexible · Team row (owner, 2026-11-10)", () => {
   const b = build({});
   const t = build({ PV_TEST_BUILD: "1" });
   try {
     for (const lang of ["en", "es"]) {
       const tr = i18n.translator(lang);
-      for (const page of ["index.html", "flexible/index.html", "teams/index.html", "about/index.html", "medicaid-hours/index.html"]) {
+      const calc = tr.t("medicaid.link_with_date", { date: new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date("2027-01-01T12:00:00Z")) });
+      for (const page of ["index.html", "flexible/index.html", "teams/index.html", "about/index.html"]) {
         const html = b.read(`${lang}/${page}`);
         const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
-        const nav = header.slice(header.indexOf('class="site-header__pages"'));
-        assert.match(header, new RegExp(`<nav class="site-header__pages"[^>]*aria-label="${tr.t("site.pages_nav")}"`), page);
-        // In this order, the existing page names.
-        assert.deepEqual(
-          [...nav.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], decode(m[2])]),
-          [
-            [`/${lang}/about/`, tr.t("about_page.nav")],
-            [`/${lang}/medicaid-hours/`, tr.t("medicaid.title")],
-          ],
-          `${lang} ${page}`,
-        );
-        // The footer: only the sources sentence; no page links.
+        // Logo, then About, then the language switch; no other page links up here.
+        assert.ok(header.indexOf("site-header__name") < header.indexOf("site-header__about"), page);
+        assert.ok(header.indexOf("site-header__about") < header.indexOf("lang-switch"), page);
+        const beforeLanguages = header.slice(0, header.indexOf("lang-switch"));
+        assert.deepEqual([...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]), [`/${lang}/`, `/${lang}/about/`], page);
+        // Footer: the calculator link with its date, the Dark mode switch (hidden until its script runs), the sources line.
         const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
-        assert.ok(text(footer) === tr.t("site.footer_sources"), `${lang} ${page}: ${text(footer)}`);
-        assert.doesNotMatch(footer, /<a /);
+        assert.ok(text(footer).includes(calc), `${lang} ${page}: calculator link`);
+        assert.match(footer, new RegExp(`<button type="button" class="theme-switch[^"]*" aria-pressed="false" data-theme-toggle hidden[^>]*>[\\s\\S]*?${tr.t("site.theme_dark")}`));
+        assert.ok(text(footer).includes(tr.t("site.footer_sources")), page);
       }
-      // A test build: the sentence moves to the banner at the top, with the test-version line; no footer.
+      // A test build: the footer is back (calculator and switch); the sources line is in the banner instead.
       const home = t.read(`${lang}/index.html`);
+      const tf = home.slice(home.indexOf("<footer"), home.indexOf("</footer>"));
+      assert.ok(home.includes("<footer") && text(tf).includes(calc));
+      assert.ok(!text(tf).includes(tr.t("site.footer_sources")));
       const banner = home.match(/<div class="test-banner[^"]*"[^>]*>([\s\S]*?)<\/div>/)![1];
-      assert.ok(text(banner).includes(tr.t("site.test_version")) && text(banner).includes(tr.t("site.footer_sources")), lang);
-      assert.ok(home.indexOf("test-banner") < home.indexOf("<header"), "banner at the very top");
-      assert.doesNotMatch(home, /<footer/);
-      // The calculator's own page still says the start date near the top.
-      const date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date("2027-01-01T12:00:00Z"));
-      const calc = b.read(`${lang}/medicaid-hours/index.html`);
-      const main = calc.slice(calc.indexOf("<main"));
-      assert.ok(text(main.slice(0, main.indexOf("</h1>") + 400)).includes(tr.t("medicaid.starts", { date })));
+      assert.ok(text(banner).includes(tr.t("site.footer_sources")));
+      // By Date · Flexible Shifts · Team Shifts under the heading; the page you are on is not a link.
+      for (const [page, current] of [["index.html", "home.dated_link"], ["flexible/index.html", "home.flexible_link"], ["teams/index.html", "home.teams_link"]]) {
+        const html = b.read(`${lang}/${page}`);
+        const row = html.slice(html.indexOf('<ul class="page-tabs'), html.indexOf("</ul>", html.indexOf('<ul class="page-tabs')));
+        assert.ok(html.indexOf('class="page-tabs') > html.indexOf('id="results-heading"'), "under the heading");
+        assert.deepEqual([...row.matchAll(/>([^<>]+)<\/(?:a|span)>/g)].map((m) => decode(m[1])), [tr.t("home.dated_link"), tr.t("home.flexible_link"), tr.t("home.teams_link")]);
+        assert.match(row, new RegExp(`<span class="page-tabs__current"[^>]*aria-current="page"[^>]*>${tr.t(current)}</span>`), `${lang} ${page}`);
+        assert.equal((row.match(/<a /g) ?? []).length, 2, `${lang} ${page}: two links, the current one is not`);
+      }
     }
   } finally {
     b.done();
@@ -966,7 +962,7 @@ test("the saved share picture has a neutral file name, never the title (owner, Q
 
 // ---- Search (owner, 2026-11-08) ----
 
-test("search box beside the count on home, Flexible and Teams; every card has its search words in the page's language", () => {
+test("count and List | Map on one line, search box under them, on home, Flexible and Teams; every card has its search words in the page's language", () => {
   const b = build({});
   try {
     for (const lang of ["en", "es"]) {
@@ -978,7 +974,12 @@ test("search box beside the count on home, Flexible and Teams; every card has it
       ]) {
         const html = b.read(page);
         const bar = html.slice(html.indexOf('<div class="results__bar"'), html.indexOf('id="results-none"'));
-        assert.ok(bar.indexOf('id="results-count"') < bar.indexOf('id="results-search"'), `${page}: count, then search`);
+        // One line: the count, then the List | Map switch; the search box on the next line (owner, 2026-11-10).
+        const line = bar.slice(0, bar.indexOf("</div>", bar.indexOf("data-map-switch")) + 6);
+        assert.ok(line.indexOf('id="results-count"') < line.indexOf("data-map-switch"), `${page}: count, then the switch`);
+        assert.ok(!line.includes('id="results-search"'), `${page}: search not on the count line`);
+        assert.ok(bar.indexOf("data-map-switch") < bar.indexOf('id="results-search"'), `${page}: switch, then search`);
+        assert.ok(bar.indexOf('id="results-search"') < bar.indexOf("data-map-root"), `${page}: search above the map`);
         const input = bar.match(/<input[^>]*id="results-search"[^>]*>/)![0];
         assert.match(input, /type="search"/);
         assert.match(input, /autocomplete="off"/);

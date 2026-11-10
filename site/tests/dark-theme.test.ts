@@ -83,7 +83,8 @@ function tokens(body: string): Map<string, string> {
 }
 
 const COLOUR = /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|\btransparent\b|%23[0-9a-f]{3,6}/i;
-const DARK = /prefers-color-scheme:\s*dark/;
+// Dark mode is the page's own setting (owner, 2026-11-10: light by default, with a switch).
+const DARK_ROOT = /^:root\[data-theme=("?)dark\1\]$/;
 
 let dir = "";
 let out = "";
@@ -110,9 +111,8 @@ before(() => {
     .join("\n");
   blocks = rules(css);
   for (const b of blocks) {
-    if (b.selector !== ":root") continue;
-    if (b.media === "") for (const [k, v] of tokens(b.body)) light.set(k, v);
-    else if (DARK.test(b.media)) for (const [k, v] of tokens(b.body)) dark.set(k, v);
+    if (b.selector === ":root" && b.media === "") for (const [k, v] of tokens(b.body)) light.set(k, v);
+    else if (DARK_ROOT.test(b.selector)) for (const [k, v] of tokens(b.body)) dark.set(k, v);
   }
   const walk = (d: string) => {
     for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -135,15 +135,15 @@ test("every light colour token has a dark value, and the dark set adds nothing t
 });
 
 test("the dark set is for screens only, so printing stays on the light set", () => {
-  const media = blocks.filter((b) => b.selector === ":root" && DARK.test(b.media)).map((b) => b.media);
+  const media = blocks.filter((b) => DARK_ROOT.test(b.selector)).map((b) => b.media);
   assert.ok(media.length > 0);
-  for (const m of media) assert.match(m, /^@media screen and /);
+  for (const m of media) assert.match(m, /^@media screen\b/);
 });
 
 test("components use colour tokens only: no colour written straight into a style, outside print", () => {
   const found: string[] = [];
   for (const b of blocks) {
-    if (b.selector === ":root") continue;
+    if (b.selector === ":root" || DARK_ROOT.test(b.selector)) continue;
     if (/\bprint\b|forced-colors/.test(b.media)) continue;
     // Strip custom-property fallbacks such as var(--x, #fff): the token wins whenever the site's CSS loads.
     const body = b.body.replace(/var\(--[\w-]+\s*,\s*[^()]*(\([^()]*\))?[^()]*\)/g, "var()");
@@ -155,13 +155,25 @@ test("components use colour tokens only: no colour written straight into a style
   assert.deepEqual(found, []);
 });
 
-test("pages say we have our own light and dark colours", () => {
-  assert.match(css, /html\s*{[^}]*color-scheme:\s*light dark/);
+test("pages are light by default, say we have our own dark colours, and apply a saved Dark mode before the first paint", () => {
+  // Light for everyone unless the person turns on Dark mode (owner, 2026-11-10).
+  assert.match(css, /html\s*{[^}]*color-scheme:\s*light\s*[;}]/);
+  assert.match(css, /html\[data-theme=("?)dark\1\]\s*{[^}]*color-scheme:\s*dark/);
+  assert.doesNotMatch(css, /prefers-color-scheme:\s*dark/, "the device setting no longer switches the colours");
   assert.ok(pages.length >= 10, `${pages.length} pages`);
   for (const p of pages) {
     const html = readFileSync(p, "utf8");
     if (!html.includes("<head>")) continue;
     assert.match(html, /<meta name="color-scheme" content="light dark"\s*\/?>/, p.slice(out.length));
+    // Pages built on the site's layout (the root language page and 404 have their own frame).
+    if (!html.includes('class="site-header"')) continue;
+    assert.match(html, /<html[^>]*data-theme="light"/, p.slice(out.length));
+    if (!p.includes("medicaid-hours")) {
+      // The saved choice is read before any stylesheet, so the page never flashes.
+      const head = html.slice(0, html.indexOf("</head>"));
+      const script = head.indexOf('localStorage.getItem("cvh.theme")');
+      assert.ok(script > 0 && script < (head.indexOf("<link rel=\"stylesheet\"") + 1 || Infinity), p.slice(out.length));
+    }
   }
 });
 

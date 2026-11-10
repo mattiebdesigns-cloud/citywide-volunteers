@@ -1,21 +1,108 @@
 ---
 /**
- * Footer: where listings come from (PROJECT.md 2). The page links moved to
- * the header (owner, 2026-11-10). In a test build the sentence is in the
- * banner at the top instead, and the layout leaves the footer out.
+ * Footer (owner, 2026-11-10): the Medicaid hours calculator link, the Dark
+ * mode switch, and where listings come from. In a test build that sentence
+ * is in the banner at the top instead.
+ *
+ * Dark mode: the site is light by default for everyone. The switch sets
+ * data-theme="dark" on <html> and keeps the choice in this browser only
+ * (localStorage, cvh.theme): no cookie, nothing in the address, nothing sent.
+ * The layout applies a saved choice before the first paint. Pages that use no
+ * storage (the Medicaid calculator, decision 0022) show no switch and stay light.
  */
-import { translator } from "../lib/site.ts";
+import MapCredits from "./MapCredits.astro";
+import { paths, translator } from "../lib/site.ts";
+import { startDateText } from "../lib/medicaid.ts";
 
 interface Props {
   lang: string;
+  /** This page's path, so the link to it is marked aria-current="page". */
+  path?: string;
+  testBuild?: boolean;
+  noStorage?: boolean;
+  /** This page has a map: show the map credits here (owner, 2026-11-10). */
+  mapCredits?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, path, testBuild = false, noStorage = false, mapCredits = false } = Astro.props;
 const tr = translator(lang);
+const current = (href: string) => (href === path ? "page" : undefined);
 ---
 
 <footer class="site-footer">
-  <div class="page">
-    <p class="muted">{tr.t("site.footer_sources")}</p>
+  <div class="page site-footer__inner">
+    <a class="site-footer__link" href={paths.medicaid(lang)} aria-current={current(paths.medicaid(lang))}
+      >{tr.t("medicaid.link_with_date", { date: startDateText(tr.lang) })}</a
+    >
+    {
+      !noStorage && (
+        <button type="button" class="theme-switch" aria-pressed="false" data-theme-toggle hidden>
+          <svg class="theme-switch__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>
+          <span>{tr.t("site.theme_dark")}</span>
+        </button>
+      )
+    }
+    {!testBuild && <p class="muted site-footer__sources">{tr.t("site.footer_sources")}</p>}
+    {mapCredits && <MapCredits lang={lang} />}
   </div>
 </footer>
+
+{
+  !noStorage && (
+    <script>
+      import "../scripts/theme.ts";
+    </script>
+  )
+}
+
+<style>
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-3);
+  }
+  /* 48 px tap target. */
+  .site-footer__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .site-footer__sources {
+    flex-basis: 100%;
+    margin: 0;
+  }
+  /* The Dark mode switch: a 48 px toggle; pressed (dark on) shows filled. */
+  .theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    border: 2px solid var(--color-primary);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: var(--weight-strong);
+    cursor: pointer;
+  }
+  .theme-switch[hidden] {
+    display: none;
+  }
+  .theme-switch[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .theme-switch:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-inner);
+  }
+  .theme-switch__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+  }
+</style>

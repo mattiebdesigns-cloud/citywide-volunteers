@@ -15,6 +15,9 @@ import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
 import OriginalText from "../../components/OriginalText.astro";
+import MapCardLines from "../../components/MapCardLines.astro";
+import PageTabs from "../../components/PageTabs.astro";
+import MapSwitch from "../../components/MapSwitch.astro";
 import MapView from "../../components/MapView.astro";
 import { mapAttrs } from "../../lib/map-build.ts";
 import { languagePaths, paths, siteData, translator } from "../../lib/site.ts";
@@ -43,14 +46,10 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
 }
 ---
 
-<Base lang={lang} alternates={alternates} path={paths.home(lang)}>
+<Base lang={lang} alternates={alternates} path={paths.home(lang)} mapCredits>
   <div class="page results">
     <ResultsHeading lang={lang} text={t("filters.heading")} filters />
-    {/* Under the Filters button, side by side (owner, 2026-11-10). */}
-    <ul class="home-pages">
-      <li><a href={paths.flexible(lang)}>{t("home.flexible_link")}</a></li>
-      <li><a href={paths.teams(lang)}>{t("home.teams_link")}</a></li>
-    </ul>
+    <PageTabs lang={lang} current="dated" />
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
@@ -68,8 +67,9 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
     >
       {tr.plural("results.count", listings.length)}
     </p>
-    <SearchBox lang={lang} />
+    <MapSwitch lang={lang} />
     </div>
+    <div class="results__searchrow"><SearchBox lang={lang} /></div>
     <MapView lang={lang} mode="day" kind="dated" />
     <div
       id="results-none"
@@ -115,7 +115,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
             data-kind="dated"
             data-search={cardSearchText(tr, e, settings)}
             data-over-at={e.overAt}
-            {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), when: timeText(tr, e) })}
+            {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), time: timeText(tr, e), when: whenText(tr, e) })}
           >
             <ListingCard
               id={e.id}
@@ -143,7 +143,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
               shareUrl={paths.listing(lang, e.id)}
               headingLevel={2}
             />
-            {e.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
+            <MapCardLines lang={lang} item={e} />
           </li>
         ))
       }
@@ -212,21 +212,3 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
 </script>
 
 
-<style>
-  /* Two links side by side, right-aligned under the Filters button; they wrap on a narrow screen.
-     Each is a 48 px tall target with the site's focus ring. */
-  .home-pages {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0 var(--space-4);
-    margin: var(--space-1) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .home-pages a {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-  }
-</style>

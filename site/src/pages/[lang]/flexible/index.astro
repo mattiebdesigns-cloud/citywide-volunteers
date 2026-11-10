@@ -13,6 +13,9 @@ import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
 import OriginalText from "../../../components/OriginalText.astro";
+import MapCardLines from "../../../components/MapCardLines.astro";
+import PageTabs from "../../../components/PageTabs.astro";
+import MapSwitch from "../../../components/MapSwitch.astro";
 import MapView from "../../../components/MapView.astro";
 import { mapAttrs } from "../../../lib/map-build.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
@@ -40,10 +43,11 @@ function facts(o: (typeof opportunities)[number]) {
 }
 ---
 
-<Base lang={lang} title={t("flexible.title")} alternates={alternates} path={paths.flexible(lang)}>
+<Base lang={lang} title={t("flexible.title")} alternates={alternates} path={paths.flexible(lang)} mapCredits>
   <div class="page results">
     <p class="flexible__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
     <ResultsHeading lang={lang} text={t("flexible.title")} filters={any} />
+    <PageTabs lang={lang} current="flexible" />
     <p>{t("flexible.intro")}</p>
   </div>
   {any && <FlexibleFilterPanel lang={lang} />}
@@ -64,8 +68,9 @@ function facts(o: (typeof opportunities)[number]) {
           >
             {tr.plural("flexible.count", opportunities.length)}
           </p>
-            <SearchBox lang={lang} kind="flexible" />
+            <MapSwitch lang={lang} />
           </div>
+          <div class="results__searchrow"><SearchBox lang={lang} kind="flexible" /></div>
           <MapView lang={lang} mode="all" kind="flexible" />
           <div
             id="results-none"
@@ -112,7 +117,7 @@ function facts(o: (typeof opportunities)[number]) {
                   headingLevel={2}
                 />
                 <OriginalText lang={lang} item={o} />
-                {o.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
+                <MapCardLines lang={lang} item={o} />
               </li>
             ))}
           </ul>

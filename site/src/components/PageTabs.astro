@@ -1,0 +1,66 @@
+---
+/**
+ * By Date · Flexible Shifts · Team Shifts, under the page heading on the home,
+ * Flexible and Teams pages (owner, 2026-11-10). The page you are on is shown as
+ * already chosen: not a link, marked aria-current="page", in muted text on a
+ * soft tile with no underline (more than colour alone; muted text on the tile
+ * is 5.9:1 light, 8.0:1 dark). The others are underlined links. One line at
+ * 360 px in English; Spanish needs 336 px or more at the 16 px text floor and
+ * wraps to two lines until the owner chooses (QUESTIONS.md). Each item is 44 px tall.
+ */
+import { paths, translator } from "../lib/site.ts";
+
+interface Props {
+  lang: string;
+  current: "dated" | "flexible" | "teams";
+}
+
+const { lang, current } = Astro.props;
+const t = translator(lang).t;
+const items = [
+  { id: "dated", href: paths.home(lang), label: t("home.dated_link") },
+  { id: "flexible", href: paths.flexible(lang), label: t("home.flexible_link") },
+  { id: "teams", href: paths.teams(lang), label: t("home.teams_link") },
+] as const;
+---
+
+<ul class="page-tabs">
+  {
+    items.map((item) => (
+      <li>
+        {item.id === current ? (
+          <span class="page-tabs__current" aria-current="page">{item.label}</span>
+        ) : (
+          <a class="page-tabs__link" href={item.href}>{item.label}</a>
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .page-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .page-tabs__link,
+  .page-tabs__current {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.375rem;
+    border-radius: var(--radius-sm, 0.5rem);
+    white-space: nowrap;
+  }
+  /* The page you are on: already chosen, so greyed, on a soft tile, not underlined. */
+  .page-tabs__current {
+    background: var(--color-line-soft);
+    color: var(--color-ink-muted);
+    font-weight: var(--weight-strong);
+  }
+</style>

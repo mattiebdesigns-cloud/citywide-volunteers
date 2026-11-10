@@ -18,7 +18,7 @@
     "footer_open_source": "Cualquier persona puede ver y reutilizar el código de este sitio.",
     "footer_code_link": "Ver el código",
     "test_version": "Versión de prueba. El sitio web sigue en construcción.",
-    "pages_nav": "Páginas"
+    "theme_dark": "Modo oscuro"
   },
   "filters": {
     "heading": "Buscar un turno",
@@ -157,8 +157,9 @@
     "picks_note": "Turnos con lugares disponibles, elegidos por nuestro equipo. Nadie paga por aparecer aquí.",
     "tonight": "Esta noche",
     "tomorrow": "Mañana",
-    "flexible_link": "Turnos flexibles",
-    "teams_link": "Turnos en equipo"
+    "dated_link": "Por fecha",
+    "flexible_link": "Flexibles",
+    "teams_link": "En equipo"
   },
   "listing": {
     "hosted_by": "Organiza: {org}",
@@ -540,6 +541,7 @@
       }
     },
     "pin": "{title}. {time}",
+    "pin_hint": "Presione otra vez para ir a este turno en la lista.",
     "with_approx": "{name}. Zona aproximada.",
     "place": {
       "dated": {
@@ -586,13 +588,15 @@
     "credit": "Mapa: {protomaps} © colaboradores de {osm}",
     "credit_census": "Centros de las zonas: {census} (Oficina del Censo de EE. UU.)",
     "census_name": "US Census Bureau",
+    "credit_short": "© {osm}",
     "credit_esa": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
     "credit_esa_translation": "Cobertura del suelo: © proyecto ESA WorldCover 2020 / Contiene datos modificados de Copernicus Sentinel (2020) procesados por el consorcio ESA WorldCover",
     "census_notice": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
     "census_notice_translation": "Este producto usa la API de datos de la Oficina del Censo, pero la Oficina del Censo no lo respalda ni lo certifica.",
     "about_data": "Sobre los datos del mapa",
     "directions": "Cómo llegar",
-    "directions_note": "Abre su aplicación de mapas. Ese servicio verá esta dirección.",
+    "directions_to": "a {title}",
+    "directions_note": "Abre su aplicación de mapas. Ese servicio verá la dirección de este turno.",
     "show_in_list": "Ver en la lista",
     "close": "Cerrar los detalles",
     "loading": "Cargando el mapa…",

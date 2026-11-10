@@ -5,7 +5,8 @@
  * and maps with no day on the Flexible and Teams pages (mode "all").
  *
  * The list stays the main view. The map opens only from the "List | Map"
- * switch, which is hidden until the script runs (the map needs JavaScript).
+ * switch (components/MapSwitch.astro, beside the count), which is hidden until
+ * the script runs (the map needs JavaScript).
  * Every pin is a card in the list below; a card with no map point stays in
  * the list and the map says how many have none.
  *
@@ -19,7 +20,6 @@
  * the list loads as fast as before.
  */
 import { siteData, translator, paths } from "../lib/site.ts";
-import SpokenSlash from "./SpokenSlash.astro";
 import { mapConfig } from "../lib/map-build.ts";
 import { templateParts } from "../lib/map.ts";
 
@@ -38,6 +38,7 @@ const config = mapConfig(mode, kind, settings, basemap);
 // Everything the map script says, from the translation files (rule 10).
 const words = {
   pin: t("map.pin"),
+  pinHint: t("map.pin_hint"),
   withApprox: t("map.with_approx"),
   placeOne: t(`map.place.${kind}.one`),
   placeOther: t(`map.place.${kind}.other`),
@@ -47,12 +48,6 @@ const words = {
   noLocationOther: t(`map.no_location.${kind}.other`),
   announceOne: t("map.announce.one"),
   announceOther: t("map.announce.other"),
-  approximate: t("map.approximate"),
-  translated: t("listing.translated_automatically"),
-  directions: t("map.directions"),
-  directionsNote: t("map.directions_note"),
-  showInList: t("map.show_in_list"),
-  close: t("map.close"),
   previous: t("map.day.previous"),
   next: t("map.day.next"),
   loading: t("map.loading"),
@@ -74,27 +69,9 @@ const words = {
   },
 };
 
-// The credit (scraping-licence condition 3): "Map: Protomaps © OpenStreetMap contributors".
-const credit = templateParts(t("map.credit"), {
-  protomaps: { text: "Protomaps", lang: "en" },
-  osm: { text: "OpenStreetMap", lang: "en" },
-});
-// The Census credit (scraping-licence gate): "Area centers: US Census Bureau", and the
-// Census Bureau's own notice, in English on every page (with a translation beside it elsewhere).
-const censusCredit = templateParts(t("map.credit_census"), { census: { text: t("map.census_name"), lang: "en" } });
-const censusTranslation = tr.lang === "en" ? null : t("map.census_notice_translation");
-// The land-cover layer's credit (ESA WorldCover, CC BY 4.0; licence gate wording): English, with a translation beside it off English pages.
-const esaTranslation = tr.lang === "en" ? null : t("map.credit_esa_translation");
-const creditLinks: Record<string, string> = {
-  Protomaps: "https://protomaps.com/",
-  OpenStreetMap: "https://www.openstreetmap.org/copyright",
-};
+// The short credit in the map's corner: "© OpenStreetMap", linked.
+const cornerCredit = templateParts(t("map.credit_short"), { osm: { text: "OpenStreetMap", lang: "en" } });
 ---
-
-<div class="map-switch" role="group" aria-label={t("map.view_label")} data-map-switch hidden>
-  <button type="button" class="map-switch__button" aria-pressed="true" data-map-view="list">{t("map.view_list")}</button>
-  <button type="button" class="map-switch__button" aria-pressed="false" data-map-view="map" aria-controls="map-section">{t("map.view_map")}</button>
-</div>
 
 <section
   id="map-section"
@@ -145,28 +122,9 @@ const creditLinks: Record<string, string> = {
       </button>
     </div>
     <div class="map__canvas" data-map-canvas></div>
-    <p class="map__credit">
-      {
-        credit.map((part) =>
-          creditLinks[part.text] ? (
-            <a href={creditLinks[part.text]} lang={part.lang} rel="noopener noreferrer">{part.text}</a>
-          ) : (
-            part.text
-          ),
-        )
-      }
-      <span aria-hidden="true"> · </span>
-      <a href={paths.mapData(lang)}>{t("map.about_data")}</a>
-    </p>
-    <p class="map__credit map__credit--census" data-map-census>
-      {censusCredit.map((part) => (part.lang ? <span lang={part.lang}>{part.text}</span> : part.text))}
-      <br />
-      <span lang="en">{t("map.census_notice")}</span>
-      {censusTranslation && <> {censusTranslation}</>}
-      <br />
-      {/* The zoomed-out land-cover layer's required credit (ESA WorldCover, CC-BY-4.0; owner Q126). */}
-      <SpokenSlash text={t("map.credit_esa")} lang="en" data-map-esa="" />
-      {esaTranslation && <><br /><SpokenSlash text={esaTranslation} /></>}
+    {/* OpenStreetMap's own credit stays on the map (their attribution guidelines); the full block is in the footer (owner, 2026-11-10). */}
+    <p class="map__corner-credit" data-map-corner-credit>
+      {cornerCredit.map((part) => (part.lang ? <a href="https://www.openstreetmap.org/copyright" lang={part.lang} rel="noopener noreferrer">{part.text}</a> : part.text))}
     </p>
   </div>
 
@@ -183,18 +141,8 @@ const creditLinks: Record<string, string> = {
 
   <p class="map__nolocation" data-map-nolocation hidden></p>
   {mode === "day" && <p class="sr-only" data-map-status role="status"></p>}
+  <p class="sr-only" data-map-pin-hint role="status"></p>
 
-  <div class="map__detail" data-map-detail hidden>
-    <div class="map__detail-top">
-      <h3 class="map__detail-heading" tabindex="-1" data-map-detail-heading></h3>
-      <button type="button" class="map__button map__button--plain" data-map-detail-close>
-        <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-        <span class="sr-only">{t("map.close")}</span>
-      </button>
-    </div>
-    <ul class="map__detail-list" data-map-detail-list></ul>
-    <div data-map-detail-extra></div>
-  </div>
 </section>
 
 <script>
@@ -202,37 +150,6 @@ const creditLinks: Record<string, string> = {
 </script>
 
 <style>
-  .map-switch {
-    display: inline-flex;
-    border: 2px solid var(--color-primary);
-    border-radius: var(--radius-sm, 0.5rem);
-    overflow: hidden;
-    margin-block: var(--space-2);
-  }
-  .map-switch[hidden] {
-    display: none;
-  }
-  .map-switch__button {
-    min-height: var(--tap);
-    min-width: 5rem;
-    padding: 0 var(--space-4);
-    border: 0;
-    background: var(--color-surface);
-    color: var(--color-primary);
-    font: inherit;
-    font-weight: var(--weight-strong, 600);
-    cursor: pointer;
-  }
-  /* The chosen view: filled, and aria-pressed tells screen readers. */
-  .map-switch__button[aria-pressed="true"] {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-  }
-  .map-switch__button:focus-visible {
-    outline: 3px solid var(--color-focus);
-    outline-offset: -5px;
-    box-shadow: inset 0 0 0 2px var(--color-focus-inner);
-  }
 
   .map {
     margin-block: var(--space-3) var(--space-5);
@@ -241,10 +158,31 @@ const creditLinks: Record<string, string> = {
     display: none;
   }
   /* "Skip the map": a plain link, always visible, so keyboard users can pass the pins. */
+  /* "Skip the map": hidden until it gets keyboard focus (owner, 2026-11-10: "Hide until
+     tabbed"), then shown with the focus ring, 48 px tall. */
   .map__skip {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .map__skip:focus {
+    position: static;
     display: inline-flex;
     align-items: center;
+    width: auto;
+    height: auto;
     min-height: var(--tap);
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    padding-inline: var(--space-2);
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-inner);
   }
 
   .map-day__row {
@@ -314,30 +252,24 @@ const creditLinks: Record<string, string> = {
     gap: var(--space-2);
     z-index: 2;
   }
-  .map__credit {
+
+  /* The short OpenStreetMap credit, in the map's bottom corner, on the surface colour. */
+  .map__corner-credit {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
     margin: 0;
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-2);
     background: var(--color-surface);
-    border-top: 1px solid var(--color-line);
+    border-top-left-radius: var(--radius-sm, 0.5rem);
     font-size: var(--text-min, 1rem);
   }
-  /* Links stay in the sentence; padding makes each a 44 px tall target. */
-  .map__credit--census {
-    border-top: 0;
-    padding-block: 0 var(--space-2);
-  }
-  .map__credit {
-    padding-block: var(--space-1);
-    line-height: 1.5;
-  }
-  /* 1.5 line height + 2 × 0.625rem = 2.75rem (44 px) tall (accessibility gate, fix 6). */
-  .map__credit a {
-    display: inline-block;
+  .map__corner-credit a {
+    display: inline-flex;
+    align-items: center;
     min-height: 2.75rem;
-    padding-block: 0.625rem;
-    line-height: 1.5;
   }
-
   .map__message:empty,
   .map__note:empty {
     display: none;
@@ -367,35 +299,9 @@ const creditLinks: Record<string, string> = {
     margin-block: var(--space-3);
   }
 
-  .map__detail {
-    margin-block: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 2px solid var(--color-primary);
-    border-radius: var(--radius-sm, 0.5rem);
-    background: var(--color-surface);
-  }
-  .map__detail[hidden] {
-    display: none;
-  }
-  .map__detail-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-3);
-  }
-  .map__detail-heading {
-    margin: var(--space-2) 0;
-    overflow-wrap: anywhere;
-  }
-  .map__detail-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
 
   .map__button:focus-visible,
-  :global(.map__text-button:focus-visible),
-  .map__detail-heading:focus-visible {
+  :global(.map__text-button:focus-visible) {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-focus-inner);
@@ -447,7 +353,7 @@ const creditLinks: Record<string, string> = {
     color: var(--color-on-band);
   }
   /* The open pin: a gap and an outer ring of opposite shades (white gap, ink ring in light mode; the reverse in dark), 3:1 or more on every map colour (accessibility gate, fix 4). */
-  :global(.pv-pin[aria-expanded="true"] .pv-pin__shape) {
+  :global(.pv-pin[data-flag="open"] .pv-pin__shape) {
     box-shadow:
       0 0 0 2px var(--map-pin-edge),
       0 0 0 5px var(--map-pin-ring),
@@ -472,6 +378,53 @@ const creditLinks: Record<string, string> = {
     border-radius: 999px;
   }
 
+  /* The title flag on a pressed pin (owner, 2026-11-10): above the pin, on the surface colour
+     with an ink edge; it wraps, and stays inside a 360 px screen. */
+  :global(.pv-flag) {
+    position: absolute;
+    bottom: calc(100% + 0.25rem);
+    left: 50%;
+    /* --flag-dx slides it back inside the map frame near an edge (map-engine.ts placeFlag). */
+    transform: translateX(calc(-50% + var(--flag-dx, 0px)));
+    width: max-content;
+    max-width: 14rem;
+    padding: var(--space-1) var(--space-2);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-sm, 0.5rem);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: var(--text-min, 1rem);
+    font-weight: var(--weight-strong, 600);
+    line-height: 1.3;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    pointer-events: auto;
+  }
+  /* MapLibre already positions each pin (absolute), which anchors the flag; the open one sits on top. */
+  /* No room above the pin: the flag goes under it (map-engine.ts placeFlag). */
+  :global(.pv-flag[data-below="true"]) {
+    bottom: auto;
+    top: calc(100% + 0.25rem);
+  }
+  /* The open pin and its flag sit above the other pins and the zoom buttons. */
+  :global(.pv-pin[data-flag="open"]) {
+    z-index: 5;
+  }
+  /* "Get directions" under a card while the map is on: a 44 px tall link with its note. */
+  :global(.map-directions) {
+    margin: var(--space-2) 0 0;
+  }
+  :global(.map-directions[hidden]) {
+    display: none;
+  }
+  :global(.map-directions__link) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong, 600);
+  }
+
   /* The list card that matches the open pin. */
   :global(li.is-map-selected) {
     outline: 3px solid var(--color-primary);
@@ -487,27 +440,6 @@ const creditLinks: Record<string, string> = {
     display: none;
   }
 
-  :global(.map-detail__item) {
-    padding-block: var(--space-3);
-    border-top: 1px solid var(--color-line-soft);
-  }
-  :global(.map-detail__item:first-child) {
-    border-top: 0;
-  }
-  /* "Translated automatically" under a machine-translated title, as on the cards (decision 0036). */
-  :global(.map-detail__translated) {
-    font-style: italic;
-  }
-  :global(.map-detail__item p) {
-    margin: var(--space-1) 0;
-  }
-  :global(.map-detail__title),
-  :global(.map-detail__link) {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    font-weight: var(--weight-strong, 600);
-  }
 
   @media (prefers-reduced-motion: reduce) {
     :global(.map *) {

@@ -2,8 +2,8 @@
 // "Map" (scripts/map-view.ts), so the list loads as fast as before.
 //
 // MapLibre GL JS (BSD-3-Clause; never Mapbox GL) draws the street map from
-// our own PMTiles pieces, read in byte ranges from this site: no tile
-// position is in any web address (privacy condition 1). The worker, letters
+// small tile files on this site (/map/tiles/z/x/y.mvt, written at build time
+// from our PMTiles pieces), fetched with no cookies or credentials. The worker, letters
 // and road signs are on this site too (privacy condition 3).
 //
 // Pins, places and number circles are real <button>s on top of the map, so
@@ -13,7 +13,6 @@
 import { LngLatBounds, Map as MapLibre, Marker, addProtocol, setWorkerUrl } from "maplibre-gl";
 // MapLibre's stylesheet is not imported here (that would put it on every page); map-view.ts
 // adds it from /map/ just before this file loads.
-import { PMTiles } from "pmtiles";
 import { groupByPlace, groupOnScreen, isOnScreen, partFor, type Place, type PinItem } from "../lib/map.ts";
 import { TILE_PROTOCOL, mapStyle } from "../lib/map-style.ts";
 import type { MapConfig } from "../lib/map-build.ts";
@@ -37,8 +36,12 @@ export interface EngineHooks {
   placeName(place: Place<EngineItem>): Array<{ text: string; lang?: string }>;
   /** A number circle's name: "{count} shifts here; zoom in to see them". */
   clusterName(count: number): string;
-  /** The person opened a pin. */
-  onOpen(place: Place<EngineItem>, button: HTMLButtonElement): void;
+  /** The words on a pin's flag: the listing's title (or "2 shifts at this place"), with its language. */
+  flagText(place: Place<EngineItem>): { text: string; lang?: string };
+  /** A flag just opened: tell screen readers to press again to go to the card. */
+  onFlag(): void;
+  /** The person pressed a pin whose flag was already showing: go to its card in the list. */
+  onJump(place: Place<EngineItem>): void;
   /** The map could not start (no WebGL, for example). */
   onFail(): void;
 }
@@ -52,25 +55,41 @@ export interface Engine {
 
 let protocolAdded = false;
 
-/** Reads tiles z/x/y from whichever street map piece holds them. */
-function addTileProtocol(parts: NonNullable<MapConfig["basemap"]>["parts"]): void {
+/** Gzip bytes start with 1f 8b. A host may already have unpacked them (Content-Encoding), so check. */
+const isGzip = (b: Uint8Array) => b.length > 2 && b[0] === 0x1f && b[1] === 0x8b;
+
+async function gunzip(bytes: Uint8Array): Promise<Uint8Array> {
+  const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+/**
+ * Reads tile z/x/y as one small file from this site (/map/tiles/z/x/y.mvt,
+ * written at build time), only where the street map has one: no range
+ * requests, which the live host does not serve. Outside the region, or when a
+ * tile is missing, the map gets an empty tile.
+ */
+function addTileProtocol(basemap: NonNullable<MapConfig["basemap"]>): void {
   if (protocolAdded) return;
   protocolAdded = true;
-  const files = parts.map((p) => new PMTiles(new URL(p.url, location.origin).href));
   addProtocol(TILE_PROTOCOL, async (params, abort) => {
     const m = /\/(\d+)\/(\d+)\/(\d+)$/.exec(params.url);
     if (!m) throw new Error("bad tile address");
     const [z, x, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
-    const i = partFor(parts, z, x, y);
-    if (i < 0) return { data: new Uint8Array() }; // outside the region: an empty tile
-    const tile = await files[i].getZxy(z, x, y, abort.signal);
-    return { data: tile ? new Uint8Array(tile.data) : new Uint8Array() };
+    if (partFor(basemap.parts, z, x, y) < 0) return { data: new Uint8Array() };
+    const res = await fetch(basemap.tiles.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y)), {
+      signal: abort.signal,
+      credentials: "omit",
+    });
+    if (!res.ok || (res.headers.get("content-type") ?? "").includes("html")) return { data: new Uint8Array() };
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    return { data: isGzip(bytes) ? await gunzip(bytes) : bytes };
   });
 }
 
 export function createEngine(canvas: HTMLElement, config: MapConfig, lang: string, locale: Record<string, string>, hooks: EngineHooks): Engine | null {
   setWorkerUrl(new URL(config.worker, location.origin).href);
-  if (config.basemap) addTileProtocol(config.basemap.parts);
+  if (config.basemap) addTileProtocol(config.basemap);
 
   let map: MapLibre;
   try {
@@ -92,6 +111,11 @@ export function createEngine(canvas: HTMLElement, config: MapConfig, lang: strin
     hooks.onFail();
     return null;
   }
+  // Dark mode switch (footer): redraw the street map in the matching colours. The pins are
+  // buttons on top of the map, styled by the page's own colours, so they follow by themselves.
+  document.addEventListener("pv:themechange", () => {
+    map.setStyle(mapStyle({ lang, origin: location.origin, maxzoom: config.basemap?.maxzoom ?? null }));
+  });
   map.touchZoomRotate.disableRotation();
   map.keyboard.disableRotation();
 
@@ -117,7 +141,14 @@ export function createEngine(canvas: HTMLElement, config: MapConfig, lang: strin
     }
   });
 
-  map.on("moveend", () => drawButtons());
+  map.on("moveend", () => {
+    drawButtons();
+    // An open flag stays inside the frame as the map moves.
+    for (const { button } of markers.values()) {
+      const flag = button.querySelector<HTMLElement>(".pv-flag");
+      if (flag) placeFlag(flag);
+    }
+  });
 
   function pinButton(className: string, label: Array<{ text: string; lang?: string }>, shapeText: string): HTMLButtonElement {
     const button = document.createElement("button");
@@ -174,11 +205,31 @@ export function createEngine(canvas: HTMLElement, config: MapConfig, lang: strin
           hooks.placeName(place),
           count > 1 ? new Intl.NumberFormat(lang).format(count) : "",
         );
-        button.setAttribute("aria-expanded", "false");
+        // First press: a flag with the title on the pin, and screen readers hear "Press again
+        // to go to this shift in the list". Second press: jump to the card (owner, 2026-11-10).
+        // Escape closes the flag. (No aria-expanded: nothing opens that a person can move into.)
         button.addEventListener("click", () => {
-          for (const { button: other } of markers.values()) if (other !== button && other.hasAttribute("aria-expanded")) other.setAttribute("aria-expanded", "false");
-          button.setAttribute("aria-expanded", "true");
-          hooks.onOpen(place, button);
+          if (button.dataset.flag === "open") {
+            hooks.onJump(place);
+            return;
+          }
+          closeFlags();
+          const words = hooks.flagText(place);
+          const flag = document.createElement("span");
+          flag.className = "pv-flag";
+          flag.setAttribute("aria-hidden", "true"); // the button's own name already says the title
+          flag.textContent = words.text;
+          if (words.lang) flag.lang = words.lang;
+          button.append(flag);
+          button.dataset.flag = "open";
+          placeFlag(flag);
+          hooks.onFlag();
+        });
+        button.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape" && button.dataset.flag === "open") {
+            ev.stopPropagation();
+            closeFlags();
+          }
         });
       }
       button.dataset.pinKey = key;
@@ -196,6 +247,35 @@ export function createEngine(canvas: HTMLElement, config: MapConfig, lang: strin
       }
     }
     orderButtons(focusedKey);
+  }
+
+  /** Takes down any flag that is showing. */
+  function closeFlags(): void {
+    for (const { button } of markers.values()) {
+      if (button.dataset.flag !== "open") continue;
+      delete button.dataset.flag;
+      button.querySelector(".pv-flag")?.remove();
+    }
+  }
+
+  /**
+   * Keeps a flag inside the map frame (accessibility gate): slides it sideways near
+   * the left or right edge, and puts it under the pin when there is no room above.
+   */
+  function placeFlag(flag: HTMLElement): void {
+    flag.style.setProperty("--flag-dx", "0px");
+    delete flag.dataset.below;
+    const box = map.getContainer().getBoundingClientRect();
+    const pad = 4;
+    let r = flag.getBoundingClientRect();
+    if (r.top < box.top + pad) {
+      flag.dataset.below = "true";
+      r = flag.getBoundingClientRect();
+    }
+    let dx = 0;
+    if (r.left < box.left + pad) dx = box.left + pad - r.left;
+    else if (r.right > box.right - pad) dx = box.right - pad - r.right;
+    flag.style.setProperty("--flag-dx", `${Math.round(dx)}px`);
   }
 
   /**

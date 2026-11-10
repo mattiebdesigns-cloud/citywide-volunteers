@@ -134,14 +134,16 @@
 }
 
 /*
- * Dark set (owner, 2026-11-10). Used when the device is set to dark mode.
- * "screen" keeps printing on the light set. Every colour token above is
+ * Dark set (owner, 2026-11-10). Used only when the person turns on "Dark mode"
+ * (the switch in the footer sets data-theme="dark" on <html>); the site is light
+ * by default whatever the device is set to (owner, 2026-11-10, "Light, with a
+ * switch"). "screen" keeps printing on the light set. Every colour token above is
  * redefined here; contrast is listed beside each, and every pair is in
  * docs/design.md. The cause and About drawings keep their own colours and
  * sit on a softer tile, so they read the same in both modes.
  */
-@media screen and (prefers-color-scheme: dark) {
-  :root {
+@media screen {
+  :root[data-theme="dark"] {
     /* Page */
     --color-paper: #0f1724;          /* deep navy-black page */
     --color-surface: #18233a;        /* cards' text areas, sheets, fields */

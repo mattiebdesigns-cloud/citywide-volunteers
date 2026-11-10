@@ -29,9 +29,11 @@ interface Props {
    * 0022) runs no storage code at all.
    */
   noStorage?: boolean;
+  /** The page has a map: its credits go in the footer (decision 0035; owner, 2026-11-10). */
+  mapCredits?: boolean;
 }
 
-const { lang, title, alternates, path, noStorage = false } = Astro.props;
+const { lang, title, alternates, path, noStorage = false, mapCredits = false } = Astro.props;
 const { testBuild, siteUrl, settings, listings } = siteData();
 // Every listing in this build and when it is over, so the browser can clear
 // saved shifts that have ended (owner, Q32). Ids are letters, digits, - and _.
@@ -43,11 +45,26 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
 ---
 
 <!doctype html>
-<html lang={tr.lang} dir="ltr">
+<html lang={tr.lang} dir="ltr" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* "light dark": we have our own dark colours, so browsers such as Chrome on Android
+        do not darken the page themselves. The page is light unless the person turns on
+        Dark mode (owner, 2026-11-10). */}
     <meta name="color-scheme" content="light dark" />
+    {
+      // Before the first paint: the person's own Dark mode choice, kept only in this
+      // browser (localStorage). No cookie, nothing in the address, nothing sent.
+      // Pages that use no storage (the Medicaid calculator) stay light.
+      !noStorage && (
+        <script is:inline>
+          try {
+            if (localStorage.getItem("cvh.theme") === "dark") document.documentElement.dataset.theme = "dark";
+          } catch (e) {}
+        </script>
+      )
+    }
     <title>{pageTitle}</title>
     <meta name="description" content={tr.t("site.description")} />
     {testBuild && <meta name="robots" content="noindex, nofollow" />}
@@ -68,8 +85,7 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    {/* A test build says where listings come from in the banner at the top (owner, 2026-11-10); the footer then has nothing left to hold. */}
-    {!testBuild && <SiteFooter lang={lang} />}
+    <SiteFooter lang={lang} path={path} testBuild={testBuild} noStorage={noStorage} mapCredits={mapCredits} />
     {!noStorage && <script type="application/json" id="live-listings" set:html={live} />}
     {
       !noStorage && (

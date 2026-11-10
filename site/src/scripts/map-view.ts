@@ -1,4 +1,4 @@
-// The "List | Map" switch, the day picker and the details panel
+// The "List | Map" switch, the day picker, pin flags and the jump to a card
 // (decision 0035; components/MapView.astro). Small, and loaded with the
 // page; the map itself (map-engine.ts, with MapLibre) loads only when the
 // person first chooses Map.
@@ -36,12 +36,15 @@ const list = document.getElementById("listing-list");
 interface Item extends EngineItem {
   title: string;
   titleLang: string;
+  /** Short time for the pin's name. */
+  time: string;
+  /** The card's date and time line. */
   when: string;
+  /** The card's place line as shown, and as screen readers hear it. */
   place: string;
+  placeSpoken: string;
   href: string;
   address: string | null;
-  /** The title is a machine translation (decision 0036). */
-  translated: boolean;
 }
 
 if (root && switcher && list) {
@@ -57,10 +60,7 @@ if (root && switcher && list) {
   const noLocation = q<HTMLElement>("[data-map-nolocation]")!;
   const status = q<HTMLElement>("[data-map-status]");
   const nearStatus = q<HTMLElement>("[data-map-near-status]")!;
-  const detail = q<HTMLElement>("[data-map-detail]")!;
-  const detailHeading = q<HTMLElement>("[data-map-detail-heading]")!;
-  const detailList = q<HTMLElement>("[data-map-detail-list]")!;
-  const detailExtra = q<HTMLElement>("[data-map-detail-extra]")!;
+  const pinHint = q<HTMLElement>("[data-map-pin-hint]")!;
   const countEl = document.getElementById("results-count");
   const buttons = [...switcher.querySelectorAll<HTMLButtonElement>("[data-map-view]")];
 
@@ -74,7 +74,6 @@ if (root && switcher && list) {
   let engine: Engine | null = null;
   let loading: Promise<Engine | null> | null = null;
   let lastKey = "";
-  let openFrom: HTMLButtonElement | null = null;
 
   // ---- The day (day map only) ----
   const dayText = q<HTMLElement>("[data-map-day-text]");
@@ -133,12 +132,13 @@ if (root && switcher && list) {
       if (on) countEl.setAttribute("aria-live", "off");
       else countEl.removeAttribute("aria-live");
     }
-    for (const line of list!.querySelectorAll<HTMLElement>("[data-map-approx-line]")) line.hidden = !on;
+    for (const line of list!.querySelectorAll<HTMLElement>("[data-map-approx-line], [data-map-directions]")) line.hidden = !on;
     if (on) {
       showDay();
       lastKey = "";
       start();
-    } else closeDetail(false);
+      showDirections();
+    } else highlight([]);
     document.dispatchEvent(new CustomEvent("pv:mapchange"));
   }
   for (const b of buttons) b.addEventListener("click", () => setOn(b.dataset.mapView === "map"));
@@ -152,7 +152,13 @@ if (root && switcher && list) {
         createEngine(canvas, config, lang, words.maplibre, {
           placeName,
           clusterName: (count) => plural(words.clusterOne, words.clusterOther, count),
-          onOpen: openDetail,
+          flagText,
+          onFlag: () => {
+            // Cleared first, so the same words are announced again on the next pin.
+            pinHint.textContent = "";
+            setTimeout(() => (pinHint.textContent = words.pinHint), 50);
+          },
+          onJump: jumpTo,
           onFail: failed,
         }),
       )
@@ -204,11 +210,12 @@ if (root && switcher && list) {
         approximate: d.approx === "true",
         title: d.mapTitle ?? "",
         titleLang: d.mapLang ?? lang,
+        time: d.mapTime ?? "",
         when: d.mapWhen ?? "",
         place: d.mapPlace ?? "",
+        placeSpoken: d.mapPlaceSpoken ?? "",
         href: d.mapHref ?? "",
         address: d.mapAddress ?? null,
-        translated: d.mapTranslated === "true",
       });
     }
     return { items, missing };
@@ -225,8 +232,6 @@ if (root && switcher && list) {
       const announce = plural(words.announceOne, words.announceOther, shown, { date: dayInWords(day, lang) });
       status.textContent = missing ? `${announce} ${noLocation.textContent}` : announce;
     }
-    // The open details may no longer match the list.
-    if (key !== lastKey) closeDetail(false);
     const changed = key !== lastKey;
     lastKey = key;
     engine?.update(items, changed);
@@ -247,8 +252,8 @@ if (root && switcher && list) {
     let parts: Array<{ text: string; lang?: string }>;
     if (items.length === 1) {
       const it = items[0];
-      parts = it.when
-        ? templateParts(words.pin, { title: { text: it.title, lang: it.titleLang }, time: { text: it.when } })
+      parts = it.time
+        ? templateParts(words.pin, { title: { text: it.title, lang: it.titleLang }, time: { text: it.time } })
         : [{ text: it.title, lang: it.titleLang }];
     } else parts = [{ text: plural(words.placeOne, words.placeOther, items.length) }];
     if (!place.approximate) return parts;
@@ -261,90 +266,50 @@ if (root && switcher && list) {
     return joinParts(out);
   }
 
-  // ---- The details panel ----
-  function el<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, className?: string): HTMLElementTagNameMap[K] {
-    const node = document.createElement(tag);
-    if (text !== undefined) node.textContent = text;
-    if (className) node.className = className;
-    return node;
-  }
-
+  // ---- Pin flags and the jump to a card (owner, 2026-11-10) ----
   function highlight(items: Item[]): void {
     for (const li of list!.querySelectorAll("li.is-map-selected")) li.classList.remove("is-map-selected");
     for (const it of items) it.li.classList.add("is-map-selected");
   }
 
-  function openDetail(place: Place<EngineItem>, from: HTMLButtonElement): void {
+  /** The flag on a pressed pin: the title (in its own language), or "2 shifts at this place". */
+  function flagText(place: Place<EngineItem>): { text: string; lang?: string } {
     const items = place.items as Item[];
-    openFrom = from;
-    detailHeading.replaceChildren();
-    if (items.length === 1) {
-      const span = el("span", items[0].title);
-      span.lang = items[0].titleLang;
-      detailHeading.append(span);
-    } else detailHeading.textContent = plural(words.placeOne, words.placeOther, items.length);
+    return items.length === 1 ? { text: items[0].title, lang: items[0].titleLang } : { text: plural(words.placeOne, words.placeOther, items.length) };
+  }
 
-    const rows: HTMLElement[] = [];
-    for (const it of items) {
-      const row = el("li", undefined, "map-detail__item");
-      const link = el("a", undefined, "map-detail__title");
-      link.href = it.href;
-      const title = el("span", it.title);
-      title.lang = it.titleLang;
-      link.append(title);
-      row.append(link);
-      if (it.translated) row.append(el("p", words.translated, "map-detail__translated"));
-      if (it.when) row.append(el("p", it.when));
-      if (it.place) row.append(el("p", it.place));
-      const show = el("button", words.showInList, "map__text-button");
-      show.type = "button";
-      show.addEventListener("click", () => {
-        it.li.scrollIntoView({ block: "center" });
-        (it.li.querySelector<HTMLElement>("a, button") ?? it.li).focus({ preventScroll: true });
-      });
-      row.append(show);
-      rows.push(row);
-    }
-    const extra: HTMLElement[] = [];
-    if (place.approximate) extra.push(el("p", words.approximate, "map-approx-line"));
-    // "Get directions": a plain link, opened only by the person's own tap. It carries only the
-    // address (or the point), never the title, organization or listing id (owner Q119).
-    const address = items.find((i) => i.address)?.address ?? null;
-    const url = directionsUrl({ address, lat: place.lat, lon: place.lon, approximate: place.approximate }, isApple(navigator.userAgent));
-    if (url) {
-      const p = el("p");
-      const a = el("a", words.directions, "map-detail__link");
-      a.href = url;
-      a.rel = "noopener noreferrer";
-      a.referrerPolicy = "no-referrer";
-      a.setAttribute("aria-describedby", "map-directions-note");
-      p.append(a);
-      const note = el("p", words.directionsNote, "muted");
-      note.id = "map-directions-note";
-      extra.push(p, note);
-    }
-    detailList.replaceChildren(...rows);
-    detailExtra.replaceChildren(...extra);
-    detail.hidden = false;
+  /**
+   * The second press: scroll to the listing's card and move focus to it. Every pin
+   * comes from a card that is showing in the list (same day, same filters), so the
+   * card is always there. Nothing goes in the address, nothing is sent or stored.
+   */
+  function jumpTo(place: Place<EngineItem>): void {
+    const items = place.items as Item[];
     highlight(items);
-    detailHeading.focus();
+    const li = items[0].li;
+    li.scrollIntoView({ block: "center" });
+    (li.querySelector<HTMLElement>("a, button") ?? li).focus({ preventScroll: true });
   }
 
-  function closeDetail(returnFocus: boolean): void {
-    if (detail.hidden) return;
-    detail.hidden = true;
-    highlight([]);
-    openFrom?.setAttribute("aria-expanded", "false");
-    if (returnFocus) {
-      if (openFrom?.isConnected) openFrom.focus();
-      else engine?.focusCanvas();
+  /**
+   * "Get directions" under each card with an exact address, while the map is on (the
+   * details box it used to sit in is gone). A plain link the person taps; it carries
+   * only the address or the point (owner Q119), with the note that the maps app will see it.
+   */
+  function showDirections(): void {
+    const apple = isApple(navigator.userAgent);
+    for (const line of list!.querySelectorAll<HTMLElement>("[data-map-directions]")) {
+      const li = line.closest<HTMLElement>("li[data-id]");
+      const a = line.querySelector<HTMLAnchorElement>("a");
+      if (!li || !a) continue;
+      const url = directionsUrl(
+        { address: li.dataset.mapAddress ?? null, lat: Number(li.dataset.lat), lon: Number(li.dataset.lon), approximate: li.dataset.approx === "true" },
+        apple,
+      );
+      if (url) a.href = url;
+      line.hidden = !url;
     }
-    openFrom = null;
   }
-  q<HTMLButtonElement>("[data-map-detail-close]")?.addEventListener("click", () => closeDetail(true));
-  detail.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeDetail(true);
-  });
 
   // ---- Controls ----
   q<HTMLButtonElement>("[data-map-zoom-in]")?.addEventListener("click", () => engine?.zoomBy(1));

@@ -13,9 +13,12 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Our own light and dark colour sets (tokens.css). Saying both tells phones,
-     such as Samsung Internet, to use them instead of darkening the page themselves. */
-  color-scheme: light dark;
+  /* Light by default (owner, 2026-11-10): form controls and scrollbars stay light too. */
+  color-scheme: light;
+}
+/* The person chose Dark mode (footer switch): the browser's own parts follow. */
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {

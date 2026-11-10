@@ -18,7 +18,7 @@
     "footer_open_source": "Anyone can see and reuse the code for this site.",
     "footer_code_link": "See the code",
     "test_version": "Test version. Website still under construction.",
-    "pages_nav": "Pages"
+    "theme_dark": "Dark mode"
   },
   "filters": {
     "heading": "Find a shift",
@@ -157,6 +157,7 @@
     "picks_note": "Shifts with open spots, chosen by our team. No one pays to be picked.",
     "tonight": "Tonight",
     "tomorrow": "Tomorrow",
+    "dated_link": "By Date",
     "flexible_link": "Flexible Shifts",
     "teams_link": "Team Shifts"
   },
@@ -540,6 +541,7 @@
       }
     },
     "pin": "{title}, {time}",
+    "pin_hint": "Press again to go to this shift in the list.",
     "with_approx": "{name}. Approximate area.",
     "place": {
       "dated": {
@@ -586,13 +588,15 @@
     "credit": "Map: {protomaps} © {osm} contributors",
     "credit_census": "Area centers: {census}",
     "census_name": "US Census Bureau",
+    "credit_short": "© {osm}",
     "credit_esa": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
     "credit_esa_translation": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
     "census_notice": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
     "census_notice_translation": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
     "about_data": "About the map data",
     "directions": "Get directions",
-    "directions_note": "Opens your maps app. That service will see this address.",
+    "directions_to": "to {title}",
+    "directions_note": "Opens your maps app. That service will see this shift's address.",
     "show_in_list": "Show in the list",
     "close": "Close the details",
     "loading": "Loading the map…",
