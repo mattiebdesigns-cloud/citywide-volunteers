@@ -296,7 +296,7 @@
     "only_dhs": "Esta herramienta suma horas. No decide si usted mantiene Medicaid. Solo el DHS de Pensilvania lo decide.",
     "not_legal": "Esto no es asesoría legal. Para recibir ayuda, llame al Pennsylvania Health Law Project al {phlp} o a Community Legal Services al {cls}.",
     "answer_letters": "Responda siempre las cartas del DHS antes de la fecha que indica la carta.",
-    "not_proof": "Las horas que anote en Citywide Volunteers no son una prueba oficial. La prueba viene de cada organización.",
+    "not_proof": "Las horas que anote en Philly Volunteers no son una prueba oficial. La prueba viene de cada organización.",
     "last_checked": "Cifras revisadas por última vez: {date}.",
     "exempt_heading": "Quiénes no tienen que hacerlo",
     "exempt_intro": "Estos grupos no tienen que mostrar horas. Esta lista es solo informativa. Solo el DHS decide a quién se aplica.",

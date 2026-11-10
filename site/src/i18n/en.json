@@ -296,7 +296,7 @@
     "only_dhs": "This tool adds up hours. It does not decide whether you keep Medicaid. Only Pennsylvania DHS decides.",
     "not_legal": "This is not legal advice. For help, call the Pennsylvania Health Law Project at {phlp} or Community Legal Services at {cls}.",
     "answer_letters": "Always answer letters from DHS by the date in the letter.",
-    "not_proof": "Hours you keep track of on Citywide Volunteers are not official proof. Proof comes from each organization.",
+    "not_proof": "Hours you keep track of on Philly Volunteers are not official proof. Proof comes from each organization.",
     "last_checked": "Figures last checked: {date}.",
     "exempt_heading": "Who does not have to do this",
     "exempt_intro": "These groups do not have to show hours. This list is for information only. Only DHS decides who it applies to.",
