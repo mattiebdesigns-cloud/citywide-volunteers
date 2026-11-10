@@ -1,0 +1,241 @@
+---
+/**
+ * Progress (owner, 2026-11-10: "open development"; PROJECT.md 5, 12). Where
+ * each phase stands, what is new, and the running totals. Every word comes
+ * from the translation files (progress.*); every status, percentage and date
+ * from src/data/progress.json, which the coordinator updates; the totals from
+ * the same running totals file as the About page (PV_STATS), so no figure is
+ * ever typed into the page. No script.
+ *
+ * The phases are a vertical list, top to bottom (owner: "make it vertical"),
+ * so nothing scrolls sideways at any width. Each status shows by its word and
+ * by the marker's shape (filled, half, dashed, thin), never by colour alone.
+ */
+import Base from "../../../layouts/Base.astro";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+import { checkProgress, newsDate, type ProgressFile } from "../../../lib/progress.ts";
+import data from "../../../data/progress.json";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n, totals, settings } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.progress(code)]));
+const progress = checkProgress(data as unknown as ProgressFile);
+const day = (d: string) => tr.formatDate(`${d}T12:00:00Z`);
+// Names and addresses come from the city's own settings, never typed into the text.
+const siteName = tr.setting(settings.site.name);
+const email = settings.site.contact_email;
+// The site's web address, from the settings: site.domain when set, otherwise the contact
+// address's domain (hello@phillyvolunteers.org gives phillyvolunteers.org). Not the address
+// this build is uploaded to, which may be a test host.
+const domain = typeof settings.site.domain === "string" ? settings.site.domain.trim() : "";
+const webAddress = domain || (email.split("@")[1] ?? "");
+const newsVars = { site_name: siteName, email, web_address: webAddress };
+const numbers =
+  totals && totals.opportunities > 0
+    ? t("about_page.shifts.numbers_to_date", {
+        opportunities: tr.plural("about_page.shifts.listings", totals.opportunities),
+        organizations: tr.plural("about_page.shifts.organizations", totals.organizations),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", totals.neighborhoods),
+      })
+    : null;
+---
+
+<Base lang={lang} title={t("progress.title")} alternates={alternates} path={paths.progress(lang)}>
+  <div class="page progress">
+    <p class="progress__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+    <p class="progress__kicker">{t("progress.kicker")}</p>
+    <h1>{t("progress.title")}</h1>
+    <p class="progress__intro">{t("progress.intro", { site_name: siteName })}</p>
+    <p class="muted">{t("progress.updated", { date: day(progress.updated) })}</p>
+    <p class="progress__launch">{t("progress.launch", { date: day(progress.launch_goal) })}</p>
+
+    <h2>{t("progress.phases_heading")}</h2>
+    <ol class="phases" data-progress-phases>
+      {
+        progress.phases.map((p) => (
+          <li class:list={["phase", `phase--${p.status}`]} data-status={p.status}>
+            <span class="phase__marker" aria-hidden="true">{p.number}</span>
+            <div class="phase__body">
+              <h3 class="phase__name">{t("progress.phase_heading", { number: p.number, name: t(`progress.phases.${p.id}.name`) })}</h3>
+              <p class="phase__line">{t(`progress.phases.${p.id}.line`)}</p>
+              <p class="phase__status">{t(`progress.status.${p.status}`)}</p>
+              {p.percent !== null && (
+                <div class="phase__progress">
+                  <span class="phase__bar" aria-hidden="true">
+                    <span class="phase__fill" style={`width: ${p.percent}%`} />
+                  </span>
+                  <span class="phase__percent">{t("progress.percent", { percent: tr.formatNumber(p.percent) })}</span>
+                </div>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="muted progress__note">{t("progress.percent_note")}</p>
+
+    {
+      numbers && (
+        <>
+          <h2>{t("progress.numbers_heading")}</h2>
+          <p data-progress-numbers>{numbers}</p>
+        </>
+      )
+    }
+
+    <h2>{t("progress.news_heading")}</h2>
+    <ul class="news" data-progress-news>
+      {
+        progress.news.map((n) => (
+          <li>
+            <p class="news__date">{newsDate(n, tr.lang, t("progress.date_range"))}</p>
+            <p class="news__text">{t(`progress.news.${n.id}`, newsVars)}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .progress__back {
+    margin: 0;
+  }
+  .progress__kicker {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-weight: var(--weight-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .progress h1 {
+    margin-top: var(--space-1);
+  }
+  .progress__launch {
+    font-weight: var(--weight-strong);
+  }
+
+  /* The phases: a vertical line of markers, top to bottom. */
+  .phases {
+    position: relative;
+    margin: var(--space-4) 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+  }
+  .phase {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: var(--space-3);
+    padding-bottom: var(--space-5);
+  }
+  /* The line joining the markers. */
+  .phase::before {
+    content: "";
+    position: absolute;
+    top: 3rem;
+    bottom: 0;
+    left: calc(1.5rem - 1px);
+    width: 2px;
+    background: var(--color-line);
+  }
+  .phase:last-child::before {
+    display: none;
+  }
+  .phase__marker {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    border: 2px solid var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-weight: var(--weight-heavy, 700);
+  }
+  /* Shapes, not only colours: done is filled; being built is a thick ring; next is dashed; later is thin. */
+  .phase--done .phase__marker {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .phase--building .phase__marker {
+    border: 5px solid var(--color-primary);
+  }
+  .phase--next .phase__marker {
+    border: 3px dashed var(--color-primary);
+  }
+  .phase__body {
+    min-width: 0;
+  }
+  .phase__line,
+  .phase__status {
+    margin: 0 0 var(--space-1);
+  }
+  .phase__name {
+    margin: 0 0 var(--space-1);
+    overflow-wrap: anywhere;
+  }
+  .phase__status {
+    display: inline-block;
+    padding: 0 var(--space-2);
+    border: 2px solid var(--color-line);
+    border-radius: 999px;
+    font-weight: var(--weight-strong);
+  }
+  .phase--done .phase__status,
+  .phase--building .phase__status {
+    border-color: var(--color-primary);
+  }
+  .phase__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+  .phase__bar {
+    flex: 1 1 auto;
+    max-width: 14rem;
+    height: 0.75rem;
+    border: 2px solid var(--color-line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .phase__fill {
+    display: block;
+    height: 100%;
+    background: var(--color-primary);
+  }
+  .phase__percent {
+    flex: none;
+  }
+
+  .progress__note {
+    margin: calc(-1 * var(--space-4)) 0 var(--space-5);
+  }
+  .news {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .news li {
+    padding-block: var(--space-2);
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .news__date {
+    margin: 0;
+    font-weight: var(--weight-strong);
+  }
+  .news__text {
+    margin: var(--space-1) 0 0;
+  }
+</style>

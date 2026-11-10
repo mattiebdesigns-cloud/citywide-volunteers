@@ -612,7 +612,8 @@ test("header as before (1715dec): logo, About, languages; footer: calculator, Da
         assert.ok(header.indexOf("site-header__name") < header.indexOf("site-header__about"), page);
         assert.ok(header.indexOf("site-header__about") < header.indexOf("lang-switch"), page);
         const beforeLanguages = header.slice(0, header.indexOf("lang-switch"));
-        assert.deepEqual([...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]), [`/${lang}/`, `/${lang}/about/`], page);
+        // About, and Progress directly under it (owner, 2026-11-10).
+        assert.deepEqual([...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]), [`/${lang}/`, `/${lang}/about/`, `/${lang}/progress/`], page);
         // Footer: the calculator link with its date, the Dark mode switch (hidden until its script runs), the sources line.
         const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
         assert.ok(text(footer).includes(calc), `${lang} ${page}: calculator link`);
@@ -746,6 +747,68 @@ test("About page: nine sections in order, each with its drawing, heading and wor
   } finally {
     b.done();
   }
+});
+
+test("Progress page: phases top to bottom from the data file, live totals, what's new; linked under About (owner, 2026-11-10)", () => {
+  const data = JSON.parse(readFileSync(join(site, "src/data/progress.json"), "utf8"));
+  const dir = mkdtempSync(join(tmpdir(), "pv-progress-"));
+  const stats = join(dir, "listings-ledger.json");
+  writeFileSync(stats, JSON.stringify({ version: 4, note: "NOTE-NEVER-SHOWN", totals: { shifts: 459, cards: 59, organizations: 86, neighborhoods: 35 } }));
+  const b = build({ PV_STATS: stats, PV_SITE_URL: URL_ });
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/progress/index.html`);
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      assert.match(main, new RegExp(`<h1[^>]*>${tr.t("progress.title")}</h1>`));
+      // The phases: an ordered list, in the data file's order, each with its number, name, line and status word.
+      const list = main.slice(main.indexOf("data-progress-phases"), main.indexOf("</ol>"));
+      const items = [...list.matchAll(/<li[^>]*data-status="([a-z]+)"[^>]*>([\s\S]*?)<\/li>/g)];
+      assert.equal(items.length, data.phases.length);
+      items.forEach((m, i) => {
+        const p = data.phases[i];
+        assert.equal(m[1], p.status);
+        const words = text(m[2]);
+        const heading = tr.t("progress.phase_heading", { number: p.number, name: tr.t(`progress.phases.${p.id}.name`) });
+        assert.match(m[2], /<h3[^>]*>/, `${lang} ${p.id}: heading`);
+        for (const w of [heading, tr.t(`progress.phases.${p.id}.line`), tr.t(`progress.status.${p.status}`)]) assert.ok(words.includes(w), `${lang} ${p.id}: ${w}`);
+        // The percentage is in words as well as the bar; phases with none show no bar.
+        if (p.percent === null) assert.doesNotMatch(m[2], /phase__bar/);
+        else assert.ok(words.includes(tr.t("progress.percent", { percent: tr.formatNumber(p.percent) })), `${lang} ${p.id} percent`);
+      });
+      // No figure typed into the page: the page source holds no percentages or statuses.
+      // Live totals from the running totals file, as on the About page.
+      assert.ok(text(main).includes(tr.t("about_page.shifts.numbers_to_date", {
+        opportunities: tr.plural("about_page.shifts.listings", 518),
+        organizations: tr.plural("about_page.shifts.organizations", 86),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", 35),
+      })));
+      assert.ok(!html.includes("NOTE-NEVER-SHOWN"), "the totals file's note never shows");
+      // What's new: dated, from the data file; names and addresses from the settings.
+      const news = text(main.slice(main.indexOf("data-progress-news")));
+      assert.ok(news.includes(settings.site.contact_email), "contact address from the settings");
+      // The web address from the settings (site.domain, else the contact address's domain), never the upload host.
+      assert.ok(news.includes(settings.site.contact_email.split("@")[1]), "web address from the settings");
+      assert.ok(!news.includes(new URL(URL_).host), "not the host this build is uploaded to");
+      assert.doesNotMatch(news, /\{[a-z_]+\}/, "no raw placeholder");
+      // Date ranges are in words from the translation, never a dash (accessibility gate).
+      assert.ok(news.includes(tr.t("progress.date_range", { from: "", to: "" }).trim().split(" ")[0]), `${lang}: range words`);
+      assert.doesNotMatch(news, /\d\s*[–—-]\s*\d/, `${lang}: no dash between dates`);
+      assert.ok(text(main).includes(tr.t("progress.percent_note")), `${lang}: the percentages note`);
+      // The header links here, under About, and marks it current on this page.
+      const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+      assert.match(header, new RegExp(`href="/${lang}/progress/"[^>]*aria-current="page"|aria-current="page"[^>]*href="/${lang}/progress/"`));
+      assert.ok(header.indexOf(`/${lang}/about/`) < header.indexOf(`/${lang}/progress/`));
+      // No script on the page beyond the site's own.
+      assert.doesNotMatch(main, /<script/);
+    }
+  } finally {
+    b.done();
+    rmSync(dir, { recursive: true, force: true });
+  }
+  const source = readFileSync(join(site, "src/pages/[lang]/progress/index.astro"), "utf8");
+  const markup = source.slice(0, source.indexOf("<style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.doesNotMatch(markup, /\b(95|15|100)\b|"(done|building|next|later)"/, "statuses and percentages come only from the data file");
 });
 
 test("About page says Spanish titles are translated by Anthropic's Claude, and links 'write to us' to the site's address (owner Q139); Back link at the top", () => {

@@ -39,7 +39,13 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
         <span class="sr-only">{siteName}</span>
       </a>
     </p>
-    <a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a>
+    {/* About, and Progress directly under it (owner, 2026-11-10). */}
+    <nav class="site-header__pages" aria-label={tr.t("site.pages_nav")}>
+      <ul>
+        <li><a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a></li>
+        <li><a class="site-header__about" href={paths.progress(lang)} aria-current={current(paths.progress(lang))}>{tr.t("progress.nav")}</a></li>
+      </ul>
+    </nav>
     <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
   </div>
   {tr.isBeta && <p class="page site-header__beta muted">{tr.t("language.beta_note")}</p>}
@@ -76,6 +82,13 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
     .site-header__logo :global(svg) {
       height: 4rem;
     }
+  }
+  /* About and Progress, one under the other, right-aligned. */
+  .site-header__pages ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: end;
   }
   /* About page link (decision 0025), a 48 px tap target. */
   .site-header__about {

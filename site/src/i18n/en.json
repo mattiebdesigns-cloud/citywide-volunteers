@@ -18,6 +18,7 @@
     "footer_open_source": "Anyone can see and reuse the code for this site.",
     "footer_code_link": "See the code",
     "test_version": "Test version. Website still under construction.",
+    "pages_nav": "Pages",
     "theme_dark": "Dark mode"
   },
   "filters": {
@@ -621,5 +622,70 @@
     "commands": "How we made it:",
     "no_file": "This version of the site has no street map file.",
     "privacy": "The maps and their files load from our own site only. No outside map company is involved."
+  },
+  "progress": {
+    "nav": "Progress",
+    "title": "Progress",
+    "kicker": "Open development",
+    "intro": "We build {site_name} in the open. Here is where things stand.",
+    "updated": "Last updated {date}.",
+    "date_range": "{from} to {to}",
+    "launch": "Launch goal: {date}, the Martin Luther King Jr. Day of Service.",
+    "phases_heading": "The plan, step by step",
+    "phase_heading": "Phase {number}: {name}",
+    "status": {
+      "done": "Done",
+      "building": "Being built",
+      "next": "Next",
+      "later": "Later"
+    },
+    "percent": "{percent}% done",
+    "percent_note": "Percentages show building work, not the launch goals.",
+    "numbers_heading": "So far",
+    "news_heading": "What's new",
+    "phases": {
+      "p0": {
+        "name": "Setup",
+        "line": "The project, its rules and the first sources of shifts."
+      },
+      "p1": {
+        "name": "Calendar",
+        "line": "Find a volunteer shift by day, place, cause and how to join, in English and Spanish."
+      },
+      "p2": {
+        "name": "Profiles and hours log",
+        "line": "Keep a private log of the hours you volunteer."
+      },
+      "p3": {
+        "name": "Organizations post their own shifts",
+        "line": "Organizations add and update their shifts themselves."
+      },
+      "p4": {
+        "name": "Points, badges and friends",
+        "line": "Earn points and badges, and volunteer with friends."
+      },
+      "p4b": {
+        "name": "Workplace and university teams",
+        "line": "Teams from workplaces and schools volunteer together."
+      },
+      "p5": {
+        "name": "Coupon book",
+        "line": "Starting small, with a few nearby businesses."
+      },
+      "p6": {
+        "name": "Verified skills and roles",
+        "line": "Show skills you have used, and take on lead roles."
+      },
+      "p7": {
+        "name": "Purchased points",
+        "line": "Only after a lawyer's review."
+      }
+    },
+    "news": {
+      "n1": "Maps of shifts; the new logo; Spanish titles and short descriptions translated automatically; light and dark mode; a contact address, {email}.",
+      "n2": "A new name, {site_name}; a new web address, {web_address}; search.",
+      "n3": "Flexible Shifts, the Medicaid hours calculator, Team Shifts, the About page and a share panel.",
+      "n4": "The first calendar, with filters, in English and Spanish."
+    }
   }
 }

@@ -1,0 +1,22 @@
+{
+  "_about": "The Progress page's facts (owner, 2026-11-10). The coordinator updates this file; the page shows it and never types figures itself. Words come from src/i18n/ (progress.*). status: done | building | next | later. percent: whole number 0-100, or null to show no bar. News dates: \"date\" (YYYY-MM-DD), or \"from\" and \"to\", or \"month\" (YYYY-MM).",
+  "updated": "2026-11-10",
+  "launch_goal": "2027-01-18",
+  "phases": [
+    { "id": "p0", "number": "0", "status": "done", "percent": 100 },
+    { "id": "p1", "number": "1", "status": "building", "percent": 95 },
+    { "id": "p2", "number": "2", "status": "building", "percent": 15 },
+    { "id": "p3", "number": "3", "status": "next", "percent": null },
+    { "id": "p4", "number": "4", "status": "later", "percent": null },
+    { "id": "p4b", "number": "4b", "status": "later", "percent": null },
+    { "id": "p5", "number": "5", "status": "later", "percent": null },
+    { "id": "p6", "number": "6", "status": "later", "percent": null },
+    { "id": "p7", "number": "7", "status": "later", "percent": null }
+  ],
+  "news": [
+    { "id": "n1", "date": "2026-11-10" },
+    { "id": "n2", "date": "2026-11-09" },
+    { "id": "n3", "from": "2026-11-05", "to": "2026-11-08" },
+    { "id": "n4", "month": "2026-10" }
+  ]
+}

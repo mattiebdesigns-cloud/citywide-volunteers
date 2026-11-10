@@ -459,3 +459,20 @@ test("search words are never part of the stored filters", () => {
   assert.ok(!("search" in EMPTY_FILTERS) && !("query" in EMPTY_FILTERS));
   assert.ok(!("search" in EMPTY_FLEXIBLE_FILTERS));
 });
+
+// Progress page (owner, 2026-11-10): the data file is checked, and news dates read in words.
+test("progress data: checked plainly; news dates as a day, a range or a month", async () => {
+  const { checkProgress, newsDate } = await import("../src/lib/progress.ts");
+  const file = JSON.parse(readFileSync(new URL("../src/data/progress.json", import.meta.url), "utf8"));
+  checkProgress(file);
+  assert.throws(() => checkProgress({ ...file, phases: [{ id: "p1", number: "1", status: "almost", percent: 50 }] }), /status/);
+  assert.throws(() => checkProgress({ ...file, phases: [{ id: "p1", number: "1", status: "building", percent: 120 }] }), /percent/);
+  assert.throws(() => checkProgress({ ...file, news: [{ id: "n1" }] }), /news n1/);
+  assert.equal(newsDate({ id: "a", date: "2026-11-10" }, "en"), "November 10, 2026");
+  assert.equal(newsDate({ id: "a", month: "2026-10" }, "en"), "October 2026");
+  assert.equal(newsDate({ id: "a", month: "2026-10" }, "es"), "octubre de 2026");
+  // Ranges come from the translation, not a dash (accessibility gate); the year is said once.
+  assert.equal(newsDate({ id: "a", from: "2026-11-05", to: "2026-11-08" }, "en", "{from} to {to}"), "November 5 to November 8, 2026");
+  assert.equal(newsDate({ id: "a", from: "2026-11-05", to: "2026-11-08" }, "es", "Del {from} al {to}"), "Del 5 de noviembre al 8 de noviembre de 2026");
+  assert.equal(newsDate({ id: "a", from: "2026-12-30", to: "2027-01-02" }, "en", "{from} to {to}"), "December 30, 2026 to January 2, 2027");
+});

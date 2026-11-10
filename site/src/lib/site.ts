@@ -107,6 +107,7 @@ export const paths = {
   about: (lang: string) => `/${lang}/about/`,
   medicaid: (lang: string) => `/${lang}/medicaid-hours/`,
   mapData: (lang: string) => `/${lang}/map-data/`,
+  progress: (lang: string) => `/${lang}/progress/`,
   /** The home page with its map open (MAP_HASH in lib/map.ts): a fixed address, nothing else in it. */
   homeMap: (lang: string) => `/${lang}/#map`,
 };

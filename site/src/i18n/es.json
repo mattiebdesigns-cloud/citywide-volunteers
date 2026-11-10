@@ -18,6 +18,7 @@
     "footer_open_source": "Cualquier persona puede ver y reutilizar el código de este sitio.",
     "footer_code_link": "Ver el código",
     "test_version": "Versión de prueba. El sitio web sigue en construcción.",
+    "pages_nav": "Páginas",
     "theme_dark": "Modo oscuro"
   },
   "filters": {
@@ -54,7 +55,7 @@
     "kind": {
       "label": "Turno",
       "dated": "Por fecha",
-      "flexible": "Flexible",
+      "flexible": "Flexibles",
       "teams": "En equipo",
       "note_flexible": "Los turnos flexibles no tienen día ni hora fijos, así que los filtros de día y hora no se usan.",
       "note_teams": "Los filtros de día y hora solo se aplican a los turnos en equipo con fecha."
@@ -621,5 +622,70 @@
     "commands": "Cómo lo hicimos:",
     "no_file": "Esta versión del sitio no tiene archivo de mapa de calles.",
     "privacy": "Los mapas y sus archivos se cargan solo desde nuestro propio sitio. No participa ninguna empresa de mapas externa."
+  },
+  "progress": {
+    "nav": "Avances",
+    "title": "Avances",
+    "kicker": "Desarrollo abierto",
+    "intro": "Construimos {site_name} de forma abierta. Aquí puede ver cómo vamos.",
+    "updated": "Última actualización: {date}.",
+    "date_range": "Del {from} al {to}",
+    "launch": "Fecha prevista de lanzamiento: {date}, el Día de Servicio en honor a Martin Luther King Jr.",
+    "phases_heading": "El plan, paso a paso",
+    "phase_heading": "Fase {number}: {name}",
+    "status": {
+      "done": "Terminada",
+      "building": "En construcción",
+      "next": "Próxima",
+      "later": "Más adelante"
+    },
+    "percent": "Avance: {percent} %",
+    "percent_note": "Los porcentajes muestran el trabajo de desarrollo, no las metas del lanzamiento.",
+    "numbers_heading": "Hasta ahora",
+    "news_heading": "Novedades",
+    "phases": {
+      "p0": {
+        "name": "Preparación",
+        "line": "El proyecto, sus reglas y las primeras fuentes de turnos."
+      },
+      "p1": {
+        "name": "Calendario",
+        "line": "Encuentre un turno de voluntariado por día, lugar, causa y forma de participar, en inglés y español."
+      },
+      "p2": {
+        "name": "Perfiles y registro de horas",
+        "line": "Lleve un registro privado de sus horas de voluntariado."
+      },
+      "p3": {
+        "name": "Las organizaciones publican sus propios turnos",
+        "line": "Las organizaciones agregan y actualizan sus turnos por su cuenta."
+      },
+      "p4": {
+        "name": "Puntos, insignias y amigos",
+        "line": "Gane puntos e insignias, y haga voluntariado con sus amigos."
+      },
+      "p4b": {
+        "name": "Equipos de empresas y universidades",
+        "line": "Equipos de lugares de trabajo y de escuelas hacen voluntariado juntos."
+      },
+      "p5": {
+        "name": "Libro de cupones",
+        "line": "Empezamos poco a poco, con algunos negocios cercanos."
+      },
+      "p6": {
+        "name": "Habilidades y funciones verificadas",
+        "line": "Muestre las habilidades que ha usado y asuma funciones de liderazgo."
+      },
+      "p7": {
+        "name": "Puntos comprados",
+        "line": "Solo después de la revisión de un abogado."
+      }
+    },
+    "news": {
+      "n1": "Mapas de turnos; el logotipo nuevo; títulos y descripciones cortas en español traducidos automáticamente; modo claro y oscuro; una dirección de contacto, {email}.",
+      "n2": "Un nombre nuevo, {site_name}; una dirección web nueva, {web_address}; la búsqueda.",
+      "n3": "Turnos flexibles, la calculadora de horas de Medicaid, Turnos en equipo, la página sobre el sitio y un panel para compartir.",
+      "n4": "El primer calendario, con filtros, en inglés y español."
+    }
   }
 }
