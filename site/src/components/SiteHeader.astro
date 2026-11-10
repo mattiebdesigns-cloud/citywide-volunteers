@@ -4,8 +4,14 @@
  * the About link and the language switch. The Filters button sits beside
  * each page's heading (components/ResultsHeading.astro). (The "rewards are coming" line was removed at the owner's request,
  * 2026-11-08.)
+ * The site name is shown as the logo (owner's pick A4, 2026-11-10; docs/design.md
+ * "Header logo"). The drawing (components/ui/logo.svg) is put
+ * straight into the page, so it costs no extra download (the Medicaid page
+ * allows no images). It is hidden from screen readers; the link's name is the
+ * site name from the settings, in visually hidden text.
  */
 import LanguageSwitch from "./LanguageSwitch.astro";
+import logo from "./ui/logo.svg?raw";
 import { paths, siteData, translator } from "../lib/site.ts";
 
 interface Props {
@@ -21,11 +27,18 @@ const { lang, alternates, noStorage = false, path } = Astro.props;
 const current = (href: string) => (href === path ? "page" : undefined);
 const tr = translator(lang);
 const siteName = tr.setting(siteData().settings.site.name);
+// The drawing without its notes, so they are not sent with every page.
+const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
 ---
 
 <header class="site-header">
   <div class="page site-header__inner">
-    <p class="site-header__name"><a href={paths.home(lang)} aria-current={current(paths.home(lang))}>{siteName}</a></p>
+    <p class="site-header__name">
+      <a href={paths.home(lang)} aria-current={current(paths.home(lang))}>
+        <span class="site-header__logo" set:html={logoSvg} />
+        <span class="sr-only">{siteName}</span>
+      </a>
+    </p>
     <a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a>
     <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
   </div>
@@ -50,6 +63,19 @@ const siteName = tr.setting(siteData().settings.site.name);
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
+  }
+  /* Logo: 56 px tall on phones (150 px wide, fits the 360 px header), 64 px from
+     480 px wide. Sized in rem so it grows with the reader's text size. */
+  .site-header__logo :global(svg) {
+    display: block;
+    height: 3.5rem;
+    width: auto;
+    aspect-ratio: 1440 / 540;
+  }
+  @media (min-width: 30rem) {
+    .site-header__logo :global(svg) {
+      height: 4rem;
+    }
   }
   /* About page link (decision 0025), a 48 px tap target. */
   .site-header__about {

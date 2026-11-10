@@ -143,6 +143,19 @@ The "Test version" strip at the top of every page of a test build (decision 0009
 ### `Icon`
 Small line icons drawn for this project, listed in `icons.ts` (needs `SvgSprite` on the page). Always next to words, so they are hidden from screen readers.
 
+## Header logo (owner's pick A4, 2026-11-10)
+
+The header shows the site name as a logo: the link-preview map of the city's eight sections (pale blues, coral Center City, three coral pins in Northeast, Northwest and South Philly), with "Philly" over "Volunteers" beside it. The lines are centred with each other and the pair is centred against the map. The lettering never touches the map.
+
+- **File.** `site/src/components/ui/logo.svg`. `SiteHeader.astro` puts it straight into the page, with its notes stripped. That means no extra download, no image request (the Medicaid page allows none), and no font file.
+- **Font.** Shrikhand, SIL Open Font License 1.1, Copyright (c) 2015 Jonny Pinhorn (OFL allowed for fonts, owner Q122). The letters are converted to shapes, so no font is downloaded.
+- **Colours** (light page, the header's only background). "Philly" is navy `#1f4e8c`, 7.95:1. "Volunteers" is rust `#a8432b` (the notice border colour), 5.73:1. Bright coral is never used as lettering on paper (2.4:1). The map's shapes all have a navy `#15294a` edge (13.9:1).
+- **Navy version.** For a dark band, not used today: "Philly" white 14.50:1, "Volunteers" coral `#f08a6c` 5.91:1. Kept in `site/design/brand-options/option-a4-dark.svg`.
+- **Size.** 56 px tall on phones (150 px wide) and 64 px tall from 480 px wide (171 px wide). Sized in rem, so it grows with the reader's text size.
+- **Name for screen readers.** The drawing is `aria-hidden`. The link holds the site name from the settings (`site.name`) in visually hidden text, so it is announced as "Philly Volunteers" and goes to the home page in the current language.
+- **Other cities.** The lettering spells "Philly Volunteers". A city that copies the site with another `site.name` needs its own `logo.svg`.
+- **Options not chosen.** A, B, C, A2, A3, A5 and A6, with previews and a README, are in `site/design/brand-options/`. That folder is outside `public/`, so it is not published. The generator scripts were build-time only and are not kept in the repo.
+
 ## Link-preview picture (decision 0014)
 
 `site/public/og/en.png` and `es.png`, 1200 x 630, about 85 KB each: the headline (white, 80 px heavy, 14.5:1) and tagline (coral, 42 px bold, 5.9:1) on the band navy `#15294a`, beside a stylized map of the city's eight sections (pale blues, Center City in coral, the Schuylkill as a gap, the Delaware as a line, five coral pins). No labels on the map: they would be unreadable in a Facebook thumbnail. Words stay inside x 72 to 612, y 70 to 560, away from edge crops. Words come from `og.headline` and `og.tagline`, with `{city}` from the area's name in the settings file. To redraw after a word change: `node scripts/render-og.mjs` in `site/` (template: `site/scripts/og/template.svg`; uses the Mac's Google Chrome, no packages, system fonts). The script shrinks the headline if a language runs long, and stops with an error if the words still do not fit, or if a picture is not 1200 x 630 or is over 300 KB.
