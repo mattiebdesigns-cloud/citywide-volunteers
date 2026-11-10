@@ -749,6 +749,70 @@ test("About page: nine sections in order, each with its drawing, heading and wor
   }
 });
 
+test("MLK Day page: only the weekend's listings, same cards and sensitive rules as the calendar, day and group filters; empty state (decision 0041)", () => {
+  // Sample listings around the weekend (Philadelphia time): Friday and Tuesday are left out.
+  const base = sample.events.find((e) => !(e.sensitive === true || e.type === "protest_action"))!;
+  const sens = sample.events.find((e) => e.sensitive === true || e.type === "protest_action")!;
+  const at = (id: string, start: string, extra: Partial<typeof base> = {}) => ({ ...structuredClone(base), id, start, end: null, ...extra });
+  const weekend = [
+    at("mlk-fri", "2027-01-15T10:00:00-05:00"),
+    at("mlk-sat", "2027-01-16T10:00:00-05:00", { group_friendly: true, team_required: false }),
+    { ...structuredClone(sens), id: "mlk-sun-sensitive", start: "2027-01-17T13:00:00-05:00", end: null },
+    at("mlk-mon", "2027-01-18T09:00:00-05:00", { group_friendly: false, team_required: true, team_size: "6 to 10 people", team_task: "Sort food" }),
+    at("mlk-tue", "2027-01-19T09:00:00-05:00"),
+  ];
+  // Written here rather than through build()'s helper, which moves every date 100 years ahead.
+  const mlkDir = mkdtempSync(join(tmpdir(), "pv-mlk-"));
+  const mlkEvents = join(mlkDir, "events.json");
+  writeFileSync(mlkEvents, JSON.stringify({ generated_at: sample.generated_at, events: weekend }));
+  const b = build({ PV_EVENTS: mlkEvents });
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/mlk-day/index.html`);
+      const ids = [...html.matchAll(/<li[^>]*data-id="([^"]+)"/g)].map((m) => m[1]);
+      assert.deepEqual(ids, ["mlk-sat", "mlk-sun-sensitive", "mlk-mon"], `${lang}: only Saturday to Monday`);
+      assert.match(html, new RegExp(`<h1[^>]*>${tr.t("mlk.title")}</h1>`));
+      const intro = lang === "en" ? "January 16 to January 18, 2027" : "del 16 de enero al 18 de enero de 2027";
+      assert.ok(decode(html).includes(intro), `${lang}: ${intro}`);
+      assert.doesNotMatch(html, /data-mlk-empty/);
+      // Day filter: the three days; group filter: any, or only shifts good for groups.
+      const panel = html.slice(html.indexOf('id="filter-panel"'), html.indexOf("</section>", html.indexOf('id="filter-panel"')));
+      assert.deepEqual([...panel.matchAll(/<select id="filter-day"[\s\S]*?<\/select>/g)].map((m) => [...m[0].matchAll(/value="([^"]*)"/g)].map((v) => v[1]))[0], ["", "2027-01-16", "2027-01-17", "2027-01-18"]);
+      assert.match(panel, new RegExp(`<label for="filter-group"[^>]*>${tr.t("listing.group_friendly")}</label>`));
+      assert.ok(decode(panel).includes(tr.t("mlk.group_only")));
+      const li = (id: string) => html.match(new RegExp(`<li[^>]*data-id="${id}"[^>]*>`))![0];
+      assert.match(li("mlk-sat"), /data-group="true"/);
+      assert.match(li("mlk-mon"), /data-group="true"/, "a team shift is good for groups");
+      assert.match(li("mlk-sun-sensitive"), /data-date="2027-01-17"/);
+      // The sensitive listing's card is the calendar's own card, word for word.
+      const card = (page: string, id: string) => { const h = b.read(page); const i = h.indexOf(`data-id="${id}"`); return h.slice(h.indexOf("<article", i), h.indexOf("</article>", i)); };
+      assert.equal(card(`${lang}/mlk-day/index.html`, "mlk-sun-sensitive"), card(`${lang}/index.html`, "mlk-sun-sensitive"));
+    }
+  } finally {
+    b.done();
+    rmSync(mlkDir, { recursive: true, force: true });
+  }
+  // With no listings that weekend: a plain line, no filters.
+  const empty = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const html = empty.read(`${lang}/mlk-day/index.html`);
+      const tr = i18n.translator(lang);
+      const line = html.match(/<p id="mlk-none"[^>]*>([\s\S]*?)<\/p>/)![1];
+      assert.equal(decode(line.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim(), tr.t("mlk.empty", { team_shifts: tr.t("mlk.team_link") }));
+      assert.match(line, new RegExp(`<a href="/${lang}/teams/"[^>]*>${tr.t("mlk.team_link")}</a>`), `${lang}: Team Shifts link`);
+      assert.doesNotMatch(html, /id="filter-panel"/);
+      // The home page link shows only from December 1 to January 18 (decided when the site is built).
+      const home = empty.read(`${lang}/index.html`);
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+      assert.equal(home.includes("data-mlk-link"), today >= "2026-11-10" && today <= "2027-01-18", `${lang}: home link only in its window`);
+    }
+  } finally {
+    empty.done();
+  }
+});
+
 test("Progress page: phases top to bottom from the data file, live totals, what's new; linked under About (owner, 2026-11-10)", () => {
   const data = JSON.parse(readFileSync(join(site, "src/data/progress.json"), "utf8"));
   const dir = mkdtempSync(join(tmpdir(), "pv-progress-"));

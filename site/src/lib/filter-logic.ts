@@ -149,19 +149,27 @@ export interface FlexibleFacts {
   section: string;
   cause: string;
   join: string;
+  /** Local date YYYY-MM-DD, for the Martin Luther King Jr. Day page's Day filter (decision 0041); "" elsewhere. */
+  date?: string;
+  /** "true" when the listing is good for groups (group_friendly, or it needs a team). */
+  group?: string;
 }
 
 export interface FlexibleFilterState {
   section: string;
   cause: string;
   join: string;
+  /** Only on the Martin Luther King Jr. Day page: one day of the weekend, or "". */
+  day?: string;
+  /** Only on the Martin Luther King Jr. Day page: "only" = good for groups only. */
+  group?: string;
 }
 
-export const EMPTY_FLEXIBLE_FILTERS: FlexibleFilterState = { section: "", cause: "", join: "" };
+export const EMPTY_FLEXIBLE_FILTERS: FlexibleFilterState = { section: "", cause: "", join: "", day: "", group: "" };
 
-/** How many of the three filters are on. */
+/** How many of the filters are on. */
 export function flexibleActiveCount(state: FlexibleFilterState): number {
-  return (["section", "cause", "join"] as const).filter((key) => Boolean(state[key])).length;
+  return (["section", "cause", "join", "day", "group"] as const).filter((key) => Boolean(state[key])).length;
 }
 
 /** True when the card passes every filter that is on. */
@@ -169,6 +177,8 @@ export function flexibleMatches(card: FlexibleFacts, state: FlexibleFilterState)
   return (
     (!state.section || card.section === state.section) &&
     (!state.cause || card.cause === state.cause) &&
-    (!state.join || card.join === state.join)
+    (!state.join || card.join === state.join) &&
+    (!state.day || card.date === state.day) &&
+    (state.group !== "only" || card.group === "true")
   );
 }

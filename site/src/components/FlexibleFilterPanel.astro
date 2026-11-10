@@ -23,6 +23,10 @@ interface Props {
   applyLabel?: string;
   /** Where this tab remembers the choices (sessionStorage). */
   storageKey?: string;
+  /** Martin Luther King Jr. Day page (decision 0041): the weekend's days, for a Day filter. */
+  days?: string[];
+  /** Martin Luther King Jr. Day page: offer "Good for groups only". */
+  groups?: boolean;
 }
 
 const { lang } = Astro.props;
@@ -37,6 +41,9 @@ const sections = usedIds(
 );
 const causes = usedIds(settings.causes, items.map((o) => o.cause));
 const joins = ["drop_in", "signup", "application", "unknown"];
+const days = Astro.props.days ?? [];
+const dayName = (d: string) =>
+  new Intl.DateTimeFormat(tr.lang, { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`));
 ---
 
 <section
@@ -76,6 +83,17 @@ const joins = ["drop_in", "signup", "application", "unknown"];
       )
     }
 
+    {
+      days.length > 1 && (
+        <div class="field">
+          <label for="filter-day">{t("filters.day.label")}</label>
+          <select id="filter-day" data-filter="day">
+            <option value="">{t("filters.any")}</option>
+            {days.map((d) => <option value={d}>{dayName(d)}</option>)}
+          </select>
+        </div>
+      )
+    }
     <div class="field">
       <label for="filter-join">{t("filters.join.label")}</label>
       <select id="filter-join" data-filter="join">
@@ -83,6 +101,17 @@ const joins = ["drop_in", "signup", "application", "unknown"];
         {joins.map((x) => <option value={x}>{t(`filters.join.${x}`)}</option>)}
       </select>
     </div>
+    {
+      Astro.props.groups && (
+        <div class="field">
+          <label for="filter-group">{t("listing.group_friendly")}</label>
+          <select id="filter-group" data-filter="group">
+            <option value="">{t("filters.any")}</option>
+            <option value="only">{t("mlk.group_only")}</option>
+          </select>
+        </div>
+      )
+    }
   </div>
 
   <div class="filter-panel__actions">

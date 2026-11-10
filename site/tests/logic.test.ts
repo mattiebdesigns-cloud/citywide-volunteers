@@ -476,3 +476,32 @@ test("progress data: checked plainly; news dates as a day, a range or a month", 
   assert.equal(newsDate({ id: "a", from: "2026-11-05", to: "2026-11-08" }, "es", "Del {from} al {to}"), "Del 5 de noviembre al 8 de noviembre de 2026");
   assert.equal(newsDate({ id: "a", from: "2026-12-30", to: "2027-01-02" }, "en", "{from} to {to}"), "December 30, 2026 to January 2, 2027");
 });
+
+// Martin Luther King Jr. Day of Service page (decision 0041).
+test("MLK Day page: the weekend window, its days, the home link's dates, and the group and day filters", async () => {
+  const { mlkDays, inWeekend, weekendDays, promoteNow, goodForGroups } = await import("../src/lib/mlk.ts");
+  const days = mlkDays();
+  assert.deepEqual([days.from, days.to], ["2027-01-16", "2027-01-18"]);
+  assert.equal(inWeekend("2027-01-15", days), false, "Friday is out");
+  assert.equal(inWeekend("2027-01-16", days), true, "Saturday is in");
+  assert.equal(inWeekend("2027-01-18", days), true, "Monday is in");
+  assert.equal(inWeekend("2027-01-19", days), false, "Tuesday is out");
+  assert.deepEqual(weekendDays(days), ["2027-01-16", "2027-01-17", "2027-01-18"]);
+  const tz = "America/New_York";
+  // Shown early, to help groups plan (owner, 2026-11-10): from November 10.
+  assert.equal(days.promote_from, "2026-11-10");
+  assert.equal(promoteNow(new Date("2026-11-09T17:00:00Z"), tz, days), false);
+  assert.equal(promoteNow(new Date("2026-11-10T03:00:00Z"), tz, days), false, "still November 9 in Philadelphia");
+  assert.equal(promoteNow(new Date("2026-11-10T17:00:00Z"), tz, days), true);
+  assert.equal(promoteNow(new Date("2027-01-18T23:00:00Z"), tz, days), true);
+  assert.equal(promoteNow(new Date("2027-01-19T17:00:00Z"), tz, days), false);
+  assert.throws(() => mlkDays({ from: "2027-01-18", to: "2027-01-16", promote_from: "2026-12-01", promote_until: "2027-01-18" }), /not be after/);
+  assert.equal(goodForGroups({ group_friendly: true }), true);
+  assert.equal(goodForGroups({ group_friendly: false, team_required: true }), true, "a shift that needs a team is good for groups");
+  assert.equal(goodForGroups({ group_friendly: null }), false);
+  const card = { section: "", cause: "", join: "drop_in", date: "2027-01-17", group: "true" };
+  assert.ok(flexibleMatches(card, { ...EMPTY_FLEXIBLE_FILTERS, day: "2027-01-17", group: "only" }));
+  assert.ok(!flexibleMatches(card, { ...EMPTY_FLEXIBLE_FILTERS, day: "2027-01-18" }));
+  assert.ok(!flexibleMatches({ ...card, group: "false" }, { ...EMPTY_FLEXIBLE_FILTERS, group: "only" }));
+  assert.equal(flexibleActiveCount({ ...EMPTY_FLEXIBLE_FILTERS, day: "2027-01-17", group: "only" }), 2);
+});

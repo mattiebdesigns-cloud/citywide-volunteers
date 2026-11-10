@@ -687,5 +687,20 @@
       "n3": "Turnos flexibles, la calculadora de horas de Medicaid, Turnos en equipo, la página sobre el sitio y un panel para compartir.",
       "n4": "El primer calendario, con filtros, en inglés y español."
     }
+  },
+  "mlk": {
+    "title": "Día de Servicio en honor a Martin Luther King Jr.",
+    "intro": "Turnos durante el fin de semana del Día de Servicio en honor a Martin Luther King Jr., del {from} al {to}.",
+    "empty": "Agregamos turnos para este día a partir de diciembre, a medida que las organizaciones los publican. ¿Está organizando un grupo? Vuelva a consultar entonces o visite la página {team_shifts}.",
+    "team_link": "Turnos en equipo",
+    "none_match": "Ningún turno coincide con estos filtros.",
+    "count": {
+      "one": "{count} turno",
+      "other": "{count} turnos"
+    },
+    "apply": "Mostrar turnos",
+    "search_label": "Buscar en estos turnos",
+    "group_only": "Solo turnos ideales para grupos",
+    "home_link": "Día de Servicio en honor a Martin Luther King Jr., {date}: encuentre un turno"
   }
 }

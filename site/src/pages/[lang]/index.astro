@@ -17,6 +17,7 @@ import ListingCard from "../../components/ui/ListingCard.astro";
 import OriginalText from "../../components/OriginalText.astro";
 import MapCardLines from "../../components/MapCardLines.astro";
 import PageTabs from "../../components/PageTabs.astro";
+import { mlkDays, promoteNow } from "../../lib/mlk.ts";
 import MapSwitch from "../../components/MapSwitch.astro";
 import MapView from "../../components/MapView.astro";
 import { mapAttrs } from "../../lib/map-build.ts";
@@ -32,6 +33,11 @@ const tr = translator(lang);
 const t = tr.t;
 // Any flexible card shown in this language as a machine translation (decision 0036).
 const anyTranslatedOut = opportunities.some((o) => shownListing(o, lang).translated);
+// The Martin Luther King Jr. Day of Service link (decision 0041), only in its window.
+const mlk = mlkDays();
+const mlkLink = promoteNow(builtAt, settings.site.timezone, mlk)
+  ? t("mlk.home_link", { date: new Intl.DateTimeFormat(tr.lang, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${mlk.to}T12:00:00Z`)) })
+  : "";
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.home(code)]));
 
 /** The same fact lines as on the Flexible and Teams pages. */
@@ -50,6 +56,13 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
   <div class="page results">
     <ResultsHeading lang={lang} text={t("filters.heading")} filters />
     <PageTabs lang={lang} current="dated" />
+    {
+      // Decision 0041: a small, removable line, only from promote_from to promote_until
+      // in src/data/mlk-day.json (decided when the site is built).
+      mlkLink && (
+        <p class="mlk-link" data-mlk-link><a href={paths.mlk(lang)}>{mlkLink}</a></p>
+      )
+    }
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
@@ -212,3 +225,16 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
 </script>
 
 
+
+<style>
+  /* The Martin Luther King Jr. Day line: one 44 px link under the By Date row. */
+  .mlk-link {
+    margin: var(--space-1) 0 0;
+  }
+  .mlk-link a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong);
+  }
+</style>

@@ -22,7 +22,7 @@ if (panel && toggle && list && countEl) {
   const storageKey = panel.dataset.storageKey || FLEXIBLE_FILTERS_KEY;
   const cards = [...list.querySelectorAll<HTMLElement>("li[data-id]")].map((li): [HTMLElement, FlexibleFacts] => [
     li,
-    { section: li.dataset.section ?? "", cause: li.dataset.cause ?? "", join: li.dataset.join ?? "" },
+    { section: li.dataset.section ?? "", cause: li.dataset.cause ?? "", join: li.dataset.join ?? "", date: li.dataset.date ?? "", group: li.dataset.group ?? "" },
   ]);
   const selects = [...panel.querySelectorAll<HTMLSelectElement>("select[data-filter]")];
   const countBadge = toggle.querySelector<HTMLElement>("[data-filters-count]");

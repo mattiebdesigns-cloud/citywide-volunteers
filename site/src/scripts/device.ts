@@ -36,6 +36,8 @@ const FILTERS_KEY = "cvh.filters";
 export const FLEXIBLE_FILTERS_KEY = "cvh.filters.flexible";
 /** The Volunteer Teams page's own filters (decision 0020). */
 export const TEAMS_FILTERS_KEY = "cvh.filters.teams";
+/** The Martin Luther King Jr. Day page's own filters (decision 0041). */
+export const MLK_FILTERS_KEY = "cvh.filters.mlk";
 
 export function readSaved(): Set<string> {
   pruneSavedNow();

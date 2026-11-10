@@ -1,0 +1,160 @@
+---
+/**
+ * Martin Luther King Jr. Day of Service (decision 0041; PROJECT.md 2, 5, 12).
+ * The calendar's own listings that start on the weekend in src/data/mlk-day.json
+ * (Saturday to Monday, the city's time zone), on the same cards as the home
+ * page, with the same rules: campaigns only with features.campaigns, past
+ * listings left out, sensitive listings shown exactly as the calendar shows
+ * them. No new data, no accounts. Filters: day, part of the city, cause, how to
+ * join and "Only shifts good for groups" (the group_friendly field, or a shift
+ * that needs a team). Until listings for the weekend are posted, a plain line
+ * says when they appear.
+ */
+import ResultsHeading from "../../../components/ResultsHeading.astro";
+import SharePanel from "../../../components/SharePanel.astro";
+import SearchBox from "../../../components/SearchBox.astro";
+import Base from "../../../layouts/Base.astro";
+import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
+import ListingCard from "../../../components/ui/ListingCard.astro";
+import { MLK_FILTERS_KEY } from "../../../scripts/device.ts";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, requirementFacts, spotsLabel, typeLabel, whenText } from "../../../lib/words.ts";
+import { shownListing } from "../../../i18n/listing-text.ts";
+import { goodForGroups, inWeekend, mlkDays, weekendDays } from "../../../lib/mlk.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n, listings, settings, builtAt } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.mlk(code)]));
+const days = mlkDays();
+const items = listings.filter((e) => inWeekend(e.localDate, days));
+const any = items.length > 0;
+const utc = (d: string) => new Date(`${d}T12:00:00Z`);
+const sameYear = days.from.slice(0, 4) === days.to.slice(0, 4);
+const from = new Intl.DateTimeFormat(tr.lang, { month: "long", day: "numeric", ...(sameYear ? {} : { year: "numeric" }), timeZone: "UTC" }).format(utc(days.from));
+// The empty-state line, with "Team Shifts" linked for groups planning ahead (owner, 2026-11-10).
+const [emptyBefore, emptyAfter] = t("mlk.empty").split("{team_shifts}");
+const emptyParts = [
+  { text: emptyBefore, link: false },
+  ...(emptyAfter !== undefined ? [{ text: t("mlk.team_link"), link: true }, { text: emptyAfter, link: false }] : []),
+].filter((p) => p.text !== "");
+const to = new Intl.DateTimeFormat(tr.lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(utc(days.to));
+---
+
+<Base lang={lang} title={t("mlk.title")} alternates={alternates} path={paths.mlk(lang)}>
+  <div class="page results">
+    <p class="mlk__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+    <ResultsHeading lang={lang} text={t("mlk.title")} filters={any} />
+    <p>{t("mlk.intro", { from, to })}</p>
+  </div>
+  {
+    any && (
+      <FlexibleFilterPanel
+        lang={lang}
+        items={items}
+        applyLabel={t("mlk.apply")}
+        storageKey={MLK_FILTERS_KEY}
+        days={weekendDays(days)}
+        groups
+      />
+    )
+  }
+  <div class="page results">
+    {
+      any ? (
+        <>
+          <div class="results__bar">
+            <p id="results-count" class="results__count" role="status" data-count-one={t("mlk.count.one")} data-count-other={t("mlk.count.other")}>
+              {tr.plural("mlk.count", items.length)}
+            </p>
+          </div>
+          <div class="results__searchrow"><SearchBox lang={lang} kind="mlk" /></div>
+          <div
+            id="results-none"
+            class="results__none"
+            hidden
+            data-match={t("mlk.none_match")}
+            data-hint={t("flexible.none_match_hint")}
+            data-search-none={t("search.none")}
+            data-search-hint={t("search.none_hint")}
+          >
+            <p data-none-main>{t("mlk.none_match")}</p>
+            <p class="muted" data-none-hint>{t("flexible.none_match_hint")}</p>
+          </div>
+          <ul id="listing-list" class="stack listing-list">
+            {items.map((e) => (
+              <li
+                data-id={e.id}
+                data-search={cardSearchText(tr, e, settings)}
+                data-section={e.section ?? ""}
+                data-cause={e.cause ?? ""}
+                data-join={e.join_method}
+                data-date={e.localDate}
+                data-group={String(goodForGroups(e))}
+                data-over-at={e.overAt}
+              >
+                <ListingCard
+                  id={e.id}
+                  href={paths.listing(lang, e.id)}
+                  title={shownListing(e, lang).title.text}
+                  titleLang={shownListing(e, lang).title.lang}
+                  orgLang={e.listing_language}
+                  translatedLabel={shownListing(e, lang).translated ? t("listing.translated_automatically") : undefined}
+                  org={e.org_name}
+                  hostedBy={t("listing.hosted_by")}
+                  when={whenText(tr, e)}
+                  datetime={e.start}
+                  place={placeText(tr, e, settings)}
+                  placeSpoken={placeSpoken(tr, e, settings)}
+                  cause={e.cause}
+                  joinMethod={e.join_method}
+                  joinLabel={joinLabel(tr, e)}
+                  type={typeLabel(tr, e) ? e.type : undefined}
+                  typeLabel={typeLabel(tr, e)}
+                  businessLabel={businessLabel(tr, e)}
+                  teamLabel={e.team_required ? t("teams.tag") : undefined}
+                  facts={requirementFacts(tr, e)}
+                  spots={spotsLabel(tr, e, builtAt)}
+                  saveLabel={t("listing.save")}
+                  shareLabel={t("listing.share")}
+                  shareUrl={paths.listing(lang, e.id)}
+                  headingLevel={2}
+                />
+              </li>
+            ))}
+          </ul>
+          <p id="action-status" class="action-status" role="status" data-copied={t("listing.share_copied")} data-failed={t("listing.share_failed")}></p>
+        </>
+      ) : (
+        <p id="mlk-none" data-mlk-empty>
+          {emptyParts.map((part) => (part.link ? <a href={paths.teams(lang)}>{part.text}</a> : part.text))}
+        </p>
+      )
+    }
+  </div>
+  <SharePanel lang={lang} />
+</Base>
+
+{
+  any && (
+    <script>
+      import "../../../scripts/actions.ts";
+      import "../../../scripts/share-panel.ts";
+      import "../../../scripts/flexible-filters.ts";
+    </script>
+  )
+}
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .mlk__back {
+    margin: 0;
+  }
+</style>

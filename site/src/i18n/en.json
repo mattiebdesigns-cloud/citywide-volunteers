@@ -687,5 +687,20 @@
       "n3": "Flexible Shifts, the Medicaid hours calculator, Team Shifts, the About page and a share panel.",
       "n4": "The first calendar, with filters, in English and Spanish."
     }
+  },
+  "mlk": {
+    "title": "Martin Luther King Jr. Day of Service",
+    "intro": "Shifts on the Martin Luther King Jr. Day of Service weekend, {from} to {to}.",
+    "empty": "We add shifts for this day from December, as organizations post them. Planning a group? Check back then, or see {team_shifts}.",
+    "team_link": "Team Shifts",
+    "none_match": "No shifts match these filters.",
+    "count": {
+      "one": "{count} shift",
+      "other": "{count} shifts"
+    },
+    "apply": "Show shifts",
+    "search_label": "Search these shifts",
+    "group_only": "Only shifts good for groups",
+    "home_link": "Martin Luther King Jr. Day of Service, {date}: find a shift"
   }
 }

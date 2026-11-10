@@ -16,7 +16,7 @@ import { translator } from "../lib/site.ts";
 interface Props {
   lang: string;
   /** "dated" (follows Kind), "flexible" or "teams". */
-  kind?: "dated" | "flexible" | "teams";
+  kind?: "dated" | "flexible" | "teams" | "mlk";
 }
 
 const { lang, kind = "dated" } = Astro.props;
@@ -26,6 +26,7 @@ const labels = {
   dated: t("search.label_dated"),
   flexible: t("search.label_flexible"),
   teams: t("search.label_teams"),
+  mlk: t("mlk.search_label"),
 };
 ---
 
