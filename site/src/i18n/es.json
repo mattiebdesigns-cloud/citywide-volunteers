@@ -421,7 +421,7 @@
       "heading": "Hecho para todos",
       "free": "Es gratis.",
       "languages": "En inglés y español.",
-      "translation": "Los títulos en español se traducen automáticamente con Claude, de Anthropic, a partir de las propias palabras de la organización. Solo enviamos el texto del anuncio, nunca nada sobre usted. Para que quitemos un anuncio o un nombre que aparece en él, {write_to_us}.",
+      "translation": "Los títulos y las descripciones breves en español se traducen automáticamente con Claude, de Anthropic, a partir de las propias palabras de la organización. Solo enviamos el texto del anuncio, nunca nada sobre usted. Para que quitemos un anuncio o un nombre que aparece en él, {write_to_us}.",
       "write_to_us": "escríbanos",
       "phone": "Pensado primero para el teléfono.",
       "access": "Hecho para funcionar con lectores de pantalla y con el teclado."
