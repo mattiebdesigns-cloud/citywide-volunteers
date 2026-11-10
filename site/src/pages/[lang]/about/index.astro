@@ -10,7 +10,6 @@
  */
 import Base from "../../../layouts/Base.astro";
 import AboutArt from "../../../components/AboutArt.astro";
-import { aboutCounts } from "../../../lib/about.ts";
 import { MEDICAID, startDateText } from "../../../lib/medicaid.ts";
 import { cityName } from "../../../lib/og.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
@@ -18,22 +17,23 @@ import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts
 export const getStaticPaths = languagePaths;
 
 const { lang } = Astro.params as { lang: string };
-const { i18n, listings, opportunities, settings, siteUrl } = siteData();
+const { i18n, settings, siteUrl, totals } = siteData();
 const tr = translator(lang);
 const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.about(code)]));
 const siteName = tr.setting(settings.site.name);
 const city = cityName(tr, settings);
-const counts = aboutCounts(listings, opportunities);
 const email = settings.site.contact_email;
+// "To date, the calendar has listed …" from the running totals file (PV_STATS; owner, 2026-11-10).
+// Without the file, the sentence is left out.
 const numbers =
-  counts.listings > 0
-    ? t("about_page.shifts.numbers", {
-        listings: tr.plural("about_page.shifts.listings", counts.listings),
-        organizations: tr.plural("about_page.shifts.organizations", counts.organizations),
-        neighborhoods: tr.plural("about_page.shifts.neighborhoods", counts.neighborhoods),
+  totals && totals.opportunities > 0
+    ? t("about_page.shifts.numbers_to_date", {
+        opportunities: tr.plural("about_page.shifts.listings", totals.opportunities),
+        organizations: tr.plural("about_page.shifts.organizations", totals.organizations),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", totals.neighborhoods),
       })
-    : t("about_page.shifts.numbers_none");
+    : null;
 const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}");
 ---
 
@@ -46,9 +46,11 @@ const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}")
       <AboutArt id="shifts" />
       <h2 id="about-shifts">{t("about_page.shifts.heading")}</h2>
       <p>{t("about_page.shifts.body", { city })}</p>
-      <p class="about__numbers" data-counts={`${counts.listings} ${counts.organizations} ${counts.neighborhoods}`}>{numbers}</p>
+      {numbers && <p class="about__numbers">{numbers}</p>}
       <p>{t("about_page.shifts.signup")}</p>
       <p><a class="tap-link" href={paths.home(lang)}>{t("about_page.shifts.link")}</a></p>
+      {/* Opens the home page with the map on (owner, 2026-11-10; decision 0035). */}
+      <p><a class="tap-link" href={paths.homeMap(lang)}>{t("about_page.shifts.map_link")}</a></p>
     </section>
 
     <section class="about__section" aria-labelledby="about-near-you">

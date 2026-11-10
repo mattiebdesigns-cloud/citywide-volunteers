@@ -2,22 +2,28 @@
 /**
  * The "Test version" line at the very top of every page of a test build
  * (decision 0009). Striped edge plus words, so it is clear without colour.
+ * The 🚧 construction sign (owner's choice, 2026-11-10, in place of a drawn hard hat),
+ * decorative and hidden from screen readers: the words carry the meaning. Sized like
+ * the old 20 px icon. The striped warning-tape edge stays as it was (owner).
  * Shown only when the build is a test build; the page decides.
  *
- * {isTestBuild && <TestBanner text={t("site.test_version")} />}
+ * {isTestBuild && <TestBanner text={t("site.test_version")} note={t("site.footer_sources")} />}
+ * `note` (owner, 2026-11-10): "Listings come from organizations' public calendars.",
+ * moved here from the footer.
  */
-import Icon from "./Icon.astro";
 
 interface Props {
   text: string;
+  /** A second sentence under the first, optional. */
+  note?: string;
 }
 
-const { text } = Astro.props;
+const { text, note } = Astro.props;
 ---
 
 <div class="test-banner" role="note">
-  <Icon name="info" />
-  <p>{text}</p>
+  <span class="test-banner__icon" aria-hidden="true">🚧</span>
+  <p>{text}{note && <span class="test-banner__note"> {note}</span>}</p>
 </div>
 
 <style>
@@ -42,5 +48,16 @@ const { text } = Astro.props;
   }
   .test-banner p {
     margin: 0;
+  }
+  /* The same size as the 1.25rem (20 px) icon it replaces. */
+  .test-banner__icon {
+    flex: none;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  /* The second sentence on its own line, in regular weight. */
+  .test-banner__note {
+    display: block;
+    font-weight: var(--weight-normal, 400);
   }
 </style>

@@ -7,6 +7,12 @@
  * Q25/Q27). Contrast ratios are listed next to each pairing that carries
  * text or a needed edge; all meet WCAG 2.1 AA (4.5:1 for text, 3:1 for
  * borders and icons), most meet AAA (7:1).
+ *
+ * Two colour sets (owner, 2026-11-10): the light set below, and a dark set
+ * further down that redefines EVERY colour token for phones and computers
+ * set to dark mode. Components use only these tokens, never a colour of
+ * their own, so both sets always cover the whole site. A build test checks
+ * that each colour token here also has a dark value.
  */
 
 :root {
@@ -19,6 +25,7 @@
   --color-ink-muted: #4a5568;      /* secondary text: 7.2:1 on paper, 7.5:1 on white */
   --color-line: #7c8799;           /* borders that must be seen: 3.5:1 on paper, 3.6:1 on white */
   --color-line-soft: #dde3ec;      /* dividers only, never the only sign of anything */
+  --color-backdrop: rgb(23 32 46 / 55%); /* dims the page behind the share panel */
 
   /* Brand */
   --color-primary: #1f4e8c;        /* navy: buttons, links. White on it 8.3:1; it on paper 8.0:1 */
@@ -66,6 +73,22 @@
   --art-tint: #e4ecf7;             /* About drawings: soft blue blob behind (decoration only) */
   --art-tint-2: #fde6dd;           /* About drawings: soft coral circle (decoration only) */
   --art-water: #3a6aa8;            /* About map rivers: 5.3:1 on paper, 4.6:1 on the tint */
+  --art-backdrop: transparent;     /* About drawings: no tile behind them on the light page */
+
+  /* Header logo (logo.svg): the lettering's two colours */
+  --logo-philly: #1f4e8c;          /* navy, 7.95:1 on paper */
+  --logo-volunteers: #a8432b;      /* rust, 5.73:1 on paper */
+
+  /* Map (decision 0035). The street map's own colours are in lib/map-style.ts. */
+  --map-earth: #e2dfda;            /* behind the map while it loads: the street map's land colour */
+  --map-pin-ring: #ffffff;         /* ring around a pin */
+  --map-pin-edge: #17202e;         /* thin edge outside the ring: 14.1:1 on the land colour */
+  --map-area-fill: rgb(255 255 255 / 70%); /* inside the dashed "approximate area" ring */
+  --map-hint-bg: rgb(23 32 46 / 85%); /* MapLibre's two-finger hint */
+  --map-hint-text: #ffffff;        /* 11.7:1 or more over any map colour, both modes */
+
+  /* Our own drop-down arrow on selects, drawn in the text colour */
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317202e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
   /* ---- Type --------------------------------------------------------- */
   /* System fonts: nothing to download, so the first screen shows fast. */
@@ -108,6 +131,93 @@
 
   /* ---- Motion -------------------------------------------------------- */
   --speed: 150ms;
+}
+
+/*
+ * Dark set (owner, 2026-11-10). Used when the device is set to dark mode.
+ * "screen" keeps printing on the light set. Every colour token above is
+ * redefined here; contrast is listed beside each, and every pair is in
+ * docs/design.md. The cause and About drawings keep their own colours and
+ * sit on a softer tile, so they read the same in both modes.
+ */
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    /* Page */
+    --color-paper: #0f1724;          /* deep navy-black page */
+    --color-surface: #18233a;        /* cards' text areas, sheets, fields */
+    --color-ink: #eef2f8;            /* body text: 16.0:1 on paper, 14.0:1 on surface */
+    --color-ink-muted: #b8c3d3;      /* 10.1:1 on paper, 8.8:1 on surface */
+    --color-line: #8391a8;           /* 5.6:1 on paper, 4.9:1 on surface */
+    --color-line-soft: #2c3a50;      /* dividers only */
+    --color-backdrop: rgb(0 0 0 / 65%);
+
+    /* Brand: the main colour turns light blue, with dark words on it */
+    --color-primary: #8ab4f0;        /* links 8.5:1 on paper, 7.4:1 on surface; dark text on it 8.5:1 */
+    --color-primary-hover: #b3cff7;  /* 11.3:1 on paper; dark text on it 11.3:1 */
+    --color-on-primary: #0f1724;
+    --color-accent: #f08a6c;         /* coral: dark text on it 6.7:1; 7.3:1 on paper */
+    --color-on-accent: #17202e;
+
+    /* Card band */
+    --color-band: #1d3560;           /* white 12.1:1; light text 8.9:1; coral 5.0:1 */
+    --color-on-band: #ffffff;
+    --color-on-band-muted: #d5deeb;
+
+    /* Status */
+    --color-full-bg: #eef2f8;        /* "Full": dark text on light, 16.0:1 */
+    --color-full-text: #0f1724;
+    --color-spots-bg: #0f1724;       /* "6 spots left": light text on dark, 16.0:1 */
+    --color-spots-text: #eef2f8;
+    --color-notice-bg: #3a2420;      /* dark rust. Text 12.9:1 */
+    --color-notice-border: #f0937a;  /* 6.3:1 on the notice background */
+
+    /* Focus: a white ring with a dark inner ring */
+    --color-focus: #ffffff;          /* 18.0:1 on paper, 15.7:1 on surface, 12.1:1 on band */
+    --color-focus-inner: #0f1724;
+    --color-focus-on-dark: #f08a6c;  /* inside the band: 5.0:1 */
+
+    /* Cause drawing tiles: the light colours, a little softer (x 0.85), so a
+       card does not glare. Navy shapes stay 4.2:1 or more, ink 8.3:1 or more. */
+    --art-food: #d1bba3;
+    --art-parks-and-trees: #b0c3aa;
+    --art-animals: #cdbfa8;
+    --art-youth: #b0bece;
+    --art-housing: #ceb3a8;
+    --art-elders: #c4b8cb;
+    --art-civic-action: #d2c08f;
+    --art-education: #b5c4c2;
+    --art-health: #cfb6b9;
+    --art-clothing: #bbbbcb;
+    --art-repair: #bcc1c4;
+    --art-arts: #c9b5c7;
+    --art-default: #c6c2b6;
+    /* The drawings themselves keep the light colours: they sit on a tile. */
+    --art-line: #17202e;
+    --art-fill: #1f4e8c;
+    --art-fill-2: #f08a6c;
+    --art-fill-3: #ffffff;
+    --art-tint: #e4ecf7;
+    --art-tint-2: #fde6dd;
+    --art-water: #3a6aa8;            /* 3.6:1 on the About tile */
+    --art-backdrop: #cbd2db;         /* About drawings' tile: navy on it 5.5:1, ink 10.8:1 */
+
+    /* Header logo: the navy version (option-a4-dark.svg) */
+    --logo-philly: #ffffff;          /* 18.0:1 on paper */
+    --logo-volunteers: #f08a6c;      /* 7.3:1 on paper */
+
+    /* Map: Protomaps' dark style (lib/map-style.ts) */
+    --map-earth: #1f1f1f;
+    --map-pin-ring: #0f1724;         /* light-blue dot on it 8.5:1 */
+    --map-pin-edge: #ffffff;         /* 16.5:1 on the land, 9.3:1 on the brightest road */
+    --map-area-fill: rgb(15 23 36 / 75%);
+    --map-hint-bg: rgb(0 0 0 / 85%);
+    --map-hint-text: #ffffff;
+
+    --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23eef2f8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+    /* A thin light ring, so dark cards and panels stand off the dark page */
+    --shadow: 0 0 0 1px #34507e, 0 4px 12px rgb(0 0 0 / 45%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

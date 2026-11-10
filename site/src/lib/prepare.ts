@@ -2,6 +2,7 @@
 // Pure functions, so they can be tested without a build.
 import type { EventsFile, Listing, OpportunitiesFile, Opportunity, PreparedListing, SiteSettings } from "./types.ts";
 import { localParts, timeOfDay } from "./time.ts";
+import { mapPoint } from "./map.ts";
 
 export interface PrepareOptions {
   /** Listings that are over before this moment are left out. */
@@ -88,11 +89,29 @@ export function prepareListings(file: EventsFile, settings: SiteSettings, { now 
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start) || a.id.localeCompare(b.id));
 }
 
+/**
+ * Sensitive (PROJECT.md 8.1): marked sensitive, or a protest or action.
+ * The one place this is decided, for cards, listing pages and anything else
+ * that needs it, so no two parts of the site can disagree.
+ */
+export function isSensitive(e: Pick<Listing, "sensitive" | "type">): boolean {
+  return e.sensitive === true || e.type === "protest_action";
+}
+
+/**
+ * The map point fields (decision 0035): both numbers in range, or both null.
+ * Nothing about sensitivity is read here: every listing is pinned the same way.
+ */
+function pointFields(e: Pick<Listing, "lat" | "lon" | "approximate">) {
+  const p = mapPoint(e);
+  return p ? { lat: p.lat, lon: p.lon, approximate: p.approximate } : { lat: null, lon: null, approximate: false };
+}
+
 function normalise(e: Listing): Listing {
   const full = e.full === true;
   return {
     ...e,
-    sensitive: e.sensitive === true || e.type === "protest_action",
+    sensitive: isSensitive(e),
     host_type: e.host_type ?? null,
     faith_tradition: e.faith_tradition ?? null,
     activity: Array.isArray(e.activity) && e.activity.length ? e.activity : null,
@@ -100,6 +119,7 @@ function normalise(e: Listing): Listing {
     spots_left: typeof e.spots_left === "number" ? e.spots_left : null,
     spots_total: typeof e.spots_total === "number" ? e.spots_total : null,
     ...teamFields(e),
+    ...pointFields(e),
   };
 }
 
@@ -163,7 +183,7 @@ export function prepareOpportunities(file: OpportunitiesFile, settings: SiteSett
     .map(
       (o): Opportunity => ({
         ...o,
-        sensitive: o.sensitive === true || o.type === "protest_action",
+        sensitive: isSensitive(o),
         section: o.section ?? null,
         neighborhood_or_town: o.neighborhood_or_town ?? null,
         cause: o.cause ?? null,
@@ -173,6 +193,7 @@ export function prepareOpportunities(file: OpportunitiesFile, settings: SiteSett
         faith_tradition: o.faith_tradition ?? null,
         activity: Array.isArray(o.activity) && o.activity.length ? o.activity : null,
         ...teamFields(o),
+        ...pointFields(o),
       }),
     )
     .sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }) || a.id.localeCompare(b.id));

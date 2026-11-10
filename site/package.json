@@ -19,10 +19,13 @@
     "test": "node --test tests/*.test.ts"
   },
   "dependencies": {
+    "@protomaps/basemaps": "5.7.2",
     "astro": "7.4.0",
+    "lightningcss": "file:vendor/no-lightningcss",
+    "maplibre-gl": "6.17.0",
+    "pmtiles": "4.5.0",
     "sharp": "file:vendor/no-sharp",
-    "typescript": "5.9.3",
-    "lightningcss": "file:vendor/no-lightningcss"
+    "typescript": "5.9.3"
   },
   "overrides": {
     "sharp": "$sharp",

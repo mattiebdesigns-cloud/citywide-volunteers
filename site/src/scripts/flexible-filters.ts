@@ -82,6 +82,8 @@ if (panel && toggle && list && countEl) {
       if (words) words.textContent = active ? `, ${plural(countBadge, active)}` : "";
     }
     writeFilters(state, storageKey);
+    // The page's map (decision 0035), if on, shows what the list now shows.
+    document.dispatchEvent(new CustomEvent("pv:listupdated"));
   }
 
   function open(isOpen: boolean, returnFocus = true): void {
@@ -111,6 +113,8 @@ if (panel && toggle && list && countEl) {
     if (event.key === "Escape") open(false);
   });
   toggle.addEventListener("click", () => open(panel.hidden));
+
+  document.addEventListener("pv:mapchange", () => apply());
 
   toggle.hidden = false;
   showState();

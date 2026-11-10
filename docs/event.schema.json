@@ -211,7 +211,42 @@
       "description": "true when the organization's own page says the shift is full, read at the same time as last_seen_at. A full listing stays on the calendar and shows \"Full\". Left out or false otherwise.",
       "type": "boolean",
       "default": false
+    },
+    "lat": {
+      "description": "Latitude of the listing's map point, in decimal degrees (WGS 84). Written by the pipeline, never by a scraper: from the published address when it matched, or the center of the listing's area when approximate is true (decision 0035). Comes with lon and approximate: all three or none. Left out when the listing has no map point.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lon": {
+      "description": "Longitude of the listing's map point, in decimal degrees (WGS 84). Comes with lat and approximate: all three or none. Left out when the listing has no map point.",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "approximate": {
+      "description": "true when the map point is the center of an area (ZIP code, neighborhood or section), not the published address; the site shows it as \"Approximate area\" and gives no directions to it. false when the point is the published address. Comes with lat and lon: all three or none.",
+      "type": "boolean"
+    },
+    "machine_translations": {
+      "description": "Machine translations of the organization's own text, by language code. Shown labeled 'Translated automatically', with the original one tap away. Never holds the organization's name or the address. Optional.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z]{2,3}$" },
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "team_task": { "type": "string", "minLength": 1 }
+        }
+      }
     }
+  },
+  "dependentRequired": {
+    "lat": ["lon", "approximate"],
+    "lon": ["lat", "approximate"],
+    "approximate": ["lat", "lon"]
   },
   "allOf": [
     {

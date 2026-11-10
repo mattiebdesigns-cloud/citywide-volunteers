@@ -2,7 +2,7 @@
 
 _PROJECT.md sections 2 and 5; docs/briefs/phase1-home-page.md; decision 0009. Owner of this file: `pv-design`._
 
-**Status:** the owner picked the navy and coral palette on 2026-10-18 (QUESTIONS Q25/Q27). He still has to approve a screenshot of the calendar and of a listing page in this palette before launch.
+**Status:** the owner picked the navy and coral palette on 2026-10-18 (QUESTIONS Q25/Q27). He approved building a dark mode on 2026-11-10 (section "Dark mode"); the dark look still needs his OK on screenshots. He still has to approve a screenshot of the calendar and of a listing page in this palette before launch.
 
 ## The feel
 
@@ -19,7 +19,7 @@ Friendly, civic, fast. The site opens straight into this week's shifts: a header
 
 | File | What it is |
 |---|---|
-| `site/src/styles/tokens.css` | Every colour, size and space, as CSS variables. A city restyles its copy here. |
+| `site/src/styles/tokens.css` | Every colour, size and space, as CSS variables, with a light set and a dark set. A city restyles its copy here. |
 | `site/src/styles/base.css` | Light reset, text, links, focus rings, reduced motion, `.sr-only`, `.skip-link`, `.page`, `.stack`, `.muted`. |
 | `site/src/styles/forms.css` | Form fields: `.field` (label above a 48 px select or input, our own drop-down arrow), `.field__hint`, `.check` (checkbox or radio row, the whole row is the tap target). |
 | `site/src/styles/global.css` | Imports the three above. Import it once, in the main layout. |
@@ -27,7 +27,7 @@ Friendly, civic, fast. The site opens straight into this week's shifts: a header
 
 ## Colours
 
-Navy and coral. All text pairs pass WCAG 2.1 AA (4.5:1), and most pass AAA (7:1). Borders that matter pass 3:1.
+Navy and coral. This table is the light set; the dark set is under "Dark mode" below. All text pairs pass WCAG 2.1 AA (4.5:1), and most pass AAA (7:1). Borders that matter pass 3:1.
 
 | Role | Colour | Contrast |
 |---|---|---|
@@ -66,7 +66,7 @@ Line height 1.55 for body text, 1.25 for headings. Links are always underlined.
 - Space in 4 px steps: `--space-1` (4 px) to `--space-8` (64 px). Cards sit 16 px apart; the page has 16 px at each side on a phone, 24 px from 640 px up.
 - `--tap` is 48 px: every button, chip and toggle.
 - Corners: cards 14 px, small badges 8 px, pills and buttons fully round.
-- Focus: a 3 px dark ring with a thin white ring inside it, so it shows on light and dark backgrounds. Inside the dark card band the ring is coral.
+- Focus: a 3 px dark ring with a thin white ring inside it, so it shows on light and dark backgrounds (in dark mode the reverse: a white ring with a dark inner ring). Inside the dark card band the ring is coral.
 - Motion: only short colour fades (150 ms). With "reduce motion" turned on in the device settings, there is none.
 - Windows high-contrast mode keeps borders and focus rings.
 
@@ -83,7 +83,7 @@ Line height 1.55 for body text, 1.25 for headings. Links are always underlined.
 | Saved (heart) | Main colour | Heart fills in solid; `aria-pressed` for screen readers |
 | Filter chip on | Main colour fill | Check mark appears; `aria-pressed` |
 | Links | Main colour | Always underlined |
-| Test build | Pale coral strip | Striped edge and the words "Test version" |
+| Test build | Pale coral strip (dark rust in dark mode) | Striped edge, the 🚧 emoji and the words "Test version" |
 
 ## Components
 
@@ -138,7 +138,7 @@ A one-tap filter choice ("Evening", "No training needed"). Fills in and shows a 
 The plain boxed note on a business-led listing's detail page: `heading={tr.listName("host_types","business-led")} text={t("listing.business_led_note")}`.
 
 ### `TestBanner`
-The "Test version" strip at the top of every page of a test build (decision 0009). Show it only in test builds, for example when the build sets `PV_TEST_BUILD=1`. `text={t("site.test_version")}`.
+The "Test version" strip at the top of every page of a test build (decision 0009). Show it only in test builds, for example when the build sets `PV_TEST_BUILD=1`. `text={t("site.test_version")}`. Its icon is the 🚧 construction sign emoji (owner 2026-11-10, in place of a drawn hard hat), the same size as the text, decorative (`aria-hidden`).
 
 ### `Icon`
 Small line icons drawn for this project, listed in `icons.ts` (needs `SvgSprite` on the page). Always next to words, so they are hidden from screen readers.
@@ -150,7 +150,7 @@ The header shows the site name as a logo: the link-preview map of the city's eig
 - **File.** `site/src/components/ui/logo.svg`. `SiteHeader.astro` puts it straight into the page, with its notes stripped. That means no extra download, no image request (the Medicaid page allows none), and no font file.
 - **Font.** Shrikhand, SIL Open Font License 1.1, Copyright (c) 2015 Jonny Pinhorn (OFL allowed for fonts, owner Q122). The letters are converted to shapes, so no font is downloaded.
 - **Colours** (light page, the header's only background). "Philly" is navy `#1f4e8c`, 7.95:1. "Volunteers" is rust `#a8432b` (the notice border colour), 5.73:1. Bright coral is never used as lettering on paper (2.4:1). The map's shapes all have a navy `#15294a` edge (13.9:1).
-- **Navy version.** For a dark band, not used today: "Philly" white 14.50:1, "Volunteers" coral `#f08a6c` 5.91:1. Kept in `site/design/brand-options/option-a4-dark.svg`.
+- **Navy version, used in dark mode.** "Philly" white, "Volunteers" coral `#f08a6c` (from `site/design/brand-options/option-a4-dark.svg`). The two lettering shapes take their colour from `--logo-philly` and `--logo-volunteers`, so the same inline drawing switches with the page; there is no second file. On the dark page: white 18.0:1, coral 7.3:1, the map's pale blues 9.1:1 or more.
 - **Size.** 56 px tall on phones (150 px wide) and 64 px tall from 480 px wide (171 px wide). Sized in rem, so it grows with the reader's text size.
 - **Name for screen readers.** The drawing is `aria-hidden`. The link holds the site name from the settings (`site.name`) in visually hidden text, so it is announced as "Philly Volunteers" and goes to the home page in the current language.
 - **Other cities.** The lettering spells "Philly Volunteers". A city that copies the site with another `site.name` needs its own `logo.svg`.
@@ -214,6 +214,54 @@ These keys do not exist yet. Proposed English below; pv-languages owns the files
 
 - **Sensitive mark** (Q27 part 2): no mark for now. If the owner wants one, the dashed shield pill is ready; it needs agreed words.
 
+## Dark mode (owner, 2026-11-10)
+
+Phones and computers set to dark mode get our own dark colours. Before this, the page said `color-scheme: light`, and Samsung Internet darkened it by itself, which looked wrong (owner's Samsung S25).
+
+- **How it works.** `tokens.css` has the light set, then `@media screen and (prefers-color-scheme: dark)` redefines every colour token. `base.css` says `color-scheme: light dark`, and every page has `<meta name="color-scheme" content="light dark">`, so browsers use our colours instead of their own. "screen" means printing always uses the light set.
+- **One rule for components.** No component writes a colour of its own; each uses tokens. A build test (`site/tests/dark-theme.test.ts`) checks that every light colour token has a dark value, that no colour is written straight into a style (print excepted), that each page has the meta tag, and the key contrast pairs in both sets.
+- **No switch on the site.** It follows the device setting. A switch would be a new control; ask the owner first if one is wanted.
+
+### Dark colours and contrast
+
+| Role | Token | Dark | Contrast |
+|---|---|---|---|
+| Page | `--color-paper` | `#0f1724` | |
+| Surface (sheets, fields, panels) | `--color-surface` | `#18233a` | |
+| Text | `--color-ink` | `#eef2f8` | 16.0:1 on page, 14.0:1 on surface |
+| Secondary text | `--color-ink-muted` | `#b8c3d3` | 10.1:1 on page, 8.8:1 on surface |
+| Borders that must be seen | `--color-line` | `#8391a8` | 5.6:1 on page, 4.9:1 on surface, 4.5:1 on the notice |
+| Dividers only | `--color-line-soft` | `#2c3a50` | decoration |
+| Main colour (links, buttons) | `--color-primary` | `#8ab4f0` light blue | 8.5:1 on page, 7.4:1 on surface, 5.7:1 on the band; dark text on it 8.5:1 |
+| Main colour, hover | `--color-primary-hover` | `#b3cff7` | 11.3:1 on page; dark text on it 11.3:1 |
+| Words on the main colour | `--color-on-primary` | `#0f1724` | (above) |
+| Coral accent | `--color-accent` | `#f08a6c` (same) | dark text on it 6.7:1; 7.3:1 on page, 5.0:1 on band |
+| Card band | `--color-band` | `#1d3560` | white 12.1:1, light text `#d5deeb` 8.9:1 |
+| "Full" badge | `--color-full-bg` / `-text` | `#eef2f8` / `#0f1724` | 16.0:1 |
+| "Spots left" badge | `--color-spots-bg` / `-text` | `#0f1724` / `#eef2f8` | 16.0:1 |
+| Notice (test strip, business-led) | `--color-notice-bg` | `#3a2420` dark rust | text 12.9:1; stripes: coral 5.9:1, light 12.9:1 |
+| Notice edge | `--color-notice-border` | `#f0937a` | 6.3:1 on the notice |
+| Focus ring / inner ring | `--color-focus` / `--color-focus-inner` | `#ffffff` / `#0f1724` | ring 18.0:1 on page, 15.7:1 on surface, 12.1:1 on band; inner ring 8.5:1 on a main-colour button |
+| Focus inside the band | `--color-focus-on-dark` | `#f08a6c` | 5.0:1 on band |
+| Panel backdrop | `--color-backdrop` | black at 65% | decoration |
+| Card and panel shadow | `--shadow` | adds a 1 px `#34507e` ring | decoration: cards are told apart by the drawing and the band |
+| Select arrow | `--select-arrow` | drawn in `#eef2f8` | 14.0:1 on the field |
+
+### Drawings in dark mode
+
+- **Cause drawings** keep their colours (navy, coral, ink, white). Their tiles are the light colours a little softer (x 0.85), so a card does not glare: navy shapes 4.2:1 to 4.7:1 on every tile, ink 8.3:1 or more. The soft white circles use `--art-fill-3`, not a written-in white.
+- **About drawings** keep their colours and sit on a rounded tile, `--art-backdrop` `#cbd2db` (transparent on the light page): navy 5.5:1, ink 10.8:1, rivers 3.6:1. The tile is the first shape inside each drawing, so nothing else on the page changes.
+- **Instagram picture** keeps its own fixed design in both modes: `PICTURE_COLORS` in `scripts/share-picture.ts`, the light set.
+- **Link-preview picture** is a PNG for other sites; unchanged.
+
+### Map in dark mode
+
+- **Street map:** Protomaps' "dark" colours from the same pinned `@protomaps/basemaps` 5.7.2, drawn from the same street map file, letters and road-sign sprite (the "light" sprite already in `/map/`). No new file, no new request. `lib/map-style.ts` picks dark when the device asks for it (`dark` option, for tests). The labels are lightened to 4.5:1 or more on their halos: street names `#949494`/`#9a9a9a` (5.4:1/5.9:1), places `#a3a3a3` (6.5:1), water names `#8f9fd0` (6.3:1).
+- **Behind the map while it loads:** `--map-earth`, the street map's own land colour (`#e2dfda` light, `#1f1f1f` dark).
+- **Pins** (`--map-pin-ring`, `--map-pin-edge`, `--map-area-fill`): in dark, a light-blue dot with a dark ring and a white edge. White edge 16.5:1 on land, 9.3:1 on the brightest road, 12.3:1 on water; dot on ring 8.5:1. The "approximate area" ring is dashed light blue on a dark fill: 7.7:1 on land, 4.4:1 on the brightest road, 5.8:1 on water. Number circles: white on the band, 12.1:1. An open pin has a white, dark, white triple ring (light mode: ink, white, ink).
+- **Two-finger hint:** white on black at 85% in both modes, 11.7:1 or more.
+- **Switching mode while a map is open** changes the pins and frame at once; the street map's colours change the next time the map opens.
+
 ## Not in this round
 
-Dark mode, a print style, and the filter sheet's own component. Each can follow once the look is approved.
+A print style, and the filter sheet's own component. Each can follow once the look is approved.

@@ -23,7 +23,7 @@ No other top-level fields are allowed.
 
 ## One listing
 
-Every field in the first table must be present in every listing, even when its value is unknown. Three groups are optional, so older files still pass: `section` (marked optional in the table), and the tag fields and open-spots fields in the later tables. No other fields are allowed, so nothing extra (above all, nothing about people) can slip in.
+Every field in the first table must be present in every listing, even when its value is unknown. Some groups are optional, so older files still pass: `section` (marked optional in the table), and the tag, open-spots and team fields in the later tables. Two more groups are added by the pipeline only when it has something to put in them: the map point and machine translations. No other fields are allowed, so nothing extra (above all, nothing about people) can slip in.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -109,6 +109,34 @@ Some activities need a team, not one person: for example, a team of three or mor
 - All three are optional, so older files still pass. New output should write all three (`false`, `null`, `null` when the page says nothing about teams).
 - Flexible opportunities can carry the same three fields.
 
+### Map point (optional)
+
+The site's maps (decision 0035) put each listing on a map. The pipeline, not the scraper, adds the point after it reads the address.
+
+| Field | Type | Notes |
+|---|---|---|
+| lat | number from -90 to 90 | Latitude, decimal degrees |
+| lon | number from -180 to 180 | Longitude, decimal degrees |
+| approximate | true or false | true: the point is the center of the listing's area (ZIP code, neighborhood or section), shown as "Approximate area", with no directions. false: the point is the published address |
+
+- All three together, or none. A listing with only some of them fails.
+- Left out completely when there is no point, for example no address or an address that did not match. Never null, never 0, and never guessed.
+- A sensitive listing gets a point the same way as any other: the meetup place the organization itself published (owner, Q119).
+- Flexible opportunities can carry the same three fields.
+
+### Machine translations (optional)
+
+On a page in another language, the site shows the organization's own words machine translated, labeled "Translated automatically", with the original one tap away (decision 0036). The pipeline adds them after the run.
+
+```json
+"machine_translations": { "es": { "title": "Turno de voluntariado en la cocina", "team_task": "cocinar la cena para 40" } }
+```
+
+- Keyed by a language code: two or three lowercase letters, for example `es`.
+- Each language holds at least one of `title` and `team_task`, never empty text. A flexible opportunity may also hold `commitment`.
+- Never holds the organization's name, the address or any other field. Those always stay as the organization wrote them.
+- Left out (or `{}`) when nothing is translated. The original `title` and `team_task` are never replaced.
+
 ### join_method
 
 - `drop_in`: just show up.
@@ -131,6 +159,8 @@ If the source does not say, record that it does not say. Each field has exactly 
 - A `protest_action` listing must have `sensitive: true`.
 - A listing with a `recurrence_rule` must have `recurring: true`.
 - A listing with `full: true` must have `spots_left` of 0 or null.
+- `lat`, `lon` and `approximate` come together or not at all, and `lat` and `lon` are in range.
+- `machine_translations` holds only `title` and `team_task` (plus `commitment` for a flexible opportunity), under language codes.
 - Dates must include a UTC offset (`Z` or `-04:00`).
 - `area`, and `section`, `cause`, `host_type`, `faith_tradition` and each `activity` when not null, must look like an id: lowercase letters, digits and hyphens. Whether it is on the city's lists is checked against the city's settings file, not here.
 - `activity`, when not null, lists at least one id and no id twice.
@@ -161,11 +191,12 @@ Some volunteer programs have no set dates or times: you contact the organization
 { "generated_at": "2026-11-05T06:00:00-05:00", "opportunities": [ ... ] }
 ```
 
-- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`, and optionally `team_required, team_size, team_task`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
+- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`, and optionally `team_required, team_size, team_task` and the map point `lat, lon, approximate`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
 - **No `start`, `end`, `recurring` or `recurrence_rule`.** A schedule is never guessed from opening hours. If an organization publishes real dates, those dates are listings in `events.json` instead.
 - **No open-spots fields** (`spots_left`, `spots_total`, `full`).
 - **One extra field, `commitment`:** the time the organization asks for, in its own words, for example "2 hours a week for 6 months". `null` when the organization does not say. Never worked out by us.
-- **Every field is required.** This is a new file with no older copies, so `section`, `host_type`, `faith_tradition` and `activity` are always written (`null` when not known).
+- **Every field is required**, except the team fields, the map point and `machine_translations`. This is a new file with no older copies, so `section`, `host_type`, `faith_tradition` and `activity` are always written (`null` when not known).
+- **`machine_translations`** has the same shape as in a listing, and may also translate `commitment`.
 - **Same unknown rules:** `join_method` and `spanish_spoken` use `"unknown"`; every other unknown is `null`. A `protest_action` program must have `sensitive: true`.
 - `section` and `neighborhood_or_town` come from the address in the same way as for listings.
 - Each `id` appears once in the file. JSON Schema cannot check that, so the pipeline and tests do.

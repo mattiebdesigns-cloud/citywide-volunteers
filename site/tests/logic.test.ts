@@ -24,7 +24,7 @@ import {
 } from "../src/lib/filter-logic.ts";
 import { buildIcs, escapeText, foldLine } from "../src/lib/ics.ts";
 import { pruneSaved } from "../src/lib/saved.ts";
-import { aboutCounts } from "../src/lib/about.ts";
+import { readTotals } from "../src/lib/about.ts";
 import { normalizeSearch, searchMatches } from "../src/lib/search.ts";
 import { SHARE_TARGETS, STORY_SAFE_BOTTOM, STORY_SAFE_TOP, fitText, placePicture, shareLinks, wrapLines } from "../src/lib/share.ts";
 import { createI18n } from "../src/i18n/index.ts";
@@ -157,8 +157,9 @@ test("show only and hide tags, unknown never counts as a match", () => {
   assert.equal(f({ spanish: true }), false);
   assert.equal(f({ saved: true }), false);
   assert.equal(matches(card, { ...EMPTY_FILTERS, saved: true }, today, new Set(["x"])), true);
-  assert.equal(activeCount({ ...EMPTY_FILTERS, day: "pick_date" }), 0);
-  assert.equal(activeCount({ ...EMPTY_FILTERS, day: "today", spanish: true }), 2);
+  // Kind (Dated shifts by default) always counts as one (owner, 2026-11-10).
+  assert.equal(activeCount({ ...EMPTY_FILTERS, day: "pick_date" }), 1);
+  assert.equal(activeCount({ ...EMPTY_FILTERS, day: "today", spanish: true }), 3);
 });
 
 test("calendar file follows RFC 5545", () => {
@@ -339,9 +340,9 @@ test("Kind filter: dated shifts by default, flexible opportunities, or everythin
   // Other filters still apply to flexible cards.
   assert.deepEqual(shows({ ...kind("flexible"), cause: "animals" }), [false, false, false, false]);
   // With Flexible, day and time are off, so they are not counted as filters on.
-  assert.equal(activeCount({ ...kind("flexible"), day: "today", time: "evening" }), 1);
+  assert.equal(activeCount({ ...kind("flexible"), day: "today", time: "evening" }), 1, "flexible: day and time are off; Kind is the one");
   assert.equal(activeCount({ ...kind("teams"), day: "today" }), 2);
-  assert.equal(activeCount(EMPTY_FILTERS), 0);
+  assert.equal(activeCount(EMPTY_FILTERS), 1, "no choices made: Dated shifts is the one filter on (owner, 2026-11-10)");
 });
 
 test("team fields: true only when the file says true; blank words count as none; older files still work", () => {
@@ -365,16 +366,15 @@ test("team fields: true only when the file says true; blank words count as none;
   assert.equal(o.team_task, null);
 });
 
-// About page figures (decision 0025).
+// About page running totals (owner, 2026-11-10).
 
-test("About page counts: listings plus opportunities; organizations and neighborhoods counted once", () => {
-  const l = prepareListings(sample, settings, { now: before });
-  const o = prepareOpportunities(opportunities, settings);
-  const c = aboutCounts(l, o);
-  assert.equal(c.listings, l.length + o.length);
-  const twice = [{ ...l[0], org_name: "  Example   Pantry " }, { ...l[0], org_name: "example pantry", neighborhood_or_town: null }];
-  assert.deepEqual(aboutCounts(twice, []), { listings: 2, organizations: 1, neighborhoods: l[0].neighborhood_or_town ? 1 : 0 });
-  assert.deepEqual(aboutCounts([], []), { listings: 0, organizations: 0, neighborhoods: 0 });
+test("About page totals: shifts plus cards; only the four whole numbers are read", () => {
+  const file = { version: 4, note: "private words", totals: { shifts: 459, cards: 59, organizations: 86, neighborhoods: 35 } };
+  assert.deepEqual(readTotals(file, "f"), { opportunities: 518, organizations: 86, neighborhoods: 35 });
+  assert.ok(!JSON.stringify(readTotals(file, "f")).includes("private"));
+  for (const bad of [{}, { totals: {} }, { totals: { ...file.totals, cards: -1 } }, { totals: { ...file.totals, shifts: 1.5 } }, { totals: { ...file.totals, organizations: "86" } }, null]) {
+    assert.throws(() => readTotals(bad, "f"), /totals\./, JSON.stringify(bad));
+  }
 });
 
 // Share panel (decision 0027).

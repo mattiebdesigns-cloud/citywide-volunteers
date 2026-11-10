@@ -134,7 +134,47 @@
         "null"
       ],
       "minLength": 1
+    },
+    "lat": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/lat"
+    },
+    "lon": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/lon"
+    },
+    "approximate": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/approximate"
+    },
+    "machine_translations": {
+      "description": "Machine translations of the organization's own text, by language code. Shown labeled 'Translated automatically', with the original one tap away. Never holds the organization's name or the address. Optional. Same as in a listing, plus commitment.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z]{2,3}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "team_task": {
+            "type": "string",
+            "minLength": 1
+          },
+          "commitment": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
+  },
+  "dependentRequired": {
+    "lat": ["lon", "approximate"],
+    "lon": ["lat", "approximate"],
+    "approximate": ["lat", "lon"]
   },
   "allOf": [
     {

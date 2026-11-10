@@ -138,11 +138,13 @@ export function splitAround(text: string, name: string): [string, string] {
  */
 export function cardSearchText(
   tr: Translator,
-  e: Place & Pick<PreparedListing, "title" | "org_name" | "cause" | "join_method">,
+  e: Place & Pick<PreparedListing, "title" | "org_name" | "cause" | "join_method" | "machine_translations">,
   settings: Pick<SiteSettings, "sections">,
 ): string {
   return searchText([
     e.title,
+    // The machine translation shown on this page's cards, too (decision 0036).
+    e.machine_translations?.[tr.lang]?.title,
     e.org_name,
     e.neighborhood_or_town,
     sectionName(tr, settings, e.section),

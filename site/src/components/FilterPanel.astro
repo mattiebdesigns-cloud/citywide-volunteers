@@ -21,7 +21,7 @@ import Button from "./ui/Button.astro";
 import Chip from "./ui/Chip.astro";
 import IconButton from "./ui/IconButton.astro";
 import { liveAreas, usedIds } from "../lib/prepare.ts";
-import { paths, siteData, translator } from "../lib/site.ts";
+import { siteData, translator } from "../lib/site.ts";
 
 interface Props {
   lang: string;
@@ -75,13 +75,9 @@ const joins = ["drop_in", "signup", "application", "unknown"];
         data-note-flexible={t("filters.kind.note_flexible")}
         data-note-teams={t("filters.kind.note_teams")}
       ></p>
-      <ul class="filter-panel__pages">
-        <li><a href={paths.flexible(lang)}>{t("filters.kind.see_flexible")}</a></li>
-        <li><a href={paths.teams(lang)}>{t("filters.kind.see_teams")}</a></li>
-      </ul>
     </div>
 
-    <div class="field" data-dated-only>
+    <div class="field" data-dated-only data-day-field>
       <label for="filter-day">{t("filters.day.label")}</label>
       <select id="filter-day" data-filter="day">
         <option value="">{t("filters.any")}</option>
@@ -240,16 +236,6 @@ const joins = ["drop_in", "signup", "application", "unknown"];
     flex-direction: column;
     gap: var(--space-4);
     min-width: 0;
-  }
-  .filter-panel__pages {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .filter-panel__pages a {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
   }
   .filter-panel__chips {
     display: flex;

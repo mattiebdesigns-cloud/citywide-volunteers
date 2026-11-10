@@ -14,9 +14,13 @@ import SearchBox from "../../../components/SearchBox.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
+import OriginalText from "../../../components/OriginalText.astro";
+import MapView from "../../../components/MapView.astro";
+import { mapAttrs } from "../../../lib/map-build.ts";
 import { TEAMS_FILTERS_KEY } from "../../../scripts/device.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 import { cardSearchText, joinLabel, placeSpoken, placeText, requirementFacts, whenText } from "../../../lib/words.ts";
+import { listingText, shownListing } from "../../../i18n/listing-text.ts";
 import type { Opportunity, PreparedListing } from "../../../lib/types.ts";
 
 export const getStaticPaths = languagePaths;
@@ -29,6 +33,8 @@ const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.
 
 const dated = listings.filter((e) => e.team_required);
 const arranged = opportunities.filter((o) => o.team_required);
+// Any arranged card shown here as a machine translation, linking straight to the organization (decision 0036).
+const anyTranslatedOut = arranged.some((o) => shownListing(o, lang).translated);
 const items = [...dated, ...arranged];
 const any = items.length > 0;
 
@@ -36,11 +42,11 @@ type Fact = { template: string; name: string; value: string; lang?: string };
 function teamFacts(o: PreparedListing | Opportunity): Fact[] {
   const out: Fact[] = [];
   if (o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
-  if (o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
+  if (o.team_task) out.push({ template: t("teams.task"), name: "task", value: listingText(o, "team_task", lang)!.text, lang: listingText(o, "team_task", lang)!.lang });
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
   out.push(...requirementFacts(tr, o));
   if ("commitment" in o && o.commitment) {
-    out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
+    out.push({ template: t("flexible.commitment"), name: "commitment", value: listingText(o, "commitment", lang)!.text, lang: listingText(o, "commitment", lang)!.lang });
   }
   return out;
 }
@@ -62,6 +68,8 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
       any ? (
         <>
           <p id="external-note" class="muted">{t("listing.external_note")}</p>
+          {/* Shown once when a card here links straight to the organization in machine-translated words (decision 0036; licence gate). */}
+          {anyTranslatedOut && <p id="translated-note" class="muted">{t("listing.translated_note_list")}</p>}
           <div class="results__bar">
           <p
             id="results-count"
@@ -74,6 +82,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
           </p>
             <SearchBox lang={lang} kind="teams" />
           </div>
+          <MapView lang={lang} mode="all" kind="teams" />
           <div
             id="results-none"
             class="results__none"
@@ -95,14 +104,17 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                 data-cause={e.cause ?? ""}
                 data-join={e.join_method}
                 data-over-at={e.overAt}
+                {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), when: whenText(tr, e) })}
               >
                 <ListingCard
                   id={e.id}
                   href={paths.listing(lang, e.id)}
                   shareLabel={t("listing.share")}
                   shareUrl={paths.listing(lang, e.id)}
-                  title={e.title}
-                  titleLang={e.listing_language}
+                  title={shownListing(e, lang).title.text}
+                  titleLang={shownListing(e, lang).title.lang}
+                  orgLang={e.listing_language}
+                  translatedLabel={shownListing(e, lang).translated ? t("listing.translated_automatically") : undefined}
                   org={e.org_name}
                   hostedBy={t("listing.hosted_by")}
                   when={whenText(tr, e)}
@@ -116,10 +128,18 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   joinLabel={joinLabel(tr, e)}
                   headingLevel={2}
                 />
+                {e.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
               </li>
             ))}
             {arranged.map((o) => (
-              <li data-id={o.id} data-search={cardSearchText(tr, o, settings)} data-section={o.section ?? ""} data-cause={o.cause ?? ""} data-join={o.join_method}>
+              <li
+                data-id={o.id}
+                data-search={cardSearchText(tr, o, settings)}
+                data-section={o.section ?? ""}
+                data-cause={o.cause ?? ""}
+                data-join={o.join_method}
+                {...mapAttrs(tr, o, settings, { href: o.signup_url })}
+              >
                 <ListingCard
                   id={o.id}
                   href={o.signup_url}
@@ -127,8 +147,10 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   shareUrl={o.signup_url}
                   external
                   describedBy="external-note"
-                  title={o.title}
-                  titleLang={o.listing_language}
+                  title={shownListing(o, lang).title.text}
+                  titleLang={shownListing(o, lang).title.lang}
+                  orgLang={o.listing_language}
+                  translatedLabel={shownListing(o, lang).translated ? t("listing.translated_automatically") : undefined}
                   org={o.org_name}
                   hostedBy={t("listing.hosted_by")}
                   place={placeText(tr, o, settings)}
@@ -141,6 +163,8 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   joinLabel={t(`filters.join.${o.join_method}`)}
                   headingLevel={2}
                 />
+                <OriginalText lang={lang} item={o} />
+                {o.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
               </li>
             ))}
           </ul>

@@ -17,6 +17,7 @@ import { buildIcs } from "../../../lib/ics.ts";
 import { paths, siteData, translator } from "../../../lib/site.ts";
 import type { PreparedListing } from "../../../lib/types.ts";
 import { joinLabel, placeText, splitAround, spotsLabel, timeText, typeLabel, whenText, whereLines } from "../../../lib/words.ts";
+import { shownListing } from "../../../i18n/listing-text.ts";
 
 export function getStaticPaths() {
   const { i18n, listings } = siteData();
@@ -31,12 +32,19 @@ const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.listing(code, e.id)]));
 
 const spots = spotsLabel(tr, e, builtAt);
+// The organization's text in this page's language when the pipeline translated it
+// (decision 0036), else as the organization wrote it. The name is never translated.
+const shown = shownListing(e, lang);
+const originalLines = [
+  shown.title.translated ? { parts: splitAround(t("listing.original_title"), "title"), text: shown.title } : null,
+  shown.team_task?.translated ? { parts: splitAround(t("teams.task"), "task"), text: shown.team_task } : null,
+].filter((x) => x !== null);
 // The organization's name is its own wording, so it carries the listing's language.
 const [hostBefore, hostAfter] = splitAround(t("listing.hosted_by"), "org");
 // Volunteer Team details (decision 0020), in the organization's own words.
 const teamLines = [
-  e.team_size ? { parts: splitAround(t("teams.size"), "size"), value: e.team_size } : null,
-  e.team_task ? { parts: splitAround(t("teams.task"), "task"), value: e.team_task } : null,
+  e.team_size ? { parts: splitAround(t("teams.size"), "size"), value: e.team_size, lang: e.listing_language } : null,
+  shown.team_task ? { parts: splitAround(t("teams.task"), "task"), value: shown.team_task.text, lang: shown.team_task.lang } : null,
 ].filter((x) => x !== null);
 const type = typeLabel(tr, e);
 const where = whereLines(tr, e, settings);
@@ -58,8 +66,14 @@ if (e.recurring) facts.push(t("listing.recurring"));
 
 const pageUrl = (siteUrl || "") + paths.listing(lang, e.id);
 const ics = buildIcs(e, {
+  // The title this page shows: the Spanish one on /es/ when the pipeline made one (decision 0036).
+  summary: shown.title.text,
   location: where.join("\n"),
   description: [
+    // A machine-translated title says so, with the organization's own title (decision 0036; accessibility gate fix 2).
+    ...(shown.title.translated
+      ? [t("listing.translated_automatically"), `${t("listing.original_text")} ${t("listing.original_title", { title: shown.title.original })}`]
+      : []),
     t("listing.hosted_by", { org: e.org_name }),
     `${joinLabel(tr, e)}. ${t(`listing.join_hint.${e.join_method}`)}`,
     `${t(`listing.go_button.${e.join_method}`)}: ${e.signup_url}`,
@@ -73,7 +87,7 @@ const reportHref =
   `&body=${encodeURIComponent(t("report.mail_body", { url: pageUrl }))}`;
 ---
 
-<Base lang={lang} title={e.title} alternates={alternates} path={paths.listing(lang, e.id)}>
+<Base lang={lang} title={shown.title.text} titleLang={shown.title.lang} alternates={alternates} path={paths.listing(lang, e.id)}>
   <div class="page listing-page">
     <p class="listing-page__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
 
@@ -82,11 +96,32 @@ const reportHref =
         <CauseArt cause={e.cause} />
       </div>
 
-      <h1 id="listing-title" class="listing__title" lang={e.listing_language}>{e.title}</h1>
+      <h1 id="listing-title" class="listing__title" lang={shown.title.lang}>{shown.title.text}</h1>
       <p class="listing__org">
         {hostBefore}<span lang={e.listing_language}>{e.org_name}</span>{hostAfter}
       </p>
-      {e.listing_language !== lang && <p class="listing__original muted">{t("listing.original_language")}</p>}
+      {
+        shown.translated ? (
+          <div class="listing__translation">
+            <p class="listing__translated">
+              <strong>{t("listing.translated_automatically")}</strong>
+              <br />
+              <span class="muted">{t("listing.translated_note")}</span>
+            </p>
+            {/* Each original on its own line with a lead-in, so it is clear which is which (accessibility gate fix 4). */}
+            <p class="listing__original-text">{t("listing.original_text")}</p>
+            {originalLines.map((line) => (
+              <p class="listing__original-text">
+                {line.parts[0]}
+                <span lang={line.text.originalLang}>{line.text.original}</span>
+                {line.parts[1]}
+              </p>
+            ))}
+          </div>
+        ) : (
+          e.listing_language !== lang && <p class="listing__original muted">{t("listing.original_language")}</p>
+        )
+      }
 
       <div class="listing__pills">
         <Pill kind="join" value={e.join_method} label={joinLabel(tr, e)} />
@@ -139,7 +174,7 @@ const reportHref =
                   <>
                     {i > 0 && <br />}
                     {line.parts[0]}
-                    <span lang={e.listing_language}>{line.value}</span>
+                    <span lang={line.lang}>{line.value}</span>
                     {line.parts[1]}
                   </>
                 ))}
@@ -218,8 +253,8 @@ const reportHref =
           icon="heart"
           tone="plain"
           label={t("listing.save")}
-          title={e.title}
-          titleLang={e.listing_language}
+          title={shown.title.text}
+          titleLang={shown.title.lang}
           visibleLabel={t("listing.save_short")}
           pressed={false}
           data-save-id={e.id}
@@ -228,13 +263,13 @@ const reportHref =
           icon="share"
           tone="plain"
           label={t("listing.share")}
-          title={e.title}
-          titleLang={e.listing_language}
+          title={shown.title.text}
+          titleLang={shown.title.lang}
           visibleLabel={t("listing.share_short")}
           aria-haspopup="dialog"
           data-share-url={paths.listing(lang, e.id)}
-          data-share-title={e.title}
-          data-share-lang={e.listing_language}
+          data-share-title={shown.title.text}
+          data-share-lang={shown.title.lang}
           data-share-when={whenText(tr, e)}
           data-share-place={placeText(tr, e, settings)}
           data-share-host={t("listing.hosted_by", { org: e.org_name })}
@@ -302,6 +337,13 @@ const reportHref =
   }
   .listing__facts dd {
     margin: 0 0 var(--space-3);
+  }
+  /* Decision 0036: the label and the organization's own words, right under the name. */
+  .listing__translation {
+    margin-block: var(--space-3);
+  }
+  .listing__translation p {
+    margin: 0 0 var(--space-2);
   }
   .listing__facts dt {
     font-weight: var(--weight-strong);

@@ -1,0 +1,518 @@
+---
+/**
+ * The map of the list (decision 0035; PROJECT.md 2, 5, 8.1). One per page:
+ * the day map on the home page (mode "day", one day at a time, today first),
+ * and maps with no day on the Flexible and Teams pages (mode "all").
+ *
+ * The list stays the main view. The map opens only from the "List | Map"
+ * switch, which is hidden until the script runs (the map needs JavaScript).
+ * Every pin is a card in the list below; a card with no map point stays in
+ * the list and the map says how many have none.
+ *
+ * Privacy (privacy conditions 1 to 5; sensitive-events conditions 1 to 6):
+ * all pins come in this page, on the list cards; the map code, its worker,
+ * letters, road signs and street map load from this site only; nothing is
+ * stored, logged or put in the address; "Near me" asks for the location only
+ * when tapped. Sensitive listings are pinned and named like every other.
+ *
+ * The map code (MapLibre) loads only when the person first chooses Map, so
+ * the list loads as fast as before.
+ */
+import { siteData, translator, paths } from "../lib/site.ts";
+import SpokenSlash from "./SpokenSlash.astro";
+import { mapConfig } from "../lib/map-build.ts";
+import { templateParts } from "../lib/map.ts";
+
+interface Props {
+  lang: string;
+  mode: "day" | "all";
+  kind: "dated" | "flexible" | "teams";
+}
+
+const { lang, mode, kind } = Astro.props;
+const { settings, basemap } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const config = mapConfig(mode, kind, settings, basemap);
+
+// Everything the map script says, from the translation files (rule 10).
+const words = {
+  pin: t("map.pin"),
+  withApprox: t("map.with_approx"),
+  placeOne: t(`map.place.${kind}.one`),
+  placeOther: t(`map.place.${kind}.other`),
+  clusterOne: t(`map.cluster.${kind}.one`),
+  clusterOther: t(`map.cluster.${kind}.other`),
+  noLocationOne: t(`map.no_location.${kind}.one`),
+  noLocationOther: t(`map.no_location.${kind}.other`),
+  announceOne: t("map.announce.one"),
+  announceOther: t("map.announce.other"),
+  approximate: t("map.approximate"),
+  translated: t("listing.translated_automatically"),
+  directions: t("map.directions"),
+  directionsNote: t("map.directions_note"),
+  showInList: t("map.show_in_list"),
+  close: t("map.close"),
+  previous: t("map.day.previous"),
+  next: t("map.day.next"),
+  loading: t("map.loading"),
+  failed: t("map.failed"),
+  noStreetMap: t("map.no_street_map"),
+  nearDone: t("map.near_me_done"),
+  nearDenied: t("map.near_me_denied"),
+  nearFailed: t("map.near_me_failed"),
+  nearUnavailable: t("map.near_me_unavailable"),
+  // MapLibre's own words (its locale option).
+  maplibre: {
+    "Map.Title": t("map.canvas"),
+    "CooperativeGesturesHandler.MobileHelpText": t("map.gestures.mobile"),
+    "CooperativeGesturesHandler.WindowsHelpText": t("map.gestures.windows"),
+    "CooperativeGesturesHandler.MacHelpText": t("map.gestures.mac"),
+    "NavigationControl.ZoomIn": t("map.zoom_in"),
+    "NavigationControl.ZoomOut": t("map.zoom_out"),
+    "Popup.Close": t("map.close"),
+  },
+};
+
+// The credit (scraping-licence condition 3): "Map: Protomaps © OpenStreetMap contributors".
+const credit = templateParts(t("map.credit"), {
+  protomaps: { text: "Protomaps", lang: "en" },
+  osm: { text: "OpenStreetMap", lang: "en" },
+});
+// The Census credit (scraping-licence gate): "Area centers: US Census Bureau", and the
+// Census Bureau's own notice, in English on every page (with a translation beside it elsewhere).
+const censusCredit = templateParts(t("map.credit_census"), { census: { text: t("map.census_name"), lang: "en" } });
+const censusTranslation = tr.lang === "en" ? null : t("map.census_notice_translation");
+// The land-cover layer's credit (ESA WorldCover, CC BY 4.0; licence gate wording): English, with a translation beside it off English pages.
+const esaTranslation = tr.lang === "en" ? null : t("map.credit_esa_translation");
+const creditLinks: Record<string, string> = {
+  Protomaps: "https://protomaps.com/",
+  OpenStreetMap: "https://www.openstreetmap.org/copyright",
+};
+---
+
+<div class="map-switch" role="group" aria-label={t("map.view_label")} data-map-switch hidden>
+  <button type="button" class="map-switch__button" aria-pressed="true" data-map-view="list">{t("map.view_list")}</button>
+  <button type="button" class="map-switch__button" aria-pressed="false" data-map-view="map" aria-controls="map-section">{t("map.view_map")}</button>
+</div>
+
+<section
+  id="map-section"
+  class="map"
+  aria-labelledby="map-heading"
+  data-map-root
+  data-map-on="false"
+  data-config={JSON.stringify(config)}
+  data-words={JSON.stringify(words)}
+  hidden
+>
+  <h2 id="map-heading" class="sr-only">{t(`map.heading.${kind}`)}</h2>
+  <a class="map__skip" href="#listing-list" data-map-skip>{t("map.skip")}</a>
+
+  {
+    mode === "day" && (
+      <div class="map-day">
+        <div class="map-day__row" role="group" aria-labelledby="map-day-label">
+          <span id="map-day-label" class="sr-only">{t("map.day.label")}</span>
+          <button type="button" class="map__button" data-map-prev>
+            <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+            <span class="sr-only" data-map-prev-words></span>
+          </button>
+          <p class="map-day__text" data-map-day-text></p>
+          <button type="button" class="map__button" data-map-next>
+            <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            <span class="sr-only" data-map-next-words></span>
+          </button>
+        </div>
+        <div class="field map-day__pick">
+          <label for="map-day-input">{t("map.day.pick")}</label>
+          <input id="map-day-input" type="date" data-map-day-input />
+        </div>
+      </div>
+    )
+  }
+
+  <div class="map__frame">
+    {/* Zoom buttons come first in the Tab order, before the pins (accessibility gate). */}
+    <div class="map__zoom">
+      <button type="button" class="map__button" data-map-zoom-in>
+        <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        <span class="sr-only">{t("map.zoom_in")}</span>
+      </button>
+      <button type="button" class="map__button" data-map-zoom-out>
+        <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+        <span class="sr-only">{t("map.zoom_out")}</span>
+      </button>
+    </div>
+    <div class="map__canvas" data-map-canvas></div>
+    <p class="map__credit">
+      {
+        credit.map((part) =>
+          creditLinks[part.text] ? (
+            <a href={creditLinks[part.text]} lang={part.lang} rel="noopener noreferrer">{part.text}</a>
+          ) : (
+            part.text
+          ),
+        )
+      }
+      <span aria-hidden="true"> · </span>
+      <a href={paths.mapData(lang)}>{t("map.about_data")}</a>
+    </p>
+    <p class="map__credit map__credit--census" data-map-census>
+      {censusCredit.map((part) => (part.lang ? <span lang={part.lang}>{part.text}</span> : part.text))}
+      <br />
+      <span lang="en">{t("map.census_notice")}</span>
+      {censusTranslation && <> {censusTranslation}</>}
+      <br />
+      {/* The zoomed-out land-cover layer's required credit (ESA WorldCover, CC-BY-4.0; owner Q126). */}
+      <SpokenSlash text={t("map.credit_esa")} lang="en" data-map-esa="" />
+      {esaTranslation && <><br /><SpokenSlash text={esaTranslation} /></>}
+    </p>
+  </div>
+
+  <p class="map__message muted" data-map-message role="status"></p>
+
+  <div class="map__near">
+    <button type="button" class="map__text-button" data-map-near aria-describedby="map-near-note">
+      <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
+      <span>{t("map.near_me")}</span>
+    </button>
+    <p id="map-near-note" class="map__note muted">{t("map.near_me_note")}</p>
+    <p class="map__note" data-map-near-status role="status"></p>
+  </div>
+
+  <p class="map__nolocation" data-map-nolocation hidden></p>
+  {mode === "day" && <p class="sr-only" data-map-status role="status"></p>}
+
+  <div class="map__detail" data-map-detail hidden>
+    <div class="map__detail-top">
+      <h3 class="map__detail-heading" tabindex="-1" data-map-detail-heading></h3>
+      <button type="button" class="map__button map__button--plain" data-map-detail-close>
+        <svg class="map__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        <span class="sr-only">{t("map.close")}</span>
+      </button>
+    </div>
+    <ul class="map__detail-list" data-map-detail-list></ul>
+    <div data-map-detail-extra></div>
+  </div>
+</section>
+
+<script>
+  import "../scripts/map-view.ts";
+</script>
+
+<style>
+  .map-switch {
+    display: inline-flex;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm, 0.5rem);
+    overflow: hidden;
+    margin-block: var(--space-2);
+  }
+  .map-switch[hidden] {
+    display: none;
+  }
+  .map-switch__button {
+    min-height: var(--tap);
+    min-width: 5rem;
+    padding: 0 var(--space-4);
+    border: 0;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: var(--weight-strong, 600);
+    cursor: pointer;
+  }
+  /* The chosen view: filled, and aria-pressed tells screen readers. */
+  .map-switch__button[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .map-switch__button:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: -5px;
+    box-shadow: inset 0 0 0 2px var(--color-focus-inner);
+  }
+
+  .map {
+    margin-block: var(--space-3) var(--space-5);
+  }
+  .map[hidden] {
+    display: none;
+  }
+  /* "Skip the map": a plain link, always visible, so keyboard users can pass the pins. */
+  .map__skip {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+
+  .map-day__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .map-day__text {
+    flex: 1 1 auto;
+    margin: 0;
+    text-align: center;
+    font-weight: var(--weight-strong, 600);
+  }
+  .map-day__pick {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .map__button {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 2px solid var(--color-primary);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    cursor: pointer;
+  }
+  .map__button[aria-disabled="true"] {
+    border-color: var(--color-line);
+    color: var(--color-ink-muted);
+    cursor: not-allowed;
+  }
+  .map__button--plain {
+    border-color: var(--color-line);
+  }
+  .map__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .map__frame {
+    position: relative;
+    border: 2px solid var(--color-line);
+    border-radius: var(--radius-sm, 0.5rem);
+    overflow: hidden;
+    background: var(--map-earth);
+  }
+  .map__canvas {
+    width: 100%;
+    height: min(70vh, 32rem);
+    min-height: 20rem;
+  }
+  .map__zoom {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    z-index: 2;
+  }
+  .map__credit {
+    margin: 0;
+    padding: 0 var(--space-3);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-line);
+    font-size: var(--text-min, 1rem);
+  }
+  /* Links stay in the sentence; padding makes each a 44 px tall target. */
+  .map__credit--census {
+    border-top: 0;
+    padding-block: 0 var(--space-2);
+  }
+  .map__credit {
+    padding-block: var(--space-1);
+    line-height: 1.5;
+  }
+  /* 1.5 line height + 2 × 0.625rem = 2.75rem (44 px) tall (accessibility gate, fix 6). */
+  .map__credit a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding-block: 0.625rem;
+    line-height: 1.5;
+  }
+
+  .map__message:empty,
+  .map__note:empty {
+    display: none;
+  }
+  .map__near {
+    margin-block: var(--space-3);
+  }
+  /* Global: map-view.ts also makes these ("Show in the list") (accessibility gate, fix 3). */
+  :global(.map__text-button) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0 var(--space-4);
+    border: 2px solid var(--color-primary);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: var(--weight-strong, 600);
+    cursor: pointer;
+  }
+  .map__note {
+    margin: var(--space-2) 0 0;
+  }
+  .map__nolocation {
+    margin-block: var(--space-3);
+  }
+
+  .map__detail {
+    margin-block: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm, 0.5rem);
+    background: var(--color-surface);
+  }
+  .map__detail[hidden] {
+    display: none;
+  }
+  .map__detail-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .map__detail-heading {
+    margin: var(--space-2) 0;
+    overflow-wrap: anywhere;
+  }
+  .map__detail-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .map__button:focus-visible,
+  :global(.map__text-button:focus-visible),
+  .map__detail-heading:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-inner);
+  }
+
+  /* ---- Pins, places and number circles: real buttons on the map (built by map-engine.ts) ---- */
+  /* Each is a 48 px button; the shape inside is what people see. */
+  :global(.pv-pin) {
+    display: grid;
+    place-items: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  /* An exact place: a filled dot in the main colour, a ring and a thin edge of the opposite shade (tokens.css --map-pin-*), seen on every map colour in light and dark mode (3:1 or more). */
+  :global(.pv-pin__shape) {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    border: 3px solid var(--map-pin-ring);
+    box-shadow: 0 0 0 2px var(--map-pin-edge);
+    color: var(--color-on-primary);
+    font-size: var(--text-min, 1rem);
+    font-weight: var(--weight-strong, 600);
+    line-height: 1;
+  }
+  /* An approximate area: a dashed ring, told apart by shape and outline, not colour alone. */
+  :global(.pv-pin--approx .pv-pin__shape) {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--map-area-fill);
+    border: 3px dashed var(--color-primary);
+    box-shadow: 0 0 0 2px var(--map-pin-ring);
+    color: var(--color-ink);
+  }
+  /* A number circle: bigger, square-ish corners would read as a different thing, so a round badge with the count. */
+  :global(.pv-pin--cluster .pv-pin__shape) {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--color-band);
+    border: 3px solid var(--map-pin-ring);
+    box-shadow: 0 0 0 2px var(--map-pin-edge);
+    color: var(--color-on-band);
+  }
+  /* The open pin: a gap and an outer ring of opposite shades (white gap, ink ring in light mode; the reverse in dark), 3:1 or more on every map colour (accessibility gate, fix 4). */
+  :global(.pv-pin[aria-expanded="true"] .pv-pin__shape) {
+    box-shadow:
+      0 0 0 2px var(--map-pin-edge),
+      0 0 0 5px var(--map-pin-ring),
+      0 0 0 8px var(--map-pin-edge);
+  }
+
+  /* The map's own focus ring, drawn inside its edge so the frame does not cut it off (fix 2). */
+  :global(.map__canvas .maplibregl-canvas:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 6px var(--color-focus-inner);
+  }
+  /* MapLibre's two-finger hint: white on a dark 85% layer in both modes, well over 4.5:1 on any map colour (fix 5). */
+  :global(.map .maplibregl-cooperative-gesture-screen) {
+    background: var(--map-hint-bg);
+    color: var(--map-hint-text);
+  }
+  :global(.pv-pin:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 0;
+    box-shadow: 0 0 0 3px var(--color-focus-inner) inset;
+    border-radius: 999px;
+  }
+
+  /* The list card that matches the open pin. */
+  :global(li.is-map-selected) {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm, 0.5rem);
+  }
+  /* "Approximate area" under a card, shown while the map is on. */
+  :global(.map-approx-line) {
+    margin: var(--space-2) 0 0;
+    font-weight: var(--weight-strong, 600);
+  }
+  :global(.map-approx-line[hidden]) {
+    display: none;
+  }
+
+  :global(.map-detail__item) {
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-line-soft);
+  }
+  :global(.map-detail__item:first-child) {
+    border-top: 0;
+  }
+  /* "Translated automatically" under a machine-translated title, as on the cards (decision 0036). */
+  :global(.map-detail__translated) {
+    font-style: italic;
+  }
+  :global(.map-detail__item p) {
+    margin: var(--space-1) 0;
+  }
+  :global(.map-detail__title),
+  :global(.map-detail__link) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong, 600);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.map *) {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>

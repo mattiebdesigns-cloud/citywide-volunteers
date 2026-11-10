@@ -17,7 +17,8 @@
     "footer_sources": "Listings come from organizations' public calendars.",
     "footer_open_source": "Anyone can see and reuse the code for this site.",
     "footer_code_link": "See the code",
-    "test_version": "Test version. Listings may be wrong or out of date."
+    "test_version": "Test version. Website still under construction.",
+    "pages_nav": "Pages"
   },
   "filters": {
     "heading": "Find a shift",
@@ -51,14 +52,12 @@
       "all": "All parts of the city"
     },
     "kind": {
-      "label": "Kind",
-      "dated": "Dated shifts",
+      "label": "Shift",
+      "dated": "By Date",
       "flexible": "Flexible",
-      "teams": "Volunteer Teams",
-      "note_flexible": "Flexible opportunities have no set day or time, so the day and time filters are off.",
-      "note_teams": "Day and time filters apply only to dated team shifts.",
-      "see_flexible": "See all flexible opportunities",
-      "see_teams": "See all Volunteer Team activities"
+      "teams": "Teams",
+      "note_flexible": "Flexible shifts have no set day or time, so the day and time filters are off.",
+      "note_teams": "Day and time filters apply only to dated team shifts."
     },
     "cause": {
       "label": "Cause",
@@ -157,7 +156,9 @@
     "picks_heading": "This week's picks",
     "picks_note": "Shifts with open spots, chosen by our team. No one pays to be picked.",
     "tonight": "Tonight",
-    "tomorrow": "Tomorrow"
+    "tomorrow": "Tomorrow",
+    "flexible_link": "Flexible Shifts",
+    "teams_link": "Team Shifts"
   },
   "listing": {
     "hosted_by": "Hosted by {org}",
@@ -194,10 +195,12 @@
     "spanish_spoken": "Spanish spoken here",
     "recurring": "Repeats on a schedule",
     "original_language": "Shown in the language the organization used.",
-    "translate": "Translate",
-    "show_original": "Show original",
+    "original_text": "Original text:",
+    "original_title": "Title: {title}",
+    "show_original": "Show the original text",
     "translated_automatically": "Translated automatically",
     "translated_note": "A computer translated this text, and it may have mistakes. Check the organization's page for exact details.",
+    "translated_note_list": "A computer translated the text marked “Translated automatically”. It may have mistakes. Check the organization's page for exact details.",
     "back": "Back to all shifts",
     "gone": "This listing is no longer on the calendar.",
     "add_to_calendar": "Add to my calendar",
@@ -260,32 +263,32 @@
     "error": "Something went wrong. Please try again."
   },
   "flexible": {
-    "title": "Flexible opportunities",
+    "title": "Flexible Shifts",
     "intro": "These programs have no set dates or times. You choose a time with the organization.",
     "tag": "Flexible",
     "commitment": "Time asked: {commitment}",
     "count": {
-      "one": "{count} opportunity",
-      "other": "{count} opportunities"
+      "one": "{count} flexible shift",
+      "other": "{count} flexible shifts"
     },
-    "none": "No flexible opportunities yet.",
-    "none_match": "No opportunities match these filters.",
+    "none": "No flexible shifts yet.",
+    "none_match": "No flexible shifts match these filters.",
     "none_match_hint": "Remove a filter to see more.",
-    "apply": "Show opportunities"
+    "apply": "Show flexible shifts"
   },
   "teams": {
-    "title": "Volunteer Teams",
+    "title": "Team Shifts",
     "intro": "These activities need a team, not one person. Bring your own team and sign up together.",
-    "tag": "Volunteer Team",
+    "tag": "Team shift",
     "size": "Team size: {size}",
     "task": "What the team does: {task}",
     "count": {
-      "one": "{count} team activity",
-      "other": "{count} team activities"
+      "one": "{count} team shift",
+      "other": "{count} team shifts"
     },
-    "none": "No Volunteer Team activities yet.",
-    "none_match": "No team activities match these filters.",
-    "apply": "Show team activities"
+    "none": "No team shifts yet.",
+    "none_match": "No team shifts match these filters.",
+    "apply": "Show team shifts"
   },
   "medicaid": {
     "title": "Medicaid hours calculator",
@@ -391,8 +394,7 @@
     "shifts": {
       "heading": "Every volunteer shift in one place",
       "body": "Organizations across {city} post volunteer shifts on their own websites. We gather them into one calendar.",
-      "numbers": "Right now the calendar has {listings} from {organizations} in {neighborhoods}.",
-      "numbers_none": "Listings appear here as soon as organizations post them.",
+      "numbers_to_date": "To date, the calendar has listed {opportunities} from {organizations} in {neighborhoods}.",
       "listings": {
         "one": "{count} volunteer opportunity",
         "other": "{count} volunteer opportunities"
@@ -406,7 +408,8 @@
         "other": "{count} neighborhoods"
       },
       "signup": "Every listing links to the organization's own sign-up page.",
-      "link": "See the calendar"
+      "link": "See the calendar",
+      "map_link": "See the map"
     },
     "near_you": {
       "heading": "Find one near you",
@@ -429,13 +432,13 @@
     },
     "more": {
       "heading": "More than one-off shifts",
-      "flexible": "Flexible opportunities: programs where you choose a time with the organization.",
-      "teams": "Volunteer Teams: activities that need a team, not one person."
+      "flexible": "Flexible Shifts: programs where you choose a time with the organization.",
+      "teams": "Team Shifts: activities that need a team, not one person."
     },
     "rewards": {
       "heading": "Coming next: Citywide Rewards",
       "points": "We plan to add points and badges for confirmed volunteer hours.",
-      "offers": "We also plan offers from local businesses that volunteers can redeem.",
+      "offers": "We also plan to add the ability to redeem Citywide points for coupons and other rewards from local businesses.",
       "when": "We will share the details when they are ready."
     },
     "why": {
@@ -449,7 +452,7 @@
     },
     "support": {
       "heading": "How to support",
-      "organizations": "Organizations: tell us about your volunteer calendar so we can list your shifts. Later, you will be able to confirm volunteers' hours.",
+      "organizations": "Organizations: tell us about your volunteer calendar so we can list your shifts.",
       "sponsors": "Businesses and sponsors: the nonprofit that will run the site plans to offer sponsorship. Later, businesses will be able to offer volunteers coupons or event tickets.",
       "office": "The City of {city}: please share your volunteer programs and calendar with us, so we can list them too.",
       "city": "City partners: help us reach more organizations and residents."
@@ -484,8 +487,8 @@
   },
   "search": {
     "label_dated": "Search shifts",
-    "label_flexible": "Search opportunities",
-    "label_teams": "Search team activities",
+    "label_flexible": "Search flexible shifts",
+    "label_teams": "Search team shifts",
     "clear": "Clear search",
     "none": "No results for this search.",
     "none_hint": "Try other words, or clear the search."
@@ -500,5 +503,117 @@
     "title": "Page not found",
     "body": "We could not find that page.",
     "link": "Go to the calendar"
+  },
+  "map": {
+    "view_label": "Show as",
+    "view_list": "List",
+    "view_map": "Map",
+    "heading": {
+      "dated": "Map of shifts",
+      "flexible": "Map of flexible shifts",
+      "teams": "Map of team shifts"
+    },
+    "skip": "Skip the map",
+    "canvas": "Map. Arrow keys move it; plus and minus zoom in and out.",
+    "day": {
+      "label": "Day on the map",
+      "previous": "Previous day: {date}",
+      "next": "Next day: {date}",
+      "pick": "Choose a day"
+    },
+    "announce": {
+      "one": "{count} shift on {date}.",
+      "other": "{count} shifts on {date}."
+    },
+    "no_location": {
+      "dated": {
+        "one": "{count} shift has no map location. It is in the list below.",
+        "other": "{count} shifts have no map location. They are in the list below."
+      },
+      "flexible": {
+        "one": "{count} flexible shift has no map location. It is in the list below.",
+        "other": "{count} flexible shifts have no map location. They are in the list below."
+      },
+      "teams": {
+        "one": "{count} team shift has no map location. It is in the list below.",
+        "other": "{count} team shifts have no map location. They are in the list below."
+      }
+    },
+    "pin": "{title}, {time}",
+    "with_approx": "{name}. Approximate area.",
+    "place": {
+      "dated": {
+        "one": "{count} shift at this place",
+        "other": "{count} shifts at this place"
+      },
+      "flexible": {
+        "one": "{count} flexible shift at this place",
+        "other": "{count} flexible shifts at this place"
+      },
+      "teams": {
+        "one": "{count} team shift at this place",
+        "other": "{count} team shifts at this place"
+      }
+    },
+    "cluster": {
+      "dated": {
+        "one": "{count} shift here; zoom in to see it",
+        "other": "{count} shifts here; zoom in to see them"
+      },
+      "flexible": {
+        "one": "{count} flexible shift here; zoom in to see it",
+        "other": "{count} flexible shifts here; zoom in to see them"
+      },
+      "teams": {
+        "one": "{count} team shift here; zoom in to see it",
+        "other": "{count} team shifts here; zoom in to see them"
+      }
+    },
+    "approximate": "Approximate area",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "near_me": "Near me",
+    "near_me_note": "Your location stays on your device. The map then loads the area around you from our server.",
+    "near_me_done": "The map now shows the area around you.",
+    "near_me_denied": "Location is turned off for this site, so the map stays where it was.",
+    "near_me_failed": "Your location could not be found, so the map stays where it was.",
+    "near_me_unavailable": "This browser cannot share a location.",
+    "gestures": {
+      "mobile": "Use two fingers to move the map",
+      "windows": "Use Ctrl + scroll to zoom the map",
+      "mac": "Use ⌘ + scroll to zoom the map"
+    },
+    "credit": "Map: {protomaps} © {osm} contributors",
+    "credit_census": "Area centers: {census}",
+    "census_name": "US Census Bureau",
+    "credit_esa": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
+    "credit_esa_translation": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
+    "census_notice": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
+    "census_notice_translation": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
+    "about_data": "About the map data",
+    "directions": "Get directions",
+    "directions_note": "Opens your maps app. That service will see this address.",
+    "show_in_list": "Show in the list",
+    "close": "Close the details",
+    "loading": "Loading the map…",
+    "failed": "The map could not load on this device. Everything is in the list below.",
+    "no_street_map": "This version of the site has no street map, so the pins sit on a plain background."
+  },
+  "map_data": {
+    "title": "About the map",
+    "intro": "The streets, parks and place names on our maps come from OpenStreetMap, a map that people around the world make together. Protomaps turns that data into map files.",
+    "pins": "The pins are ours. Each one comes from the address the organization published for that listing. The US Census Bureau's address service turns that address into a map point. A listing that gives only a neighborhood, a park or a town shows as an approximate area, centered on a point from our own list or from US Census Bureau data.",
+    "licence": "Map data © {osm} contributors, under the {odbl}.",
+    "odbl": "Open Database License (ODbL)",
+    "style": "Map style and map tools: {protomaps}.",
+    "fonts": "Letters on the map: Noto Sans, under the {ofl}.",
+    "esa_licence": "The land cover data is under the {cc_by} licence.",
+    "esa_simplified": "Protomaps simplified this data for the map.",
+    "file_heading": "Our map file",
+    "file": "Our map file is a part of one Protomaps build, {build}, made from OpenStreetMap data. We cut it on {date}. The data in it is under the ODbL, and you may download it here:",
+    "file_link": "Map file {number} of {total}",
+    "commands": "How we made it:",
+    "no_file": "This version of the site has no street map file.",
+    "privacy": "The maps and their files load from our own site only. No outside map company is involved."
   }
 }

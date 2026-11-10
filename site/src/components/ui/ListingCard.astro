@@ -39,10 +39,14 @@ interface Props {
   href: string;
   /** The organization's own title, untranslated. */
   title: string;
-  /** listing_language, so screen readers read the title in the right voice. */
+  /** The title's language (listing_language, or the page's language for a machine translation), so screen readers use the right voice. */
   titleLang?: string;
-  /** The organization's name, as it writes it, untranslated. Marked with titleLang. */
+  /** The organization's name, as it writes it, never translated. Marked with orgLang. */
   org: string;
+  /** listing_language. Defaults to titleLang. Pass it when the title is a machine translation. */
+  orgLang?: string;
+  /** t("listing.translated_automatically"), only when the card shows machine-translated text (decision 0036). */
+  translatedLabel?: string;
   /** t("listing.hosted_by") with the {org} placeholder left open; the card fills it in. */
   hostedBy: string;
   /** Day, date and time, already formatted, e.g. "Tuesday, October 20, 6:30 to 8:30 PM". Leave out for flexible opportunities. */
@@ -98,6 +102,8 @@ const {
   title,
   titleLang,
   org,
+  orgLang = titleLang,
+  translatedLabel,
   hostedBy,
   when,
   datetime,
@@ -149,8 +155,9 @@ const titleTail = external ? title.slice(titleHead.length) : "";
         >{titleHead}{external && <span class="card__nowrap">{titleTail}<Icon name="external" /></span>}</a
       >
     </Heading>
+    {translatedLabel && <p class="card__line card__translated">{translatedLabel}</p>}
     <p class="card__line card__host">
-      <span>{hostBefore}<span lang={titleLang}>{org}</span>{hostAfter}</span>
+      <span>{hostBefore}<span lang={orgLang}>{org}</span>{hostAfter}</span>
     </p>
     {
       when && (
@@ -308,6 +315,10 @@ const titleTail = external ? title.slice(titleHead.length) : "";
   .card__fact {
     display: block;
     overflow-wrap: anywhere;
+  }
+  /* "Translated automatically" (decision 0036): small, under the title. */
+  .card__translated {
+    font-style: italic;
   }
   .card__line :global(.icon) {
     margin-top: 0.1em;

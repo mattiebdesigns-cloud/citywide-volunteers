@@ -238,10 +238,9 @@ test("calculator page: disclaimers, links, phone numbers and figures from the se
     assert.ok(html.includes("$7.25"), "$7.25");
     assert.ok(html.includes("2027"), "start year");
     assert.ok(html.includes(lang === "en" ? "November 7, 2026" : "7 de noviembre de 2026"), "last checked date");
-    // Linked from the home page and the footer.
+    // Linked from the home page's header (owner, 2026-11-10: page links moved from the footer).
     const home = read(`${lang}/index.html`);
-    assert.ok(home.includes(`href="/${lang}/medicaid-hours/"`), "home link");
-    assert.match(home.slice(home.indexOf("<footer")), new RegExp(`href="/${lang}/medicaid-hours/"`), "footer link");
+    assert.match(home.slice(home.indexOf("<header"), home.indexOf("</header>")), new RegExp(`href="/${lang}/medicaid-hours/"`), "header link");
   }
 });
 

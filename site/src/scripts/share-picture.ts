@@ -2,8 +2,10 @@
 // with <canvas>. It is never uploaded: it goes to the device's share sheet,
 // or downloads. Portrait, 1080 x 1920, the size of an Instagram Story.
 // Words stay out of the top and bottom ~250 px that Instagram covers.
-// Colours come from the page (styles/tokens.css); fonts are the site's own
-// system fonts, so nothing loads from anywhere.
+// The picture has its own fixed colours (PICTURE_COLORS, the site's light
+// set), so it looks the same whether the phone is in light or dark mode
+// (pv-design, 2026-11-10). Fonts are the site's own system fonts, so nothing
+// loads from anywhere.
 import { fitText, placePicture } from "../lib/share.ts";
 
 export interface PictureCard {
@@ -18,6 +20,17 @@ export interface PictureCard {
   /** "volunteer.example.org": the site's address without https://. */
   siteAddress: string;
 }
+
+/** The picture's fixed colours: the light set in styles/tokens.css, never the dark one. */
+export const PICTURE_COLORS = {
+  page: "#f8fafd",
+  band: "#15294a",
+  onBand: "#ffffff",
+  onBandMuted: "#d5deeb",
+  primary: "#1f4e8c",
+  coral: "#f08a6c",
+  ink: "#17202e",
+} as const;
 
 export const PICTURE_WIDTH = 1080;
 export const PICTURE_HEIGHT = 1920;
@@ -36,15 +49,7 @@ export async function drawCardPicture(card: PictureCard): Promise<Blob> {
   if (!ctx) throw new Error("no canvas");
 
   const fontFamily = token("--font-body", 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif');
-  const colors = {
-    page: token("--color-paper", "#f8fafd"),
-    band: token("--color-band", "#17305a"),
-    onBand: token("--color-on-band", "#ffffff"),
-    onBandMuted: token("--color-on-band-muted", "#d9e2f0"),
-    primary: token("--color-primary", "#1f4e8c"),
-    coral: token("--art-fill-2", "#f08a6c"),
-    ink: token("--color-ink", "#17202e"),
-  };
+  const colors = PICTURE_COLORS;
   const font = (size: number, weight = 400) => `${weight} ${size}px ${fontFamily}`;
   const measureAt = (weight: number) => (s: string, size: number) => {
     ctx.font = font(size, weight);

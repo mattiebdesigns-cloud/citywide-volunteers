@@ -14,6 +14,9 @@
 // every shape that carries meaning is navy (8.0:1), ink (15.7:1), or has an
 // ink outline. Coral (2.4:1) and the pale fills are never the only edge.
 // The soft tinted blobs behind each drawing are decoration only.
+// Dark mode: the first shape in each drawing is a rounded tile in
+// --art-backdrop (transparent on the light page, a soft blue-grey on the dark
+// page), so the same colours keep the same contrast (navy 5.5:1 on the tile).
 
 export type AboutArtId =
   | "shifts"
@@ -62,7 +65,7 @@ const paint = (drawing: string): string =>
     styles[name] ? `style="${styles[name]}${own ? `;${own}` : ""}"` : whole,
   );
 const svg = (drawing: string): string =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="100%" aria-hidden="true" focusable="false" class="about-art-svg">${paint(drawing)}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="100%" aria-hidden="true" focusable="false" class="about-art-svg"><rect width="480" height="300" rx="24" style="fill:var(--art-backdrop,transparent)"/>${paint(drawing)}</svg>`;
 
 // A small wall-calendar card, centred on (x, y), turned r degrees.
 // head: "a" navy or "b" coral. dots: how many shift dots in its grid.

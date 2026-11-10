@@ -5,6 +5,8 @@ import { createI18n, type I18n, type Translator } from "../i18n/index.ts";
 import { catalogs } from "../i18n/locales.ts";
 import { checkEventsFile, checkOpportunitiesFile, checkSettings, prepareListings, prepareOpportunities } from "./prepare.ts";
 import type { EventsFile, OpportunitiesFile, Opportunity, PreparedListing, SiteSettings } from "./types.ts";
+import { checkManifest, type BasemapManifest } from "./map.ts";
+import { readTotals, type AboutTotals } from "./about.ts";
 
 export interface SiteData {
   settings: SiteSettings;
@@ -17,6 +19,10 @@ export interface SiteData {
   testBuild: boolean;
   /** The site's public address with no trailing slash, or "" when not set. */
   siteUrl: string;
+  /** The About page's running totals (owner, 2026-11-10), or null when PV_STATS is not set. */
+  totals: AboutTotals | null;
+  /** The street map under the map pins (decision 0035), or null when PV_BASEMAP is not set. */
+  basemap: BasemapManifest | null;
 }
 
 let cached: SiteData | undefined;
@@ -55,8 +61,22 @@ export function siteData(): SiteData {
     opportunities = prepareOpportunities(opp, settings);
   }
 
+  // Optional street map (decision 0035). The files themselves are checked and copied by scripts/astro-map-files.mjs.
+  const basemapPath = process.env.PV_BASEMAP_PATH;
+  let basemap: BasemapManifest | null = null;
+  if (basemapPath) {
+    basemap = readJson<BasemapManifest>(basemapPath, "street map description (basemap.json)");
+    checkManifest(basemap, basemapPath);
+  }
+
+  // Optional running totals for the About page. A path the builder named must exist.
+  const statsPath = process.env.PV_STATS_PATH;
+  const totals = statsPath ? readTotals(readJson<unknown>(statsPath, "totals file"), statsPath) : null;
+
   const builtAt = new Date();
   cached = {
+    totals,
+    basemap,
     settings,
     i18n: createI18n(settings, catalogs),
     listings: prepareListings(file, settings, { now: builtAt }),
@@ -86,4 +106,7 @@ export const paths = {
   teams: (lang: string) => `/${lang}/teams/`,
   about: (lang: string) => `/${lang}/about/`,
   medicaid: (lang: string) => `/${lang}/medicaid-hours/`,
+  mapData: (lang: string) => `/${lang}/map-data/`,
+  /** The home page with its map open (MAP_HASH in lib/map.ts): a fixed address, nothing else in it. */
+  homeMap: (lang: string) => `/${lang}/#map`,
 };

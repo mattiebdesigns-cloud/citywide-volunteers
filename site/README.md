@@ -25,6 +25,7 @@ All optional. Relative paths are read from the folder you run the command in.
 | `PV_OPPORTUNITIES` | The flexible opportunities file (`docs/opportunities-file.schema.json`, decision 0018). Optional: a file named here must exist; with none, the default sample is used if present, otherwise the Flexible page says there are none yet | `../docs/examples/opportunities.sample.json` |
 | `PV_SITE_URL` | The site's public address, for full links and link previews (below) | none |
 | `PV_TEST_BUILD` | `1` makes a test build (below) | off |
+| `PV_BASEMAP` | `basemap.json` made by `scripts/cut-basemap.mjs`: the street map under the map pins (decision 0035). Kept outside this repo (OpenStreetMap data, ODbL) | none: pins on a plain background |
 
 Example, with a city's own files:
 
@@ -63,6 +64,16 @@ A search box sits beside the results count on the home, Flexible and Teams pages
 ### Medicaid hours calculator
 
 `/en/medicaid-hours/` and `/es/medicaid-hours/` add up one month of work (or income), volunteering, a work program and school for Pennsylvania's Medicaid rule (decision 0022). It runs only in the browser: no form, no network request, no storage of any kind (the page leaves out the site's storage scripts), no analytics. Every figure, link and phone number is in `MEDICAID` in `src/lib/medicaid.ts`, with the date they were last checked; check them against Pennsylvania DHS before launch and whenever DHS publishes guidance. The checklist prints on its own and copies as plain text.
+
+### Maps (decision 0035)
+
+The list stays the main view. A "List | Map" switch (hidden without JavaScript) opens a map of what the list shows: on the home page one day at a time (today first, with Previous day, Next day and a date box; every other filter still applies), and on the Flexible and Teams pages every card with a place, with no day. A card with no map point stays in the list, and the map says how many have none.
+
+- **Where pins come from.** Optional `lat`, `lon` and `approximate` on each listing (all three or none; docs/event.schema.json), worked out by the pipeline. `approximate: true` is an area's center: a dashed ring, "Approximate area" in words, and no directions. A listing with a point but no `approximate` is treated as having no point. Sensitive listings are pinned at their published place like every other (owner Q119); the map code never reads `sensitive`.
+- **Pins** are real buttons on the map (`src/scripts/map-engine.ts`), named "{title}, {time}", in reading order for Tab. Places close together on screen become a number circle; pressing it zooms in. Opening a pin shows its details under the map, marks the matching card in the list, and offers "Get directions" (a plain link with only the address) with the note that the maps app will see it.
+- **Nothing tracked.** All pins are in the page. The map code, worker, stylesheet, letters, road signs and street map load only from this site; nothing goes in the address or browser storage; "Near me" asks for the location only when tapped and centers at neighborhood level. MapLibre (and its 1 MB of code) loads only when someone first chooses Map.
+- **Files.** `public/map/fonts` (Noto Sans, OFL-1.1, fonts only: owner Q122) and `public/map/sprites` (MIT) come from one pinned commit: `node scripts/fetch-map-assets.mjs` (checks SHA-256 against `scripts/map-assets.lock.json`; `--check` re-checks). The street map is cut once from one dated Protomaps build with `node scripts/cut-basemap.mjs --build YYYYMMDD --bbox=w,s,e,n --maxzoom 14 --out <folder outside this repo>`: it plans pieces of at most 25 MiB with dry runs and downloads only with `--download`. Needs `brew install pmtiles`.
+- **Credit and notice.** "Map: Protomaps © OpenStreetMap contributors" under every map, linked; `/<lang>/map-data/` names the build, the date, the commands and links each piece (ODbL).
 
 ### About page
 

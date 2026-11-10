@@ -17,7 +17,8 @@
     "footer_sources": "Los anuncios vienen de los calendarios públicos de las organizaciones.",
     "footer_open_source": "Cualquier persona puede ver y reutilizar el código de este sitio.",
     "footer_code_link": "Ver el código",
-    "test_version": "Versión de prueba. Los anuncios pueden tener errores o no estar al día."
+    "test_version": "Versión de prueba. El sitio web sigue en construcción.",
+    "pages_nav": "Páginas"
   },
   "filters": {
     "heading": "Buscar un turno",
@@ -51,14 +52,12 @@
       "all": "Todas las partes de la ciudad"
     },
     "kind": {
-      "label": "Tipo",
-      "dated": "Turnos con fecha",
-      "flexible": "Flexibles",
-      "teams": "Equipos de voluntarios",
-      "note_flexible": "Las oportunidades flexibles no tienen día ni hora fijos, así que los filtros de día y hora no se usan.",
-      "note_teams": "Los filtros de día y hora solo se aplican a los turnos en equipo con fecha.",
-      "see_flexible": "Ver todas las oportunidades flexibles",
-      "see_teams": "Ver todas las actividades para equipos de voluntarios"
+      "label": "Turno",
+      "dated": "Por fecha",
+      "flexible": "Flexible",
+      "teams": "En equipo",
+      "note_flexible": "Los turnos flexibles no tienen día ni hora fijos, así que los filtros de día y hora no se usan.",
+      "note_teams": "Los filtros de día y hora solo se aplican a los turnos en equipo con fecha."
     },
     "cause": {
       "label": "Causa",
@@ -157,7 +156,9 @@
     "picks_heading": "Recomendados de esta semana",
     "picks_note": "Turnos con lugares disponibles, elegidos por nuestro equipo. Nadie paga por aparecer aquí.",
     "tonight": "Esta noche",
-    "tomorrow": "Mañana"
+    "tomorrow": "Mañana",
+    "flexible_link": "Turnos flexibles",
+    "teams_link": "Turnos en equipo"
   },
   "listing": {
     "hosted_by": "Organiza: {org}",
@@ -194,10 +195,12 @@
     "spanish_spoken": "Se habla español",
     "recurring": "Se repite con regularidad",
     "original_language": "Se muestra en el idioma que usó la organización.",
-    "translate": "Traducir",
-    "show_original": "Ver original",
+    "original_text": "Texto original:",
+    "original_title": "Título: {title}",
+    "show_original": "Ver el texto original",
     "translated_automatically": "Traducido automáticamente",
     "translated_note": "Una computadora tradujo este texto y puede tener errores. Consulte la página de la organización para ver los detalles exactos.",
+    "translated_note_list": "Una computadora tradujo el texto marcado “Traducido automáticamente”. Puede tener errores. Consulte la página de la organización para ver los detalles exactos.",
     "back": "Volver a todos los turnos",
     "gone": "Este anuncio ya no está en el calendario.",
     "add_to_calendar": "Agregar a mi calendario",
@@ -260,32 +263,32 @@
     "error": "Algo salió mal. Inténtelo de nuevo."
   },
   "flexible": {
-    "title": "Oportunidades flexibles",
+    "title": "Turnos flexibles",
     "intro": "Estos programas no tienen fechas ni horarios fijos. Usted elige un horario con la organización.",
     "tag": "Flexible",
     "commitment": "Tiempo que se pide: {commitment}",
     "count": {
-      "one": "{count} oportunidad",
-      "other": "{count} oportunidades"
+      "one": "{count} turno flexible",
+      "other": "{count} turnos flexibles"
     },
-    "none": "Todavía no hay oportunidades flexibles.",
-    "none_match": "Ninguna oportunidad coincide con estos filtros.",
+    "none": "Todavía no hay turnos flexibles.",
+    "none_match": "Ningún turno flexible coincide con estos filtros.",
     "none_match_hint": "Quite un filtro para ver más.",
-    "apply": "Mostrar oportunidades"
+    "apply": "Mostrar turnos flexibles"
   },
   "teams": {
-    "title": "Equipos de voluntarios",
+    "title": "Turnos en equipo",
     "intro": "Estas actividades necesitan un equipo, no una sola persona. Venga con su propio equipo e inscríbanse juntos.",
-    "tag": "Equipo de voluntarios",
+    "tag": "Turno en equipo",
     "size": "Tamaño del equipo: {size}",
     "task": "Lo que hace el equipo: {task}",
     "count": {
-      "one": "{count} actividad en equipo",
-      "other": "{count} actividades en equipo"
+      "one": "{count} turno en equipo",
+      "other": "{count} turnos en equipo"
     },
-    "none": "Todavía no hay actividades para equipos de voluntarios.",
-    "none_match": "Ninguna actividad en equipo coincide con estos filtros.",
-    "apply": "Mostrar actividades en equipo"
+    "none": "Todavía no hay turnos en equipo.",
+    "none_match": "Ningún turno en equipo coincide con estos filtros.",
+    "apply": "Mostrar turnos en equipo"
   },
   "medicaid": {
     "title": "Calculadora de horas para Medicaid",
@@ -391,8 +394,7 @@
     "shifts": {
       "heading": "Todos los turnos de voluntariado en un solo lugar",
       "body": "Las organizaciones de todo {city} publican turnos de voluntariado en sus propios sitios web. Nosotros los reunimos en un solo calendario.",
-      "numbers": "Ahora el calendario tiene {listings} de {organizations} en {neighborhoods}.",
-      "numbers_none": "Los anuncios aparecen aquí en cuanto las organizaciones los publican.",
+      "numbers_to_date": "Hasta la fecha, el calendario ha reunido {opportunities} de {organizations} en {neighborhoods}.",
       "listings": {
         "one": "{count} oportunidad de voluntariado",
         "other": "{count} oportunidades de voluntariado"
@@ -406,7 +408,8 @@
         "other": "{count} barrios"
       },
       "signup": "Cada anuncio enlaza con la página de inscripción de la propia organización.",
-      "link": "Ver el calendario"
+      "link": "Ver el calendario",
+      "map_link": "Ver el mapa"
     },
     "near_you": {
       "heading": "Encuentre uno cerca de usted",
@@ -429,13 +432,13 @@
     },
     "more": {
       "heading": "Más que turnos de un solo día",
-      "flexible": "Oportunidades flexibles: programas en los que usted elige un horario con la organización.",
-      "teams": "Equipos de voluntarios: actividades que necesitan un equipo, no una sola persona."
+      "flexible": "Turnos flexibles: programas en los que usted elige un horario con la organización.",
+      "teams": "Turnos en equipo: actividades que necesitan un equipo, no una sola persona."
     },
     "rewards": {
       "heading": "Lo que viene: Citywide Rewards",
       "points": "Planeamos agregar puntos e insignias por las horas de voluntariado confirmadas.",
-      "offers": "También planeamos ofertas de negocios locales que los voluntarios puedan canjear.",
+      "offers": "También planeamos que se puedan canjear los puntos de Citywide por cupones y otras recompensas de negocios locales.",
       "when": "Compartiremos los detalles cuando estén listos."
     },
     "why": {
@@ -449,7 +452,7 @@
     },
     "support": {
       "heading": "Cómo apoyar",
-      "organizations": "Organizaciones: cuéntenos sobre su calendario de voluntariado para que podamos publicar sus turnos. Más adelante, podrán confirmar las horas de los voluntarios.",
+      "organizations": "Organizaciones: cuéntenos sobre su calendario de voluntariado para que podamos publicar sus turnos.",
       "sponsors": "Negocios y patrocinadores: la organización sin fines de lucro que manejará el sitio planea ofrecer patrocinios. Más adelante, los negocios podrán ofrecer a los voluntarios cupones o entradas a eventos.",
       "office": "La Ciudad de {city}: por favor, comparta sus programas de voluntariado y su calendario con nosotros, para que también podamos publicarlos.",
       "city": "Socios de la ciudad: ayúdenos a llegar a más organizaciones y residentes."
@@ -484,8 +487,8 @@
   },
   "search": {
     "label_dated": "Buscar turnos",
-    "label_flexible": "Buscar oportunidades",
-    "label_teams": "Buscar actividades en equipo",
+    "label_flexible": "Buscar turnos flexibles",
+    "label_teams": "Buscar turnos en equipo",
     "clear": "Borrar la búsqueda",
     "none": "No hay resultados para esta búsqueda.",
     "none_hint": "Pruebe con otras palabras o borre la búsqueda."
@@ -500,5 +503,117 @@
     "title": "Página no encontrada",
     "body": "No encontramos esa página.",
     "link": "Ir al calendario"
+  },
+  "map": {
+    "view_label": "Mostrar como",
+    "view_list": "Lista",
+    "view_map": "Mapa",
+    "heading": {
+      "dated": "Mapa de turnos",
+      "flexible": "Mapa de turnos flexibles",
+      "teams": "Mapa de turnos en equipo"
+    },
+    "skip": "Saltar el mapa",
+    "canvas": "Mapa. Las teclas de flecha lo mueven; las teclas más y menos lo acercan y lo alejan.",
+    "day": {
+      "label": "Día en el mapa",
+      "previous": "Día anterior: {date}",
+      "next": "Día siguiente: {date}",
+      "pick": "Elegir un día"
+    },
+    "announce": {
+      "one": "{count} turno el {date}.",
+      "other": "{count} turnos el {date}."
+    },
+    "no_location": {
+      "dated": {
+        "one": "{count} turno no tiene ubicación en el mapa. Está en la lista de abajo.",
+        "other": "{count} turnos no tienen ubicación en el mapa. Están en la lista de abajo."
+      },
+      "flexible": {
+        "one": "{count} turno flexible no tiene ubicación en el mapa. Está en la lista de abajo.",
+        "other": "{count} turnos flexibles no tienen ubicación en el mapa. Están en la lista de abajo."
+      },
+      "teams": {
+        "one": "{count} turno en equipo no tiene ubicación en el mapa. Está en la lista de abajo.",
+        "other": "{count} turnos en equipo no tienen ubicación en el mapa. Están en la lista de abajo."
+      }
+    },
+    "pin": "{title}. {time}",
+    "with_approx": "{name}. Zona aproximada.",
+    "place": {
+      "dated": {
+        "one": "{count} turno en este lugar",
+        "other": "{count} turnos en este lugar"
+      },
+      "flexible": {
+        "one": "{count} turno flexible en este lugar",
+        "other": "{count} turnos flexibles en este lugar"
+      },
+      "teams": {
+        "one": "{count} turno en equipo en este lugar",
+        "other": "{count} turnos en equipo en este lugar"
+      }
+    },
+    "cluster": {
+      "dated": {
+        "one": "{count} turno aquí; acerque el mapa para verlo",
+        "other": "{count} turnos aquí; acerque el mapa para verlos"
+      },
+      "flexible": {
+        "one": "{count} turno flexible aquí; acerque el mapa para verlo",
+        "other": "{count} turnos flexibles aquí; acerque el mapa para verlos"
+      },
+      "teams": {
+        "one": "{count} turno en equipo aquí; acerque el mapa para verlo",
+        "other": "{count} turnos en equipo aquí; acerque el mapa para verlos"
+      }
+    },
+    "approximate": "Zona aproximada",
+    "zoom_in": "Acercar",
+    "zoom_out": "Alejar",
+    "near_me": "Cerca de mí",
+    "near_me_note": "Su ubicación se queda en su dispositivo. Luego el mapa carga la zona a su alrededor desde nuestro servidor.",
+    "near_me_done": "El mapa ahora muestra la zona a su alrededor.",
+    "near_me_denied": "La ubicación está desactivada para este sitio, así que el mapa se queda donde estaba.",
+    "near_me_failed": "No se pudo encontrar su ubicación, así que el mapa se queda donde estaba.",
+    "near_me_unavailable": "Este navegador no puede compartir una ubicación.",
+    "gestures": {
+      "mobile": "Use dos dedos para mover el mapa",
+      "windows": "Use Ctrl + desplazamiento para acercar o alejar el mapa",
+      "mac": "Use ⌘ + desplazamiento para acercar o alejar el mapa"
+    },
+    "credit": "Mapa: {protomaps} © colaboradores de {osm}",
+    "credit_census": "Centros de las zonas: {census} (Oficina del Censo de EE. UU.)",
+    "census_name": "US Census Bureau",
+    "credit_esa": "Land cover: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium",
+    "credit_esa_translation": "Cobertura del suelo: © proyecto ESA WorldCover 2020 / Contiene datos modificados de Copernicus Sentinel (2020) procesados por el consorcio ESA WorldCover",
+    "census_notice": "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau.",
+    "census_notice_translation": "Este producto usa la API de datos de la Oficina del Censo, pero la Oficina del Censo no lo respalda ni lo certifica.",
+    "about_data": "Sobre los datos del mapa",
+    "directions": "Cómo llegar",
+    "directions_note": "Abre su aplicación de mapas. Ese servicio verá esta dirección.",
+    "show_in_list": "Ver en la lista",
+    "close": "Cerrar los detalles",
+    "loading": "Cargando el mapa…",
+    "failed": "El mapa no pudo cargarse en este dispositivo. Todo está en la lista de abajo.",
+    "no_street_map": "Esta versión del sitio no tiene mapa de calles, así que los marcadores están sobre un fondo liso."
+  },
+  "map_data": {
+    "title": "Sobre el mapa",
+    "intro": "Las calles, los parques y los nombres de lugares de nuestros mapas vienen de OpenStreetMap, un mapa que personas de todo el mundo hacen juntas. Protomaps convierte esos datos en archivos de mapa.",
+    "pins": "Los marcadores son nuestros. Cada uno viene de la dirección que la organización publicó para ese anuncio. El servicio de direcciones de la Oficina del Censo de EE. UU. convierte esa dirección en un punto del mapa. Un anuncio que solo da un barrio, un parque o un pueblo aparece como una zona aproximada, centrada en un punto de nuestra propia lista o de datos de la Oficina del Censo de EE. UU.",
+    "licence": "Datos del mapa © colaboradores de {osm}, bajo la {odbl}, una licencia abierta de bases de datos.",
+    "odbl": "Open Database License (ODbL)",
+    "style": "Estilo y herramientas del mapa: {protomaps}.",
+    "fonts": "Letras del mapa: Noto Sans, bajo la licencia {ofl}.",
+    "esa_licence": "Los datos de cobertura del suelo están bajo la licencia {cc_by}.",
+    "esa_simplified": "Protomaps simplificó estos datos para el mapa.",
+    "file_heading": "Nuestro archivo de mapa",
+    "file": "Nuestro archivo de mapa es una parte de una versión de Protomaps, {build}, hecha con datos de OpenStreetMap. Lo recortamos el {date}. Sus datos están bajo la ODbL. Puede descargar el archivo aquí:",
+    "file_link": "Archivo de mapa {number} de {total}",
+    "commands": "Cómo lo hicimos:",
+    "no_file": "Esta versión del sitio no tiene archivo de mapa de calles.",
+    "privacy": "Los mapas y sus archivos se cargan solo desde nuestro propio sitio. No participa ninguna empresa de mapas externa."
   }
 }

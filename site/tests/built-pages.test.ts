@@ -535,7 +535,7 @@ test("calendar: Volunteer Team tag on cards and listing pages", () => {
       assert.ok(text(card(team.id)).includes(tr.t("teams.tag")));
       assert.match(card(other.id), /data-team="false"/);
       assert.ok(!text(card(other.id)).includes(tr.t("teams.tag")));
-      // Only the page's own content: the footer now links to "Volunteer Teams" on every page.
+      // Only the page's own content: the header links to "Volunteer Teams" on every page.
       const mainOf = (html: string) => html.slice(html.indexOf("<main"), html.indexOf("</main>"));
       const page = text(mainOf(b.read(`${lang}/listing/${team.id}/index.html`)));
       assert.ok(page.includes(tr.t("teams.tag")));
@@ -548,19 +548,22 @@ test("calendar: Volunteer Team tag on cards and listing pages", () => {
   }
 });
 
-test("home page: Kind filter, flexible cards in the list (hidden until chosen), no links at the top", () => {
+test("home page: Kind filter, flexible cards in the list (hidden until chosen), Flexible and Team links under Filters", () => {
   const b = build({});
   try {
     for (const lang of ["en", "es"]) {
       const tr = i18n.translator(lang);
       const home = b.read(`${lang}/index.html`);
       const main = home.slice(home.indexOf("<main"), home.indexOf("</main>"));
-      // The three links are gone from the top of the page.
+      // Under the Filters button: "Flexible Shifts" and "Team Shifts" side by side (owner, 2026-11-10); no calculator link at the top.
       const top = main.slice(0, main.indexOf('id="listing-list"'));
-      for (const href of ["flexible", "teams", "medicaid-hours"]) {
-        const outsidePanel = top.replace(/<section id="filter-panel"[\s\S]*?<\/section>/, "");
-        assert.ok(!outsidePanel.includes(`href="/${lang}/${href}/"`), `${lang}: no ${href} link at the top`);
-      }
+      const outsidePanel = top.replace(/<section id="filter-panel"[\s\S]*?<\/section>/, "");
+      const links = outsidePanel.slice(outsidePanel.indexOf("filters-toggle"));
+      assert.deepEqual(
+        [...links.matchAll(/<a href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], decode(m[2])]).slice(0, 2),
+        [[`/${lang}/flexible/`, tr.t("home.flexible_link")], [`/${lang}/teams/`, tr.t("home.teams_link")]],
+      );
+      assert.ok(!outsidePanel.includes(`href="/${lang}/medicaid-hours/"`), `${lang}: no calculator link at the top`);
       // Kind comes first in the panel, with the three choices and the two page links.
       const panel = home.slice(home.indexOf('id="filter-panel"'), home.indexOf("</section>", home.indexOf('id="filter-panel"')));
       assert.ok(panel.indexOf('id="filter-kind"') < panel.indexOf('id="filter-day"'));
@@ -570,7 +573,10 @@ test("home page: Kind filter, flexible cards in the list (hidden until chosen), 
         ["flexible", tr.t("filters.kind.flexible")],
         ["teams", tr.t("filters.kind.teams")],
       ]);
-      assert.ok(panel.includes(`href="/${lang}/flexible/"`) && panel.includes(`href="/${lang}/teams/"`));
+      // The panel links to the Flexible and Teams pages are gone (owner, 2026-11-10); those links sit under the Filters button.
+      assert.ok(!panel.includes(`href="/${lang}/flexible/"`) && !panel.includes(`href="/${lang}/teams/"`));
+      // Owner, 2026-11-10: "Shift" with By Date, Flexible, Teams.
+      if (lang === "en") assert.deepEqual([tr.t("filters.kind.label"), tr.t("filters.kind.dated"), tr.t("filters.kind.flexible"), tr.t("filters.kind.teams")], ["Shift", "By Date", "Flexible", "Teams"]);
       assert.doesNotMatch(panel, /id="filter-team"/, "the old team filter is folded into Kind");
       // Day and time are marked so the script can switch them off for flexible items.
       assert.equal([...panel.matchAll(/data-dated-only/g)].length, 3);
@@ -597,25 +603,46 @@ test("home page: Kind filter, flexible cards in the list (hidden until chosen), 
   }
 });
 
-test("footer: About, Flexible, Volunteer Teams, and the calculator with Pennsylvania's start date", () => {
+test("header: About and the calculator at the top right (owner, 2026-11-10: Flexible and Teams moved under Filters); footer holds only where listings come from (owner, 2026-11-10)", () => {
   const b = build({});
+  const t = build({ PV_TEST_BUILD: "1" });
   try {
     for (const lang of ["en", "es"]) {
       const tr = i18n.translator(lang);
+      for (const page of ["index.html", "flexible/index.html", "teams/index.html", "about/index.html", "medicaid-hours/index.html"]) {
+        const html = b.read(`${lang}/${page}`);
+        const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+        const nav = header.slice(header.indexOf('class="site-header__pages"'));
+        assert.match(header, new RegExp(`<nav class="site-header__pages"[^>]*aria-label="${tr.t("site.pages_nav")}"`), page);
+        // In this order, the existing page names.
+        assert.deepEqual(
+          [...nav.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], decode(m[2])]),
+          [
+            [`/${lang}/about/`, tr.t("about_page.nav")],
+            [`/${lang}/medicaid-hours/`, tr.t("medicaid.title")],
+          ],
+          `${lang} ${page}`,
+        );
+        // The footer: only the sources sentence; no page links.
+        const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+        assert.ok(text(footer) === tr.t("site.footer_sources"), `${lang} ${page}: ${text(footer)}`);
+        assert.doesNotMatch(footer, /<a /);
+      }
+      // A test build: the sentence moves to the banner at the top, with the test-version line; no footer.
+      const home = t.read(`${lang}/index.html`);
+      const banner = home.match(/<div class="test-banner[^"]*"[^>]*>([\s\S]*?)<\/div>/)![1];
+      assert.ok(text(banner).includes(tr.t("site.test_version")) && text(banner).includes(tr.t("site.footer_sources")), lang);
+      assert.ok(home.indexOf("test-banner") < home.indexOf("<header"), "banner at the very top");
+      assert.doesNotMatch(home, /<footer/);
+      // The calculator's own page still says the start date near the top.
       const date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date("2027-01-01T12:00:00Z"));
-      const label = tr.t("medicaid.link_with_date", { date });
-      assert.equal(label, lang === "en" ? "Medicaid hours calculator: Pennsylvania's rule starts January 1, 2027" : "Calculadora de horas para Medicaid: la regla de Pensilvania empieza el 1 de enero de 2027");
-      const home = b.read(`${lang}/index.html`);
-      const footer = text(home.slice(home.indexOf("<footer")));
-      for (const words of [tr.t("about_page.nav"), tr.t("flexible.title"), tr.t("teams.title"), label]) assert.ok(footer.includes(words), `${lang}: ${words}`);
-      // The About page links to the calculator with the same label; the calculator says the date near the top.
-      assert.ok(text(b.read(`${lang}/about/index.html`)).includes(label));
       const calc = b.read(`${lang}/medicaid-hours/index.html`);
       const main = calc.slice(calc.indexOf("<main"));
       assert.ok(text(main.slice(0, main.indexOf("</h1>") + 400)).includes(tr.t("medicaid.starts", { date })));
     }
   } finally {
     b.done();
+    t.done();
   }
 });
 
@@ -673,11 +700,6 @@ test("About page: nine sections in order, each with its drawing, heading and wor
   const b = build({ PV_SITE_URL: URL_ });
   try {
     const order = ["shifts", "near-you", "everyone", "private", "more", "rewards", "why", "support", "contact"];
-    // Figures from the data itself: calendar listings plus flexible opportunities.
-    const all = [...sample.events, ...oppSample.opportunities];
-    const norm = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
-    const orgs = new Set(all.map((e) => norm(e.org_name)).filter(Boolean)).size;
-    const places = new Set(all.map((e) => norm(e.neighborhood_or_town)).filter(Boolean)).size;
     for (const lang of ["en", "es"]) {
       const tr = i18n.translator(lang);
       const html = b.read(`${lang}/about/index.html`);
@@ -698,12 +720,8 @@ test("About page: nine sections in order, each with its drawing, heading and wor
         tr.t("about_page.support.heading"),
         tr.t("about_page.contact.heading"),
       ]);
-      const expected = tr.t("about_page.shifts.numbers", {
-        listings: tr.plural("about_page.shifts.listings", all.length),
-        organizations: tr.plural("about_page.shifts.organizations", orgs),
-        neighborhoods: tr.plural("about_page.shifts.neighborhoods", places),
-      });
-      assert.ok(text(main).includes(expected), `${lang}: ${expected}`);
+      // No totals file in this build (PV_STATS not set): the "to date" line is left out.
+      assert.doesNotMatch(main, /about__numbers/);
       // Links to the calendar, the three other pages and the contact address.
       for (const href of [`/${lang}/`, `/${lang}/flexible/`, `/${lang}/teams/`, `/${lang}/medicaid-hours/`, `mailto:${settings.site.contact_email}`]) {
         assert.ok(main.includes(`href="${href}"`), `${lang}: link ${href}`);
@@ -717,11 +735,10 @@ test("About page: nine sections in order, each with its drawing, heading and wor
       const office = tr.t("about_page.support.office", { city: cityName(tr, settings) });
       assert.ok(text(main).includes(office), office);
       if (lang === "en") assert.ok(office.startsWith("The City of Philadelphia: please share your volunteer programs"));
-      // Header and footer link here from every page.
+      // The header links here from every page (owner, 2026-11-10: page links moved from the footer).
       for (const page of [`${lang}/index.html`, `${lang}/flexible/index.html`, `${lang}/medicaid-hours/index.html`]) {
         const p = b.read(page);
         assert.ok(p.slice(0, p.indexOf("<main")).includes(`href="/${lang}/about/"`), `header link on ${page}`);
-        assert.ok(p.slice(p.indexOf("<footer")).includes(`href="/${lang}/about/"`), `footer link on ${page}`);
       }
       // Previews are the site's own (Q38); the handout line names the page's address.
       const tags = tagsIn(html);
@@ -735,20 +752,33 @@ test("About page: nine sections in order, each with its drawing, heading and wor
   }
 });
 
-test("About page with no listings: no zero counts, a plain line instead", () => {
-  const [path, done] = oppFile({ generated_at: "2026-11-05T06:00:00-05:00", opportunities: [] });
-  const b = build({ PV_OPPORTUNITIES: path }, (file) => {
-    file.events = [];
-  });
+test("About page 'to date' line from the running totals file (PV_STATS): numbers only, never the file's note", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pv-stats-"));
+  const stats = join(dir, "listings-ledger.json");
+  const note = "Tracking began 2026-11-09, a private note that must never reach the page.";
+  writeFileSync(stats, JSON.stringify({ version: 4, tracking_began: "2026-11-09", note, totals: { shifts: 459, cards: 59, organizations: 86, neighborhoods: 35 } }));
+  const b = build({ PV_STATS: stats });
   try {
     for (const lang of ["en", "es"]) {
-      const words = text(b.read(`${lang}/about/index.html`));
-      assert.ok(words.includes(i18n.translator(lang).t("about_page.shifts.numbers_none")));
+      const tr = i18n.translator(lang);
+      const main = text(b.read(`${lang}/about/index.html`));
+      const expected = tr.t("about_page.shifts.numbers_to_date", {
+        opportunities: tr.plural("about_page.shifts.listings", 518), // 459 shifts + 59 cards
+        organizations: tr.plural("about_page.shifts.organizations", 86),
+        neighborhoods: tr.plural("about_page.shifts.neighborhoods", 35),
+      });
+      assert.ok(main.includes(expected), `${lang}: ${expected}`);
+      if (lang === "en") assert.ok(main.includes("To date, the calendar has listed 518 volunteer opportunities from 86 organizations in 35 neighborhoods."));
+      for (const page of ["about/index.html", "index.html"]) assert.ok(!b.read(`${lang}/${page}`).includes("Tracking began"), "the note never shows");
     }
   } finally {
     b.done();
-    done();
   }
+  // A named file that is missing, or a total that is not a whole number, stops the build.
+  writeFileSync(stats, JSON.stringify({ version: 4, totals: { shifts: 1, cards: "many", organizations: 1, neighborhoods: 1 } }));
+  assert.throws(() => build({ PV_STATS: stats }), (err: { stderr?: Buffer }) => /totals\.cards/.test(String(err.stderr ?? err)));
+  assert.throws(() => build({ PV_STATS: join(dir, "missing.json") }));
+  rmSync(dir, { recursive: true, force: true });
 });
 
 test("About page words: plain, no typed-in numbers, no 'just' or 'simply', prints section by section", () => {
@@ -767,7 +797,7 @@ test("About page words: plain, no typed-in numbers, no 'just' or 'simply', print
   assert.match(print, /body > \*:not\(main\)/);
 });
 
-test("the link to the page you are on is marked aria-current=page, in the header and footer", () => {
+test("the link to the page you are on is marked aria-current=page in the header", () => {
   const b = build({});
   try {
     for (const lang of ["en", "es"]) {
@@ -775,10 +805,11 @@ test("the link to the page you are on is marked aria-current=page, in the header
         [...b.read(page).matchAll(/<a[^>]*aria-current="page"[^>]*href="([^"]+)"|<a[^>]*href="([^"]+)"[^>]*aria-current="page"/g)]
           .map((m) => m[1] ?? m[2])
           .filter((href) => !href.startsWith("/" + (lang === "en" ? "es" : "en") + "/")); // language switch marks its own
-      assert.deepEqual(current(`${lang}/about/index.html`), [`/${lang}/about/`, `/${lang}/about/`]);
+      assert.deepEqual(current(`${lang}/about/index.html`), [`/${lang}/about/`]);
+      assert.deepEqual(current(`${lang}/teams/index.html`), [], "no header link to Teams any more");
       assert.deepEqual(current(`${lang}/medicaid-hours/index.html`), [`/${lang}/medicaid-hours/`]);
       assert.deepEqual(current(`${lang}/index.html`), [`/${lang}/`]);
-      assert.deepEqual(current(`${lang}/flexible/index.html`), [`/${lang}/flexible/`]);
+      assert.deepEqual(current(`${lang}/flexible/index.html`), [], "no header link to Flexible any more");
       assert.deepEqual(current(`${lang}/listing/${sample.events[0].id}/index.html`), []);
     }
   } finally {

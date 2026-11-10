@@ -14,8 +14,12 @@ import SearchBox from "../../components/SearchBox.astro";
 import Base from "../../layouts/Base.astro";
 import FilterPanel from "../../components/FilterPanel.astro";
 import ListingCard from "../../components/ui/ListingCard.astro";
+import OriginalText from "../../components/OriginalText.astro";
+import MapView from "../../components/MapView.astro";
+import { mapAttrs } from "../../lib/map-build.ts";
 import { languagePaths, paths, siteData, translator } from "../../lib/site.ts";
-import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, requirementFacts, spotsLabel, typeLabel, whenText } from "../../lib/words.ts";
+import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, requirementFacts, spotsLabel, timeText, typeLabel, whenText } from "../../lib/words.ts";
+import { listingText, shownListing } from "../../i18n/listing-text.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -23,16 +27,18 @@ const { lang } = Astro.params as { lang: string };
 const { i18n, listings, opportunities, builtAt, settings } = siteData();
 const tr = translator(lang);
 const t = tr.t;
+// Any flexible card shown in this language as a machine translation (decision 0036).
+const anyTranslatedOut = opportunities.some((o) => shownListing(o, lang).translated);
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.home(code)]));
 
 /** The same fact lines as on the Flexible and Teams pages. */
 function flexibleFacts(o: (typeof opportunities)[number]) {
   const out: Array<{ template: string; name: string; value: string; lang?: string }> = [];
   if (o.team_required && o.team_size) out.push({ template: t("teams.size"), name: "size", value: o.team_size, lang: o.listing_language });
-  if (o.team_required && o.team_task) out.push({ template: t("teams.task"), name: "task", value: o.team_task, lang: o.listing_language });
+  if (o.team_required && o.team_task) out.push({ template: t("teams.task"), name: "task", value: listingText(o, "team_task", lang)!.text, lang: listingText(o, "team_task", lang)!.lang });
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
   out.push(...requirementFacts(tr, o));
-  if (o.commitment) out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
+  if (o.commitment) out.push({ template: t("flexible.commitment"), name: "commitment", value: listingText(o, "commitment", lang)!.text, lang: listingText(o, "commitment", lang)!.lang });
   return out;
 }
 ---
@@ -40,6 +46,11 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
 <Base lang={lang} alternates={alternates} path={paths.home(lang)}>
   <div class="page results">
     <ResultsHeading lang={lang} text={t("filters.heading")} filters />
+    {/* Under the Filters button, side by side (owner, 2026-11-10). */}
+    <ul class="home-pages">
+      <li><a href={paths.flexible(lang)}>{t("home.flexible_link")}</a></li>
+      <li><a href={paths.teams(lang)}>{t("home.teams_link")}</a></li>
+    </ul>
   </div>
   <FilterPanel lang={lang} />
   <div class="page results">
@@ -59,6 +70,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
     </p>
     <SearchBox lang={lang} />
     </div>
+    <MapView lang={lang} mode="day" kind="dated" />
     <div
       id="results-none"
       class="results__none"
@@ -79,6 +91,8 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
       <p class="muted" data-none-hint hidden={listings.length === 0}>{t("results.none_hint")}</p>
     </div>
     <p id="external-note" class="muted" hidden>{t("listing.external_note")}</p>
+    {/* Cards that link straight to the organization have no page of ours to carry the full note (decision 0036; licence gate). */}
+    {anyTranslatedOut && <p id="translated-note" class="muted" hidden>{t("listing.translated_note_list")}</p>}
 
     <ul id="listing-list" class="stack listing-list">
       {
@@ -101,12 +115,15 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
             data-kind="dated"
             data-search={cardSearchText(tr, e, settings)}
             data-over-at={e.overAt}
+            {...mapAttrs(tr, e, settings, { href: paths.listing(lang, e.id), when: timeText(tr, e) })}
           >
             <ListingCard
               id={e.id}
               href={paths.listing(lang, e.id)}
-              title={e.title}
-              titleLang={e.listing_language}
+              title={shownListing(e, lang).title.text}
+              titleLang={shownListing(e, lang).title.lang}
+              orgLang={e.listing_language}
+              translatedLabel={shownListing(e, lang).translated ? t("listing.translated_automatically") : undefined}
               org={e.org_name}
               hostedBy={t("listing.hosted_by")}
               when={whenText(tr, e)}
@@ -126,6 +143,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
               shareUrl={paths.listing(lang, e.id)}
               headingLevel={2}
             />
+            {e.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
           </li>
         ))
       }
@@ -154,8 +172,10 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
               shareUrl={o.signup_url}
               external
               describedBy="external-note"
-              title={o.title}
-              titleLang={o.listing_language}
+              title={shownListing(o, lang).title.text}
+              titleLang={shownListing(o, lang).title.lang}
+              orgLang={o.listing_language}
+              translatedLabel={shownListing(o, lang).translated ? t("listing.translated_automatically") : undefined}
               org={o.org_name}
               hostedBy={t("listing.hosted_by")}
               place={placeText(tr, o, settings)}
@@ -168,6 +188,7 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
               joinLabel={t(`filters.join.${o.join_method}`)}
               headingLevel={2}
             />
+            <OriginalText lang={lang} item={o} />
           </li>
         ))
       }
@@ -190,3 +211,22 @@ function flexibleFacts(o: (typeof opportunities)[number]) {
   import "../../scripts/filters.ts";
 </script>
 
+
+<style>
+  /* Two links side by side, right-aligned under the Filters button; they wrap on a narrow screen.
+     Each is a 48 px tall target with the site's focus ring. */
+  .home-pages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0 var(--space-4);
+    margin: var(--space-1) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-pages a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+</style>

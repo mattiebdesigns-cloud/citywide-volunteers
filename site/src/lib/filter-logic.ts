@@ -67,11 +67,16 @@ export const EMPTY_FILTERS: FilterState = {
   saved: false,
 };
 
-/** How many filters are on, for the count next to the Filters button. */
+/**
+ * How many filters are on, for the count next to the Filters button.
+ * Kind always counts as one, Dated shifts included, so the button says
+ * "1" even before anyone chooses: people can see the list shows only dated
+ * shifts (owner, 2026-11-10).
+ */
 export function activeCount(state: FilterState): number {
-  let n = 0;
+  let n = 1; // Kind: Dated shifts, Flexible shifts or Team shifts
   for (const key of Object.keys(EMPTY_FILTERS) as Array<keyof FilterState>) {
-    if (key === "date") continue; // part of the day filter
+    if (key === "date" || key === "kind") continue; // date is part of the day filter; kind is counted above
     if (key === "day" && state.day === "pick_date" && !state.date) continue;
     // Flexible opportunities have no day or time, so those filters are off and not counted.
     if ((key === "day" || key === "time") && state.kind === "flexible") continue;

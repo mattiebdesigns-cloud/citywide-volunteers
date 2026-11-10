@@ -47,6 +47,7 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>{pageTitle}</title>
     <meta name="description" content={tr.t("site.description")} />
     {testBuild && <meta name="robots" content="noindex, nofollow" />}
@@ -61,13 +62,14 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
   </head>
   <body>
     <SvgSprite />
-    {testBuild && <TestBanner text={tr.t("site.test_version")} />}
+    {testBuild && <TestBanner text={tr.t("site.test_version")} note={tr.t("site.footer_sources")} />}
     <a class="skip-link" href="#main">{tr.t("site.skip_to_content")}</a>
     <SiteHeader lang={lang} alternates={alternates} noStorage={noStorage} path={path} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <SiteFooter lang={lang} path={path} />
+    {/* A test build says where listings come from in the banner at the top (owner, 2026-11-10); the footer then has nothing left to hold. */}
+    {!testBuild && <SiteFooter lang={lang} />}
     {!noStorage && <script type="application/json" id="live-listings" set:html={live} />}
     {
       !noStorage && (

@@ -12,8 +12,12 @@ import SearchBox from "../../../components/SearchBox.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
+import OriginalText from "../../../components/OriginalText.astro";
+import MapView from "../../../components/MapView.astro";
+import { mapAttrs } from "../../../lib/map-build.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 import { cardSearchText, placeSpoken, placeText, requirementFacts, type CardFact } from "../../../lib/words.ts";
+import { listingText, shownListing } from "../../../i18n/listing-text.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -21,6 +25,7 @@ const { lang } = Astro.params as { lang: string };
 const { i18n, opportunities, settings } = siteData();
 const tr = translator(lang);
 const t = tr.t;
+const anyTranslatedOut = opportunities.some((o) => shownListing(o, lang).translated);
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.flexible(code)]));
 const any = opportunities.length > 0;
 
@@ -29,7 +34,7 @@ function facts(o: (typeof opportunities)[number]) {
   if (o.min_age !== null) out.push({ template: t("listing.min_age"), name: "age", value: tr.formatNumber(o.min_age) });
   out.push(...requirementFacts(tr, o));
   if (o.commitment) {
-    out.push({ template: t("flexible.commitment"), name: "commitment", value: o.commitment, lang: o.listing_language });
+    out.push({ template: t("flexible.commitment"), name: "commitment", value: listingText(o, "commitment", lang)!.text, lang: listingText(o, "commitment", lang)!.lang });
   }
   return out;
 }
@@ -47,6 +52,8 @@ function facts(o: (typeof opportunities)[number]) {
       any ? (
         <>
           <p id="external-note" class="muted">{t("listing.external_note")}</p>
+          {/* Shown once when a card here links straight to the organization in machine-translated words (decision 0036; licence gate). */}
+          {anyTranslatedOut && <p id="translated-note" class="muted">{t("listing.translated_note_list")}</p>}
           <div class="results__bar">
           <p
             id="results-count"
@@ -59,6 +66,7 @@ function facts(o: (typeof opportunities)[number]) {
           </p>
             <SearchBox lang={lang} kind="flexible" />
           </div>
+          <MapView lang={lang} mode="all" kind="flexible" />
           <div
             id="results-none"
             class="results__none"
@@ -73,7 +81,14 @@ function facts(o: (typeof opportunities)[number]) {
           </div>
           <ul id="listing-list" class="stack listing-list">
             {opportunities.map((o) => (
-              <li data-id={o.id} data-search={cardSearchText(tr, o, settings)} data-section={o.section ?? ""} data-cause={o.cause ?? ""} data-join={o.join_method}>
+              <li
+                data-id={o.id}
+                data-search={cardSearchText(tr, o, settings)}
+                data-section={o.section ?? ""}
+                data-cause={o.cause ?? ""}
+                data-join={o.join_method}
+                {...mapAttrs(tr, o, settings, { href: o.signup_url })}
+              >
                 <ListingCard
                   id={o.id}
                   href={o.signup_url}
@@ -81,8 +96,10 @@ function facts(o: (typeof opportunities)[number]) {
                   shareUrl={o.signup_url}
                   external
                   describedBy="external-note"
-                  title={o.title}
-                  titleLang={o.listing_language}
+                  title={shownListing(o, lang).title.text}
+                  titleLang={shownListing(o, lang).title.lang}
+                  orgLang={o.listing_language}
+                  translatedLabel={shownListing(o, lang).translated ? t("listing.translated_automatically") : undefined}
                   org={o.org_name}
                   hostedBy={t("listing.hosted_by")}
                   place={placeText(tr, o, settings)}
@@ -94,6 +111,8 @@ function facts(o: (typeof opportunities)[number]) {
                   joinLabel={t(`filters.join.${o.join_method}`)}
                   headingLevel={2}
                 />
+                <OriginalText lang={lang} item={o} />
+                {o.approximate && <p class="map-approx-line" data-map-approx-line hidden>{t("map.approximate")}</p>}
               </li>
             ))}
           </ul>

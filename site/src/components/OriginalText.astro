@@ -1,0 +1,73 @@
+---
+/**
+ * "Show the original text" (decision 0036; accessibility gate fix 3). Flexible
+ * and team opportunities have no page on our site: their cards link to the
+ * organization. When a card shows machine-translated words, this disclosure
+ * keeps the organization's own words one tap away, each with a lead-in and
+ * marked with the language it was written in. Native <details>, so it works
+ * by keyboard (Enter or Space) and needs no script. Nothing shows when
+ * nothing on the card is translated.
+ */
+import { shownListing, type HasListingText } from "../i18n/listing-text.ts";
+import { splitAround } from "../lib/words.ts";
+import { translator } from "../lib/site.ts";
+
+interface Props {
+  lang: string;
+  item: HasListingText & { team_required?: boolean };
+}
+
+const { lang, item } = Astro.props;
+const tr = translator(lang);
+const t = tr.t;
+const shown = shownListing(item, lang);
+const lines = [
+  shown.title.translated ? { parts: splitAround(t("listing.original_title"), "title"), text: shown.title } : null,
+  item.team_required && shown.team_task?.translated ? { parts: splitAround(t("teams.task"), "task"), text: shown.team_task } : null,
+  shown.commitment?.translated ? { parts: splitAround(t("flexible.commitment"), "commitment"), text: shown.commitment } : null,
+].filter((x) => x !== null);
+---
+
+{
+  lines.length > 0 && (
+    <details class="original-text" data-original-text>
+      <summary class="original-text__summary">{t("listing.show_original")}</summary>
+      <p class="original-text__lead">{t("listing.original_text")}</p>
+      {lines.map((line) => (
+        <p class="original-text__line">
+          {line.parts[0]}
+          <span lang={line.text.originalLang}>{line.text.original}</span>
+          {line.parts[1]}
+        </p>
+      ))}
+    </details>
+  )
+}
+
+<style>
+  .original-text {
+    margin-top: var(--space-2);
+  }
+  /* A 48 px tall control with a visible focus ring (accessibility gate fix 3). */
+  .original-text__summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding-inline: var(--space-2);
+    color: var(--color-primary);
+    font-weight: var(--weight-strong, 600);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .original-text__summary:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-inner);
+  }
+  .original-text__lead,
+  .original-text__line {
+    margin: var(--space-1) 0;
+    padding-inline: var(--space-2);
+    overflow-wrap: anywhere;
+  }
+</style>

@@ -27,6 +27,10 @@ const { lang, alternates, noStorage = false, path } = Astro.props;
 const current = (href: string) => (href === path ? "page" : undefined);
 const tr = translator(lang);
 const siteName = tr.setting(siteData().settings.site.name);
+const pages = [
+  { href: paths.about(lang), label: tr.t("about_page.nav") },
+  { href: paths.medicaid(lang), label: tr.t("medicaid.title") },
+];
 // The drawing without its notes, so they are not sent with every page.
 const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
 ---
@@ -39,8 +43,17 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
         <span class="sr-only">{siteName}</span>
       </a>
     </p>
-    <a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a>
-    <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
+    <div class="site-header__side">
+      <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
+      {/* About and the calculator, top right (owner, 2026-11-10; Flexible and Teams links sit under the home page's Filters button). */}
+      <nav class="site-header__pages" aria-label={tr.t("site.pages_nav")}>
+        <ul>
+          {pages.map((p) => (
+            <li><a href={p.href} aria-current={current(p.href)}>{p.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   </div>
   {tr.isBeta && <p class="page site-header__beta muted">{tr.t("language.beta_note")}</p>}
 </header>
@@ -77,14 +90,30 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
       height: 4rem;
     }
   }
-  /* About page link (decision 0025), a 48 px tap target. */
-  .site-header__about {
+  /* Right side: the language switch, then the page list under it, right-aligned. */
+  .site-header__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 0;
+    margin-inline-start: auto;
+  }
+  .site-header__pages ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: end;
+  }
+  /* A tight list: each link a 48 px tall target (accessibility gate), wrapping if a name is long. */
+  .site-header__pages a {
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
+    padding-inline: var(--space-2);
+    overflow-wrap: anywhere;
   }
   /* The link to the page you are on, shown the way the language switch shows it. */
-  .site-header__about[aria-current="page"] {
+  .site-header__pages a[aria-current="page"] {
     font-weight: var(--weight-strong);
     text-decoration-thickness: 0.2em;
   }

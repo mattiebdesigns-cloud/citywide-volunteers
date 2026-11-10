@@ -10,6 +10,8 @@ export interface IcsText {
   description: string;
   /** Where, as shown on the page. */
   location: string;
+  /** The title as the page shows it (a machine translation, decision 0036); the organization's own title when left out. */
+  summary?: string;
 }
 
 /** Escapes a text value: backslash, semicolon, comma and line breaks. */
@@ -59,7 +61,7 @@ export function buildIcs(e: Pick<Listing, "id" | "title" | "start" | "end" | "si
     `DTSTAMP:${utcStamp(e.last_seen_at)}`,
     `DTSTART:${utcStamp(e.start)}`,
     ...(e.end ? [`DTEND:${utcStamp(e.end)}`] : []),
-    `SUMMARY:${escapeText(e.title)}`,
+    `SUMMARY:${escapeText(text.summary ?? e.title)}`,
     ...(text.location ? [`LOCATION:${escapeText(text.location)}`] : []),
     `DESCRIPTION:${escapeText(text.description)}`,
     `URL:${e.signup_url}`,

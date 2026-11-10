@@ -81,11 +81,17 @@ def test_schemas_are_valid_json_schema():
 
 # Decision 0020: optional team fields, as in a listing.
 TEAM_FIELDS = ["team_required", "team_size", "team_task"]
+# Decision 0035: optional map point, as in a listing.
+MAP_FIELDS = ["lat", "lon", "approximate"]
+# Decision 0036: optional machine translations; its own shape, since it also holds commitment.
+OWN_FIELDS = ["commitment", "machine_translations"]
 
 
-def test_fields_are_the_ones_decisions_0018_and_0020_name():
+def test_fields_are_the_ones_decisions_0018_0020_0035_and_0036_name():
     schema = _load(OPPORTUNITY)
-    assert sorted(schema["properties"]) == sorted(DECISION_0018_FIELDS + TEAM_FIELDS)
+    assert sorted(schema["properties"]) == sorted(
+        DECISION_0018_FIELDS + TEAM_FIELDS + MAP_FIELDS + ["machine_translations"]
+    )
     assert sorted(schema["required"]) == sorted(DECISION_0018_FIELDS)
 
 
@@ -93,7 +99,7 @@ def test_shared_fields_point_at_the_event_schema():
     event, _ = event_schema.load_schemas(ROOT)
     schema = _load(OPPORTUNITY)
     for name, prop in schema["properties"].items():
-        if name == "commitment":
+        if name in OWN_FIELDS:
             continue
         assert name in event["properties"], f"{name} is not an event field"
         assert prop.get("$ref") == f"{event['$id']}#/properties/{name}", name
@@ -147,6 +153,15 @@ BAD = {
     "contact_email": lambda o: o.update(contact_email="info@example.org"),
     "contact_email_personal": lambda o: o.update(contact_email_personal=True),
     "contact_email_read": lambda o: o.update(contact_email_read="2026-11-08"),
+    # Map point (decision 0035): all three or none.
+    "lon without lat": lambda o: o.update(lon=-75.16, approximate=True),
+    "point without approximate": lambda o: o.update(lat=39.95, lon=-75.16),
+    "lat out of range": lambda o: o.update(lat=-91, lon=-75.16, approximate=True),
+    # Machine translations (decision 0036).
+    "translated org name": lambda o: o.update(machine_translations={"es": {"org_name": "X"}}),
+    "empty translated commitment": lambda o: o.update(
+        machine_translations={"es": {"commitment": ""}}
+    ),
 }
 
 # Each case changes a valid program in a way the schema must still accept.
@@ -161,7 +176,20 @@ GOOD = {
     "team activity": lambda o: o.update(
         team_required=True, team_size="4 to 6 people", team_task="serve one supper"
     ),
+    "approximate area point": lambda o: o.update(lat=39.97, lon=-75.13, approximate=True),
+    "exact point": lambda o: o.update(lat=39.9526, lon=-75.1652, approximate=False),
+    "translated title and commitment": lambda o: o.update(
+        machine_translations={"es": {"title": "Paseos", "commitment": "2 horas a la semana"}}
+    ),
 }
+
+
+def test_translations_match_the_listing_shape_plus_commitment():
+    event, _ = event_schema.load_schemas(ROOT)
+    listing = event["properties"]["machine_translations"]["additionalProperties"]["properties"]
+    own = _load(OPPORTUNITY)["properties"]["machine_translations"]["additionalProperties"]
+    assert sorted(own["properties"]) == sorted([*listing, "commitment"])
+    assert own["additionalProperties"] is False
 
 
 def test_sample_has_a_team_activity():

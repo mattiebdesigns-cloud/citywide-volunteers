@@ -47,6 +47,7 @@ if (panel && toggle && list && countEl) {
   const kindNote = document.getElementById("kind-note");
   const applyButton = panel.querySelector<HTMLElement>("[data-filters-apply]");
   const externalNote = document.getElementById("external-note");
+  const translatedNote = document.getElementById("translated-note");
   // How many items of each kind the page holds, for the "none yet" message.
   const kindTotals = {
     "": cards.filter(([, f]) => f.kind !== "flexible").length,
@@ -57,6 +58,12 @@ if (panel && toggle && list && countEl) {
   const pluralRules = new Intl.PluralRules(document.documentElement.lang);
 
   let state: FilterState = readFilters(EMPTY_FILTERS);
+  // The day map (decision 0035, components/MapView.astro): while it is on, its own
+  // day replaces the Day filter and flexible cards (which have no day) leave the list.
+  // The stored filters never change because of the map.
+  const mapRoot = document.querySelector<HTMLElement>("[data-map-root]");
+  const dayField = panel.querySelector<HTMLElement>("[data-day-field]");
+  const mapDay = (): string => (mapRoot?.dataset.mapOn === "true" ? (mapRoot.dataset.mapDay ?? "") : "");
   // The search box: its words stay in memory only, never in the stored filters.
   const search = setupSearch(() => apply());
 
@@ -77,8 +84,9 @@ if (panel && toggle && list && countEl) {
     }
     // Flexible opportunities have no day or time: hide those fields and say why.
     const flexible = state.kind === "flexible";
-    for (const field of datedOnly) if (field !== dateField) field.hidden = flexible;
-    if (dateField) dateField.hidden = flexible || state.day !== "pick_date";
+    const onMap = mapDay() !== "";
+    for (const field of datedOnly) if (field !== dateField) field.hidden = flexible || (onMap && field === dayField);
+    if (dateField) dateField.hidden = flexible || onMap || state.day !== "pick_date";
     search?.setKind(state.kind);
     // "Show shifts" / "Show opportunities" / "Show team activities".
     if (applyButton) {
@@ -104,9 +112,15 @@ if (panel && toggle && list && countEl) {
     const now = Date.now();
     let shown = 0;
     const query = search?.query() ?? "";
+    const day = mapDay();
+    const effective: FilterState = day ? { ...state, day: "pick_date", date: day } : state;
     for (const [li, facts] of cards) {
       const over = (overAt.get(li) ?? Infinity) < now; // built yesterday, already over today
-      const visible = !over && matches(facts, state, today, saved) && searchMatches(li.dataset.search ?? "", query);
+      const visible =
+        !over &&
+        !(day && facts.kind === "flexible") &&
+        matches(facts, effective, today, saved) &&
+        searchMatches(li.dataset.search ?? "", query);
       li.hidden = !visible;
       if (visible) shown += 1;
     }
@@ -131,7 +145,9 @@ if (panel && toggle && list && countEl) {
     }
     // The "sign-up happens on the organization's website" note, when flexible cards can show.
     if (externalNote) externalNote.hidden = state.kind !== "flexible" && state.kind !== "teams";
-    const active = activeCount(state);
+    if (translatedNote) translatedNote.hidden = state.kind !== "flexible" && state.kind !== "teams";
+    // On the day map the Day filter is off (the map's day picker sets the day), so it is not counted.
+    const active = activeCount(day ? { ...state, day: "", date: "" } : state);
     if (countBadge) {
       // Sighted people see the number in a badge; screen readers hear ", 2 filters on".
       countBadge.hidden = active === 0;
@@ -141,6 +157,9 @@ if (panel && toggle && list && countEl) {
       if (words) words.textContent = active ? `, ${plural(countBadge, active)}` : "";
     }
     writeFilters(state);
+    // The map (if on) shows what the list now shows.
+    list!.dataset.kind = state.kind;
+    document.dispatchEvent(new CustomEvent("pv:listupdated"));
   }
 
   function open(isOpen: boolean, returnFocus = true): void {
@@ -182,6 +201,11 @@ if (panel && toggle && list && countEl) {
   toggle.addEventListener("click", () => open(panel.hidden));
   // A heart tapped while "Only shifts I saved" is on does not hide its card
   // at once, so keyboard focus is not lost; the list updates on the next change.
+
+  document.addEventListener("pv:mapchange", () => {
+    showState();
+    apply();
+  });
 
   toggle.hidden = false;
   showState();

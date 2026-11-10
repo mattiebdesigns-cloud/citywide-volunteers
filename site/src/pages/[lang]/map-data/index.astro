@@ -1,0 +1,132 @@
+---
+/**
+ * About the map (decision 0035; scraping-licence conditions 3 and 4;
+ * checklist line Q123). The credit for the map data, and the Open Database
+ * License notice for our street map file: which Protomaps build it was cut
+ * from, when, with which commands, and a link to download each piece
+ * (ODbL 4.3 and 4.6). Linked from the credit under every map.
+ */
+import Base from "../../../layouts/Base.astro";
+import SpokenSlash from "../../../components/SpokenSlash.astro";
+import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+import { templateParts } from "../../../lib/map.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n, basemap } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.mapData(code)]));
+
+const links: Record<string, { href: string; text: string; lang?: string }> = {
+  osm: { href: "https://www.openstreetmap.org/copyright", text: "OpenStreetMap", lang: "en" },
+  // The licence's own English name, marked as English on every page (accessibility gate fix 7).
+  odbl: { href: "https://opendatacommons.org/licenses/odbl/1-0/", text: t("map_data.odbl"), lang: "en" },
+  protomaps: { href: "https://protomaps.com/", text: "Protomaps", lang: "en" },
+};
+/** A sentence with links in it: each {placeholder} becomes its link. */
+// The Census credit and notice (scraping-licence gate; README in src/i18n/).
+const censusCredit = templateParts(t("map.credit_census"), { census: { text: t("map.census_name"), lang: "en" } });
+const censusTranslation = tr.lang === "en" ? null : t("map.census_notice_translation");
+const withLinks = (key: string) =>
+  templateParts(t(key), Object.fromEntries(Object.entries(links).map(([k, v]) => [k, { text: `\u0000${k}` }]))).map((part) =>
+    part.text.startsWith("\u0000") ? { link: links[part.text.slice(1)] } : { text: part.text },
+  );
+---
+
+<Base lang={lang} title={t("map_data.title")} alternates={alternates} path={paths.mapData(lang)}>
+  <div class="page prose">
+    <p class="map-data__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+    <h1 id="results-heading">{t("map_data.title")}</h1>
+    <p>{t("map_data.intro")}</p>
+    <p>{t("map_data.pins")}</p>
+    <ul class="map-data__credits">
+      {
+        ["map_data.licence", "map_data.style"].map((key) => (
+          <li>
+            {withLinks(key).map((p) =>
+              "link" in p && p.link ? (
+                <a href={p.link.href} lang={p.link.lang} rel="noopener noreferrer">{p.link.text}</a>
+              ) : (
+                p.text
+              ),
+            )}
+          </li>
+        ))
+      }
+      <li data-map-census-credit>{censusCredit.map((part) => (part.lang ? <span lang={part.lang}>{part.text}</span> : part.text))}</li>
+      <li data-map-esa>
+        <SpokenSlash text={t("map.credit_esa")} lang="en" />
+        {tr.lang !== "en" && <><br /><SpokenSlash text={t("map.credit_esa_translation")} /></>}
+        <br />
+        {templateParts(t("map_data.esa_licence"), { cc_by: { text: "CC BY 4.0", lang: "en" } }).map((part) =>
+          part.lang ? <a href="https://creativecommons.org/licenses/by/4.0/" lang={part.lang} rel="noopener noreferrer">{part.text}</a> : part.text,
+        )}
+        {" "}
+        {t("map_data.esa_simplified")}
+      </li>
+      <li data-map-census-notice>
+        <span lang="en">{t("map.census_notice")}</span>
+        {censusTranslation && <> {censusTranslation}</>}
+      </li>
+      <li>
+        {templateParts(t("map_data.fonts"), { ofl: { text: "SIL Open Font License", lang: "en" } }).map((part) =>
+          part.lang ? <span lang={part.lang}>{part.text}</span> : part.text,
+        )}
+      </li>
+    </ul>
+    <p>{t("map_data.privacy")}</p>
+
+    <h2>{t("map_data.file_heading")}</h2>
+    {
+      basemap ? (
+        <>
+          <p>{t("map_data.file", { build: `${basemap.build}.pmtiles (${basemap.version})`, date: tr.formatDate(`${basemap.cut_on}T12:00:00Z`) })}</p>
+          <ul data-map-files>
+            {basemap.parts.map((part, i) => (
+              <li>
+                <a class="tap-link" href={`/map/tiles/${part.file}`} download>
+                  {t("map_data.file_link", { number: tr.formatNumber(i + 1), total: tr.formatNumber(basemap.parts.length) })}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p>{t("map_data.commands")}</p>
+          <pre lang="en" data-map-commands><code>{basemap.commands.join("\n")}</code></pre>
+        </>
+      ) : (
+        <p data-map-no-file>{t("map_data.no_file")}</p>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .map-data__back {
+    margin: 0;
+  }
+  .map-data__credits li {
+    margin-block: var(--space-2);
+  }
+  .map-data__credits a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: var(--space-3);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm, 0.5rem);
+    background: var(--color-surface);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+</style>

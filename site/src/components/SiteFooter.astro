@@ -1,45 +1,21 @@
 ---
-/** Footer: where listings come from (PROJECT.md 2). */
-import { paths, translator } from "../lib/site.ts";
-import { startDateText } from "../lib/medicaid.ts";
+/**
+ * Footer: where listings come from (PROJECT.md 2). The page links moved to
+ * the header (owner, 2026-11-10). In a test build the sentence is in the
+ * banner at the top instead, and the layout leaves the footer out.
+ */
+import { translator } from "../lib/site.ts";
 
 interface Props {
   lang: string;
-  /** This page's path, so the link to it is marked aria-current="page". */
-  path?: string;
 }
 
-const { lang, path } = Astro.props;
-const current = (href: string) => (href === path ? "page" : undefined);
+const { lang } = Astro.props;
 const tr = translator(lang);
 ---
 
 <footer class="site-footer">
   <div class="page">
     <p class="muted">{tr.t("site.footer_sources")}</p>
-    <ul class="site-footer__links">
-      <li><a class="site-footer__link" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a></li>
-      <li><a class="site-footer__link" href={paths.flexible(lang)} aria-current={current(paths.flexible(lang))}>{tr.t("flexible.title")}</a></li>
-      <li><a class="site-footer__link" href={paths.teams(lang)} aria-current={current(paths.teams(lang))}>{tr.t("teams.title")}</a></li>
-      <li>
-        <a class="site-footer__link" href={paths.medicaid(lang)} aria-current={current(paths.medicaid(lang))}
-          >{tr.t("medicaid.link_with_date", { date: startDateText(tr.lang) })}</a
-        >
-      </li>
-    </ul>
   </div>
 </footer>
-
-<style>
-  .site-footer__links {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  /* 48 px tap target. */
-  .site-footer__link {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-  }
-</style>

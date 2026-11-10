@@ -1,0 +1,19 @@
+---
+/**
+ * A credit line written with " / " between its parts (the ESA WorldCover
+ * credit). On screen the words stay exactly as the licence asks; screen
+ * readers skip the slash and hear a full stop instead (accessibility gate).
+ */
+interface Props {
+  text: string;
+  lang?: string;
+  [key: `data-${string}`]: string | undefined;
+}
+
+const { text, lang, ...rest } = Astro.props;
+const parts = text.split(" / ");
+---
+
+<span lang={lang} {...rest}>{parts.map((part, i) => (
+  <>{i > 0 && <><span aria-hidden="true"> / </span><span class="sr-only">. </span></>}{part}</>
+))}</span>

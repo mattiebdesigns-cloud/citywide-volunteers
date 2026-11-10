@@ -110,6 +110,27 @@ BAD_LISTINGS = {
     "contact_email in a public listing": lambda e: e.update(contact_email="info@example.org"),
     "contact_email_personal in a public listing": lambda e: e.update(contact_email_personal=True),
     "contact_email_read in a public listing": lambda e: e.update(contact_email_read="2026-11-08"),
+    # Map point (decision 0035): lat, lon and approximate come together or not at all.
+    "lat without lon or approximate": lambda e: e.update(lat=39.95),
+    "lat and lon without approximate": lambda e: e.update(lat=39.95, lon=-75.16),
+    "approximate without a point": lambda e: e.update(approximate=True),
+    "lat out of range": lambda e: e.update(lat=95.0, lon=-75.16, approximate=False),
+    "lon out of range": lambda e: e.update(lat=39.95, lon=-195.0, approximate=False),
+    "lat as text": lambda e: e.update(lat="39.95", lon=-75.16, approximate=False),
+    "lat null": lambda e: e.update(lat=None, lon=None, approximate=None),
+    "approximate as text": lambda e: e.update(lat=39.95, lon=-75.16, approximate="yes"),
+    # Machine translations (decision 0036): only the organization's own text, by language.
+    "translated org name": lambda e: e.update(machine_translations={"es": {"org_name": "X"}}),
+    "translated address": lambda e: e.update(machine_translations={"es": {"address": "X"}}),
+    "empty translation entry": lambda e: e.update(machine_translations={"es": {}}),
+    "empty translated title": lambda e: e.update(machine_translations={"es": {"title": ""}}),
+    "language code not a code": lambda e: e.update(
+        machine_translations={"Spanish": {"title": "X"}}
+    ),
+    "translations as a list": lambda e: e.update(machine_translations=[{"title": "X"}]),
+    "translated commitment on a listing": lambda e: e.update(
+        machine_translations={"es": {"commitment": "X"}}
+    ),
 }
 
 # Each case changes a valid listing in a way the schema must still accept.
@@ -152,6 +173,23 @@ GOOD_LISTINGS = {
     "team activity with size and task not given": lambda e: e.update(
         team_required=True, team_size=None, team_task=None
     ),
+    # Map point (decision 0035): left out when there is none.
+    "map point left out": lambda e: [e.pop(f, None) for f in ("lat", "lon", "approximate")],
+    "exact map point": lambda e: e.update(lat=39.9526, lon=-75.1652, approximate=False),
+    "approximate area point": lambda e: e.update(lat=39.97, lon=-75.13, approximate=True),
+    "sensitive listing with a map point": lambda e: e.update(
+        sensitive=True, lat=39.97, lon=-75.13, approximate=False
+    ),
+    "map point as whole numbers": lambda e: e.update(lat=40, lon=-75, approximate=True),
+    # Machine translations (decision 0036): optional.
+    "translations left out": lambda e: e.pop("machine_translations", None),
+    "translated title": lambda e: e.update(machine_translations={"es": {"title": "Turno"}}),
+    "translated title and team task": lambda e: e.update(
+        team_required=True,
+        team_task="cook supper for 40",
+        machine_translations={"es": {"title": "Turno", "team_task": "cocinar la cena"}},
+    ),
+    "no translations yet": lambda e: e.update(machine_translations={}),
 }
 
 

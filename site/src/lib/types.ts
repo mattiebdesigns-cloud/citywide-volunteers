@@ -2,6 +2,7 @@
 // The listing format is docs/EVENT-FORMAT.md; the settings are the city's
 // settings file (config/site.yml in the private repo, converted to JSON).
 import type { I18nSettings, LocalizedText } from "../i18n/index.ts";
+import type { MachineTranslations } from "../i18n/listing-text.ts";
 
 export type JoinMethod = "drop_in" | "signup" | "application" | "unknown";
 export type ListingType = "service" | "training" | "campaign" | "protest_action";
@@ -47,6 +48,20 @@ export interface Listing {
   spots_left?: number | null;
   spots_total?: number | null;
   full?: boolean;
+  /**
+   * The map point (decision 0035), worked out once by the pipeline from the
+   * listing's own address. Optional: a listing without one stays off the map
+   * and the map counts it as "no map location".
+   */
+  lat?: number | null;
+  lon?: number | null;
+  /** True when the point is a neighborhood's or park's center, not a street address (decision 0013). */
+  approximate?: boolean;
+  /**
+   * Machine translations of the organization's own text, by language code
+   * (decision 0036). Optional; shown through site/src/i18n/listing-text.ts.
+   */
+  machine_translations?: MachineTranslations | null;
 }
 
 /**
@@ -85,6 +100,10 @@ export interface Opportunity
     | "team_required"
     | "team_size"
     | "team_task"
+    | "lat"
+    | "lon"
+    | "approximate"
+    | "machine_translations"
   > {
   /** The time asked, in the organization's own words, or null. */
   commitment: string | null;
