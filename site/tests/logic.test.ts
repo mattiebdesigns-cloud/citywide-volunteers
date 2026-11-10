@@ -505,3 +505,26 @@ test("MLK Day page: the weekend window, its days, the home link's dates, and the
   assert.ok(!flexibleMatches({ ...card, group: "false" }, { ...EMPTY_FLEXIBLE_FILTERS, group: "only" }));
   assert.equal(flexibleActiveCount({ ...EMPTY_FLEXIBLE_FILTERS, day: "2027-01-17", group: "only" }), 2);
 });
+
+test("progress: each phase's start in words, actual or estimated, never a dash (owner, 2026-11-10)", async () => {
+  const { phaseStart } = await import("../src/lib/progress.ts");
+  const w = { started: "Started {date}.", estimated: "Estimated start: {date}.", lateYear: "late {year}", spring: "spring {year}", summer: "summer {year}", noDate: "No date yet." };
+  assert.equal(phaseStart({ start: { date: "2026-10-11" } }, "en", w), "Started October 11, 2026.");
+  assert.equal(phaseStart({ start: { month: "2027-01" } }, "en", w), "Estimated start: January 2027.");
+  assert.equal(phaseStart({ start: { late_year: "2027" } }, "en", w), "Estimated start: late 2027.");
+  assert.equal(phaseStart({ start: { year: "2028" } }, "en", w), "Estimated start: 2028.");
+  assert.equal(phaseStart({ start: { season: "spring", year: "2027" } }, "en", w), "Estimated start: spring 2027.");
+  assert.equal(phaseStart({ start: { season: "summer", year: "2027" } }, "en", w), "Estimated start: summer 2027.");
+  assert.equal(phaseStart({ start: null }, "en", w), "No date yet.");
+  assert.equal(phaseStart({ start: { month: "2027-03" } }, "es", { ...w, estimated: "Inicio estimado: {date}." }), "Inicio estimado: marzo de 2027.");
+  const { checkProgress } = await import("../src/lib/progress.ts");
+  const file = JSON.parse(readFileSync(new URL("../src/data/progress.json", import.meta.url), "utf8"));
+  const byId = Object.fromEntries(file.phases.map((p: { id: string; start: unknown }) => [p.id, p.start]));
+  assert.deepEqual(byId.p0, { date: "2026-10-11" });
+  assert.deepEqual(byId.p1, { date: "2026-10-18" });
+  assert.deepEqual(byId.p2, { date: "2026-11-09" });
+  assert.equal(byId.p7, null, "phase 7 waits on a lawyer's review: no date");
+  // Pulled in by about half (owner, 2026-11-10).
+  assert.deepEqual([byId.p3, byId.p4, byId.p4b, byId.p5, byId.p6], [{ month: "2026-12" }, { month: "2027-02" }, { month: "2027-02" }, { season: "spring", year: "2027" }, { season: "summer", year: "2027" }]);
+  assert.throws(() => checkProgress({ ...file, phases: [{ ...file.phases[0], start: { date: "soon" } }] }), /start must be/);
+});

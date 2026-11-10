@@ -629,6 +629,14 @@
     "kicker": "Desarrollo abierto",
     "intro": "Construimos {site_name} de forma abierta. Aquí puede ver cómo vamos.",
     "updated": "Última actualización: {date}.",
+    "started": "Comenzó el {date}.",
+    "estimated": "Inicio previsto: {date}.",
+    "late_year": "finales de {year}",
+    "season": {
+      "spring": "primavera de {year}",
+      "summer": "verano de {year}"
+    },
+    "no_date": "Todavía no hay fecha.",
     "date_range": "Del {from} al {to}",
     "launch": "Fecha prevista de lanzamiento: {date}, el Día de Servicio en honor a Martin Luther King Jr.",
     "phases_heading": "El plan, paso a paso",
@@ -666,7 +674,7 @@
       },
       "p4b": {
         "name": "Equipos de empresas y universidades",
-        "line": "Equipos de lugares de trabajo y de escuelas hacen voluntariado juntos."
+        "line": "Grupos de lugares de trabajo y de escuelas coordinan juntos su voluntariado en la página Turnos en equipo."
       },
       "p5": {
         "name": "Libro de cupones",
@@ -682,13 +690,14 @@
       }
     },
     "news": {
-      "n1": "Mapas de turnos; el logotipo nuevo; títulos y descripciones cortas en español traducidos automáticamente; modo claro y oscuro; una dirección de contacto, {email}.",
+      "n1": "Mapas de turnos; el logotipo nuevo; títulos y descripciones cortas en español traducidos automáticamente; modo claro y oscuro; una página pública de avances; una página del Día de Servicio en honor a Martin Luther King Jr.; una dirección de contacto, {email}.",
       "n2": "Un nombre nuevo, {site_name}; una dirección web nueva, {web_address}; la búsqueda.",
       "n3": "Turnos flexibles, la calculadora de horas de Medicaid, Turnos en equipo, la página sobre el sitio y un panel para compartir.",
       "n4": "El primer calendario, con filtros, en inglés y español."
     }
   },
   "mlk": {
+    "nav": "Día de Servicio MLK",
     "title": "Día de Servicio en honor a Martin Luther King Jr.",
     "intro": "Turnos durante el fin de semana del Día de Servicio en honor a Martin Luther King Jr., del {from} al {to}.",
     "empty": "Agregamos turnos para este día a partir de diciembre, a medida que las organizaciones los publican. ¿Está organizando un grupo? Vuelva a consultar entonces o visite la página {team_shifts}.",
@@ -700,7 +709,6 @@
     },
     "apply": "Mostrar turnos",
     "search_label": "Buscar en estos turnos",
-    "group_only": "Solo turnos ideales para grupos",
-    "home_link": "Día de Servicio en honor a Martin Luther King Jr., {date}: encuentre un turno"
+    "group_only": "Solo turnos ideales para grupos"
   }
 }

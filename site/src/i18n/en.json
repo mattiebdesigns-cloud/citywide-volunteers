@@ -629,6 +629,14 @@
     "kicker": "Open development",
     "intro": "We build {site_name} in the open. Here is where things stand.",
     "updated": "Last updated {date}.",
+    "started": "Started {date}.",
+    "estimated": "Estimated start: {date}.",
+    "late_year": "late {year}",
+    "season": {
+      "spring": "spring {year}",
+      "summer": "summer {year}"
+    },
+    "no_date": "No date yet.",
     "date_range": "{from} to {to}",
     "launch": "Launch goal: {date}, the Martin Luther King Jr. Day of Service.",
     "phases_heading": "The plan, step by step",
@@ -666,7 +674,7 @@
       },
       "p4b": {
         "name": "Workplace and university teams",
-        "line": "Teams from workplaces and schools volunteer together."
+        "line": "Groups from workplaces and schools coordinate volunteering together at Team Shifts."
       },
       "p5": {
         "name": "Coupon book",
@@ -682,13 +690,14 @@
       }
     },
     "news": {
-      "n1": "Maps of shifts; the new logo; Spanish titles and short descriptions translated automatically; light and dark mode; a contact address, {email}.",
+      "n1": "Maps of shifts; the new logo; Spanish titles and short descriptions translated automatically; light and dark mode; a public Progress page; a Martin Luther King Jr. Day of Service page; a contact address, {email}.",
       "n2": "A new name, {site_name}; a new web address, {web_address}; search.",
       "n3": "Flexible Shifts, the Medicaid hours calculator, Team Shifts, the About page and a share panel.",
       "n4": "The first calendar, with filters, in English and Spanish."
     }
   },
   "mlk": {
+    "nav": "MLK Day of Service",
     "title": "Martin Luther King Jr. Day of Service",
     "intro": "Shifts on the Martin Luther King Jr. Day of Service weekend, {from} to {to}.",
     "empty": "We add shifts for this day from December, as organizations post them. Planning a group? Check back then, or see {team_shifts}.",
@@ -700,7 +709,6 @@
     },
     "apply": "Show shifts",
     "search_label": "Search these shifts",
-    "group_only": "Only shifts good for groups",
-    "home_link": "Martin Luther King Jr. Day of Service, {date}: find a shift"
+    "group_only": "Only shifts good for groups"
   }
 }

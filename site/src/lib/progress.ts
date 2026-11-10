@@ -13,6 +13,8 @@ export interface ProgressPhase {
   status: PhaseStatus;
   /** Whole number 0 to 100, or null for no bar. */
   percent: number | null;
+  /** When it began (date), or an estimate (month, late_year or year), or null for no date yet. */
+  start?: { date?: string; month?: string; late_year?: string; year?: string; season?: "spring" | "summer" } | null;
 }
 
 export interface ProgressNews {
@@ -49,6 +51,15 @@ export function checkProgress(file: ProgressFile): ProgressFile {
       if (p.percent !== null && !(Number.isInteger(p.percent) && p.percent >= 0 && p.percent <= 100)) {
         problems.push(`phase ${p.id}: percent must be a whole number from 0 to 100, or null`);
       }
+      const st = p.start;
+      if (st !== undefined && st !== null) {
+        const ok =
+          (st.date && DAY.test(st.date)) ||
+          (st.month && /^\d{4}-\d{2}$/.test(st.month)) ||
+          (st.late_year && /^\d{4}$/.test(st.late_year)) ||
+          (st.year && /^\d{4}$/.test(st.year) && (st.season === undefined || st.season === "spring" || st.season === "summer"));
+        if (!ok) problems.push(`phase ${p.id}: start must be {"date"}, {"month"}, {"late_year"} or {"year"}, or null`);
+      }
     }
   }
   if (!Array.isArray(file?.news)) problems.push('"news" must be a list');
@@ -80,4 +91,35 @@ export function newsDate(n: ProgressNews, lang: string, rangeTemplate = "{from} 
     return rangeTemplate.replace("{from}", from).replace("{to}", full.format(utc(n.to)));
   }
   return new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", timeZone: "UTC" }).format(utc(`${n.month}-15`));
+}
+
+/** The words a phase's start date needs, from the translation files. */
+export interface StartWords {
+  started: string;
+  estimated: string;
+  lateYear: string;
+  /** "spring {year}" and "summer {year}" (owner, 2026-11-10). */
+  spring: string;
+  summer: string;
+  noDate: string;
+}
+
+/**
+ * A phase's start in words, beside its heading (owner, 2026-11-10): "Started
+ * October 11, 2026.", "Estimated start: December 2026.", "Estimated start: spring
+ * 2027.", "Estimated start: late 2027.", "Estimated start: 2028." or "No date yet." Never a dash.
+ */
+export function phaseStart(p: Pick<ProgressPhase, "start">, lang: string, w: StartWords): string {
+  const st = p.start;
+  if (!st) return w.noDate;
+  if (st.date) {
+    const date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(utc(st.date));
+    return w.started.replace("{date}", date);
+  }
+  let date = "";
+  if (st.month) date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", timeZone: "UTC" }).format(utc(`${st.month}-15`));
+  else if (st.late_year) date = w.lateYear.replace("{year}", st.late_year);
+  else if (st.season && st.year) date = (st.season === "spring" ? w.spring : w.summer).replace("{year}", st.year);
+  else if (st.year) date = st.year;
+  return w.estimated.replace("{date}", date);
 }

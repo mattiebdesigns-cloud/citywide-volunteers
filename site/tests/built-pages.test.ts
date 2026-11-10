@@ -613,7 +613,14 @@ test("header as before (1715dec): logo, About, languages; footer: calculator, Da
         assert.ok(header.indexOf("site-header__about") < header.indexOf("lang-switch"), page);
         const beforeLanguages = header.slice(0, header.indexOf("lang-switch"));
         // About, and Progress directly under it (owner, 2026-11-10).
-        assert.deepEqual([...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]), [`/${lang}/`, `/${lang}/about/`, `/${lang}/progress/`], page);
+        // MLK Day of Service under Progress while its window is open (decision 0041; owner, 2026-11-10).
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+        const mlkOpen = today >= "2026-11-10" && today <= "2027-01-18";
+        assert.deepEqual(
+          [...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]),
+          [`/${lang}/`, `/${lang}/about/`, `/${lang}/progress/`, ...(mlkOpen ? [`/${lang}/mlk-day/`] : [])],
+          page,
+        );
         // Footer: the calculator link with its date, the Dark mode switch (hidden until its script runs), the sources line.
         const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
         assert.ok(text(footer).includes(calc), `${lang} ${page}: calculator link`);
@@ -803,10 +810,17 @@ test("MLK Day page: only the weekend's listings, same cards and sensitive rules 
       assert.equal(decode(line.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim(), tr.t("mlk.empty", { team_shifts: tr.t("mlk.team_link") }));
       assert.match(line, new RegExp(`<a href="/${lang}/teams/"[^>]*>${tr.t("mlk.team_link")}</a>`), `${lang}: Team Shifts link`);
       assert.doesNotMatch(html, /id="filter-panel"/);
-      // The home page link shows only from December 1 to January 18 (decided when the site is built).
+      // The header links here, under Progress, only in the window (decided when the site is built);
+      // the long home-page line is gone (owner, 2026-11-10).
       const home = empty.read(`${lang}/index.html`);
       const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-      assert.equal(home.includes("data-mlk-link"), today >= "2026-11-10" && today <= "2027-01-18", `${lang}: home link only in its window`);
+      const header = home.slice(home.indexOf("<header"), home.indexOf("</header>"));
+      assert.equal(header.includes(`href="/${lang}/mlk-day/"`), today >= "2026-11-10" && today <= "2027-01-18", `${lang}: header link only in its window`);
+      assert.doesNotMatch(home, /data-mlk-link/, "no long line on the home page");
+      if (header.includes(`href="/${lang}/mlk-day/"`)) {
+        assert.ok(decode(header).includes(`>${i18n.translator(lang).t("mlk.nav")}</a>`));
+        assert.match(html.slice(html.indexOf("<header"), html.indexOf("</header>")), new RegExp(`href="/${lang}/mlk-day/" aria-current="page"`), "current on its own page");
+      }
     }
   } finally {
     empty.done();
@@ -841,6 +855,12 @@ test("Progress page: phases top to bottom from the data file, live totals, what'
         else assert.ok(words.includes(tr.t("progress.percent", { percent: tr.formatNumber(p.percent) })), `${lang} ${p.id} percent`);
       });
       // No figure typed into the page: the page source holds no percentages or statuses.
+      // Each phase shows its start in words beside its heading; "Open development" sits under the h1.
+      const starts = [...list.matchAll(/<p class="phase__start"[^>]*data-phase-start[^>]*>([^<]*)<\/p>/g)].map((m) => decode(m[1]));
+      assert.equal(starts.length, data.phases.length);
+      for (const st of starts) assert.doesNotMatch(st, /\d\s*[–—-]\s*\d/, `${lang}: no dash in "${st}"`);
+      if (lang === "en") assert.deepEqual([starts[0], starts.at(-1)], ["Started October 11, 2026.", tr.t("progress.no_date")]);
+      assert.ok(main.indexOf("<h1") < main.indexOf("progress__kicker"), `${lang}: Open development under the heading`);
       // Live totals from the running totals file, as on the About page.
       assert.ok(text(main).includes(tr.t("about_page.shifts.numbers_to_date", {
         opportunities: tr.plural("about_page.shifts.listings", 518),

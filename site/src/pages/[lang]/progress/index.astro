@@ -13,7 +13,7 @@
  */
 import Base from "../../../layouts/Base.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import { checkProgress, newsDate, type ProgressFile } from "../../../lib/progress.ts";
+import { checkProgress, newsDate, phaseStart, type ProgressFile } from "../../../lib/progress.ts";
 import data from "../../../data/progress.json";
 
 export const getStaticPaths = languagePaths;
@@ -25,6 +25,7 @@ const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.progress(code)]));
 const progress = checkProgress(data as unknown as ProgressFile);
 const day = (d: string) => tr.formatDate(`${d}T12:00:00Z`);
+const startWords = { started: t("progress.started"), estimated: t("progress.estimated"), lateYear: t("progress.late_year"), spring: t("progress.season.spring"), summer: t("progress.season.summer"), noDate: t("progress.no_date") };
 // Names and addresses come from the city's own settings, never typed into the text.
 const siteName = tr.setting(settings.site.name);
 const email = settings.site.contact_email;
@@ -47,8 +48,9 @@ const numbers =
 <Base lang={lang} title={t("progress.title")} alternates={alternates} path={paths.progress(lang)}>
   <div class="page progress">
     <p class="progress__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
-    <p class="progress__kicker">{t("progress.kicker")}</p>
     <h1>{t("progress.title")}</h1>
+    {/* "Open development" under the heading (owner, 2026-11-10). */}
+    <p class="progress__kicker">{t("progress.kicker")}</p>
     <p class="progress__intro">{t("progress.intro", { site_name: siteName })}</p>
     <p class="muted">{t("progress.updated", { date: day(progress.updated) })}</p>
     <p class="progress__launch">{t("progress.launch", { date: day(progress.launch_goal) })}</p>
@@ -61,6 +63,7 @@ const numbers =
             <span class="phase__marker" aria-hidden="true">{p.number}</span>
             <div class="phase__body">
               <h3 class="phase__name">{t("progress.phase_heading", { number: p.number, name: t(`progress.phases.${p.id}.name`) })}</h3>
+              <p class="phase__start" data-phase-start>{phaseStart(p, tr.lang, startWords)}</p>
               <p class="phase__line">{t(`progress.phases.${p.id}.line`)}</p>
               <p class="phase__status">{t(`progress.status.${p.status}`)}</p>
               {p.percent !== null && (
@@ -111,14 +114,14 @@ const numbers =
     margin: 0;
   }
   .progress__kicker {
-    margin: var(--space-3) 0 0;
+    margin: 0 0 var(--space-3);
     color: var(--color-ink-muted);
     font-weight: var(--weight-strong);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   .progress h1 {
-    margin-top: var(--space-1);
+    margin-bottom: var(--space-1);
   }
   .progress__launch {
     font-weight: var(--weight-strong);
@@ -178,8 +181,12 @@ const numbers =
     min-width: 0;
   }
   .phase__line,
+  .phase__start,
   .phase__status {
     margin: 0 0 var(--space-1);
+  }
+  .phase__start {
+    color: var(--color-ink-muted);
   }
   .phase__name {
     margin: 0 0 var(--space-1);

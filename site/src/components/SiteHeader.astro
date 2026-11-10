@@ -13,6 +13,7 @@
 import LanguageSwitch from "./LanguageSwitch.astro";
 import logo from "./ui/logo.svg?raw";
 import { paths, siteData, translator } from "../lib/site.ts";
+import { mlkDays, promoteNow } from "../lib/mlk.ts";
 
 interface Props {
   lang: string;
@@ -27,6 +28,8 @@ const { lang, alternates, noStorage = false, path } = Astro.props;
 const current = (href: string) => (href === path ? "page" : undefined);
 const tr = translator(lang);
 const siteName = tr.setting(siteData().settings.site.name);
+// Decided when the site is built (twice a week), from the build's local date.
+const mlkOpen = promoteNow(siteData().builtAt, siteData().settings.site.timezone, mlkDays());
 // The drawing without its notes, so they are not sent with every page.
 const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
 ---
@@ -44,6 +47,8 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
       <ul>
         <li><a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a></li>
         <li><a class="site-header__about" href={paths.progress(lang)} aria-current={current(paths.progress(lang))}>{tr.t("progress.nav")}</a></li>
+        {/* Martin Luther King Jr. Day of Service (decision 0041; owner, 2026-11-10): only while its window in src/data/mlk-day.json is open. */}
+        {mlkOpen && <li><a class="site-header__about" href={paths.mlk(lang)} aria-current={current(paths.mlk(lang))}>{tr.t("mlk.nav")}</a></li>}
       </ul>
     </nav>
     <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
@@ -84,17 +89,25 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
     }
   }
   /* About and Progress, one under the other, right-aligned. */
+  /* Kept at the right edge, also when it wraps under the logo on a narrow screen. */
+  .site-header__pages {
+    margin-inline-start: auto;
+  }
   .site-header__pages ul {
     margin: 0;
     padding: 0;
     list-style: none;
     text-align: end;
   }
-  /* About page link (decision 0025), a 48 px tap target. */
+  /* About, Progress and MLK Day of Service: one tight stack (owner, 2026-11-10). Each link is a
+     44 px tall target (the By Date row's rule), with no margin between them, so the targets touch. */
+  .site-header__pages li {
+    margin: 0;
+  }
   .site-header__about {
     display: inline-flex;
     align-items: center;
-    min-height: var(--tap);
+    min-height: 2.75rem;
   }
   /* The link to the page you are on, shown the way the language switch shows it. */
   .site-header__about[aria-current="page"] {
