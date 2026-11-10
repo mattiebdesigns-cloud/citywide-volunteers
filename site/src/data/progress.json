@@ -1,5 +1,5 @@
 {
-  "_about": "The Progress page's facts (owner, 2026-11-10). The coordinator updates this file; the page shows it and never types figures itself. Words come from src/i18n/ (progress.*). status: done | building | next | later. percent: whole number 0-100, or null to show no bar. News dates: \"date\" (YYYY-MM-DD), or \"from\" and \"to\", or \"month\" (YYYY-MM). start: when the phase began ({\"date\": \"YYYY-MM-DD\"}), or an estimate ({\"month\": \"YYYY-MM\"}, {\"late_year\": \"YYYY\"} or {\"year\": \"YYYY\"} or {\"season\": \"spring\" or \"summer\", \"year\": \"YYYY\"}), or null for no date yet.",
+  "_about": "The Progress page's facts (owner, 2026-11-10). The coordinator updates this file; the page shows it and never types figures itself. Words come from src/i18n/ (progress.*). status: done | building | next | later. percent: whole number 0-100, or null to show no bar. News dates: \"date\" (YYYY-MM-DD), or \"from\" and \"to\", or \"month\" (YYYY-MM). start: when the phase began ({\"date\": \"YYYY-MM-DD\"}), or an estimate ({\"month\": \"YYYY-MM\"} or {\"year\": \"YYYY\"} or {\"season\": \"spring\" or \"summer\", \"year\": \"YYYY\"}), or null for no date yet. code_url: the public code repository, linked from the open source section. timeline: \"From first commit to the coupon book\", in date order; \"estimate\": true marks an estimate (not needed, and not used, for an entry with no date, which shows \"Not scheduled\"); \"when\" is {\"date\"}, {\"from\",\"to\"}, {\"month\"}, {\"from_month\",\"to_month\"}, {\"season\",\"year\"} or null (no date yet). Past, today and planned are worked out from the build date.",
   "updated": "2026-11-10",
   "launch_goal": "2027-01-18",
   "phases": [
@@ -36,7 +36,7 @@
       "status": "next",
       "percent": null,
       "start": {
-        "month": "2026-12"
+        "month": "2027-02"
       }
     },
     {
@@ -45,7 +45,7 @@
       "status": "later",
       "percent": null,
       "start": {
-        "month": "2027-02"
+        "month": "2027-03"
       }
     },
     {
@@ -54,7 +54,7 @@
       "status": "later",
       "percent": null,
       "start": {
-        "month": "2027-02"
+        "month": "2027-03"
       }
     },
     {
@@ -102,6 +102,89 @@
     {
       "id": "n4",
       "month": "2026-10"
+    }
+  ],
+  "code_url": "https://github.com/mattiebdesigns-cloud/citywide-volunteers",
+  "timeline": [
+    {
+      "id": "t1",
+      "when": {
+        "date": "2026-10-11"
+      }
+    },
+    {
+      "id": "t2",
+      "when": {
+        "from": "2026-10-13",
+        "to": "2026-10-18"
+      }
+    },
+    {
+      "id": "t3",
+      "when": {
+        "from": "2026-10-18",
+        "to": "2026-11-08"
+      }
+    },
+    {
+      "id": "t4",
+      "when": {
+        "date": "2026-11-09"
+      }
+    },
+    {
+      "id": "t5",
+      "when": {
+        "date": "2026-11-10"
+      }
+    },
+    {
+      "id": "t6",
+      "estimate": true,
+      "when": {
+        "from_month": "2026-12",
+        "to_month": "2027-01"
+      }
+    },
+    {
+      "id": "t8",
+      "when": {
+        "date": "2027-01-18"
+      }
+    },
+    {
+      "id": "t7",
+      "estimate": true,
+      "when": {
+        "month": "2027-02"
+      }
+    },
+    {
+      "id": "t9",
+      "estimate": true,
+      "when": {
+        "month": "2027-03"
+      }
+    },
+    {
+      "id": "t10",
+      "estimate": true,
+      "when": {
+        "season": "spring",
+        "year": "2027"
+      }
+    },
+    {
+      "id": "t11",
+      "estimate": true,
+      "when": {
+        "season": "summer",
+        "year": "2027"
+      }
+    },
+    {
+      "id": "t12",
+      "when": null
     }
   ]
 }

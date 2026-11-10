@@ -13,6 +13,7 @@ import AboutArt from "../../../components/AboutArt.astro";
 import { MEDICAID, startDateText } from "../../../lib/medicaid.ts";
 import { cityName } from "../../../lib/og.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
+import progressData from "../../../data/progress.json";
 
 export const getStaticPaths = languagePaths;
 
@@ -42,6 +43,10 @@ const numbers =
       })
     : null;
 const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}");
+// Open source, built by one person so far (owner, 2026-11-10). The code address comes from the same
+// place as the Progress page's (src/data/progress.json), never typed into the page.
+const codeUrl = (progressData as { code_url?: string }).code_url ?? "";
+const [reachBefore, reachAfter] = t("progress.reach_out").split("{reach_out}");
 ---
 
 <Base lang={lang} title={t("about_page.title", { site_name: siteName })} alternates={alternates} path={paths.about(lang)}>
@@ -50,6 +55,17 @@ const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}")
     <p class="about__back"><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
     <h1>{t("about_page.title", { site_name: siteName })}</h1>
     <p class="about__lead">{t("about_page.lead", { site_name: siteName, city })}</p>
+
+    <section class="about__open" aria-labelledby="about-open" data-about-open>
+      <h2 id="about-open">{t("about_page.open.heading")}</h2>
+      <p>
+        {t("about_page.open.code")}
+        {codeUrl && <> <a href={codeUrl} rel="noopener">{t("site.footer_code_link")}</a></>}
+      </p>
+      <p>{t("about_page.open.private")}</p>
+      <p>{t("about_page.open.solo", { site_name: siteName })}</p>
+      <p>{reachBefore}<a href={`mailto:${email}`}>{t("progress.reach_out_link")}</a>{reachAfter ?? ""}</p>
+    </section>
 
     <section class="about__section" aria-labelledby="about-shifts">
       <AboutArt id="shifts" />
@@ -165,6 +181,26 @@ const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}")
   .about__numbers {
     font-size: var(--text-lead);
     font-weight: var(--weight-strong);
+  }
+  /* Open source, built by one person so far: a bordered box near the top. */
+  .about__open {
+    margin-block: var(--space-4) var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm, 0.5rem);
+    background: var(--color-surface);
+  }
+  .about__open h2 {
+    margin-top: var(--space-2);
+  }
+  .about__open p {
+    margin-block: var(--space-2);
+  }
+  .about__open a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding-block: 0.625rem;
+    line-height: 1.5;
   }
   .about__back {
     margin: 0;

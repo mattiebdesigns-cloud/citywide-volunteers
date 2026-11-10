@@ -13,8 +13,8 @@ export interface ProgressPhase {
   status: PhaseStatus;
   /** Whole number 0 to 100, or null for no bar. */
   percent: number | null;
-  /** When it began (date), or an estimate (month, late_year or year), or null for no date yet. */
-  start?: { date?: string; month?: string; late_year?: string; year?: string; season?: "spring" | "summer" } | null;
+  /** When it began (date), or an estimate (month, or year with an optional season), or null for no date yet. */
+  start?: { date?: string; month?: string; year?: string; season?: "spring" | "summer" } | null;
 }
 
 export interface ProgressNews {
@@ -31,6 +31,10 @@ export interface ProgressFile {
   launch_goal: string;
   phases: ProgressPhase[];
   news: ProgressNews[];
+  /** The public code repository (the open source section). */
+  code_url?: string;
+  /** "From first commit to the coupon book". */
+  timeline?: TimelineEntry[];
 }
 
 const STATUSES: PhaseStatus[] = ["done", "building", "next", "later"];
@@ -56,9 +60,8 @@ export function checkProgress(file: ProgressFile): ProgressFile {
         const ok =
           (st.date && DAY.test(st.date)) ||
           (st.month && /^\d{4}-\d{2}$/.test(st.month)) ||
-          (st.late_year && /^\d{4}$/.test(st.late_year)) ||
           (st.year && /^\d{4}$/.test(st.year) && (st.season === undefined || st.season === "spring" || st.season === "summer"));
-        if (!ok) problems.push(`phase ${p.id}: start must be {"date"}, {"month"}, {"late_year"} or {"year"}, or null`);
+        if (!ok) problems.push(`phase ${p.id}: start must be {"date"}, {"month"} or {"year"}, or null`);
       }
     }
   }
@@ -69,7 +72,9 @@ export function checkProgress(file: ProgressFile): ProgressFile {
       if (!ok) problems.push(`news ${n.id}: give "date", or "from" and "to", or "month"`);
     }
   }
+  if (file?.code_url !== undefined && !/^https:\/\/[^\s"<>]+$/.test(String(file.code_url))) problems.push('"code_url" must be an https:// address');
   if (problems.length) throw new Error(`src/data/progress.json cannot be used:\n  - ${problems.join("\n  - ")}`);
+  if (file.timeline) checkTimeline(file.timeline);
   return file;
 }
 
@@ -97,7 +102,6 @@ export function newsDate(n: ProgressNews, lang: string, rangeTemplate = "{from} 
 export interface StartWords {
   started: string;
   estimated: string;
-  lateYear: string;
   /** "spring {year}" and "summer {year}" (owner, 2026-11-10). */
   spring: string;
   summer: string;
@@ -118,8 +122,109 @@ export function phaseStart(p: Pick<ProgressPhase, "start">, lang: string, w: Sta
   }
   let date = "";
   if (st.month) date = new Intl.DateTimeFormat(lang, { year: "numeric", month: "long", timeZone: "UTC" }).format(utc(`${st.month}-15`));
-  else if (st.late_year) date = w.lateYear.replace("{year}", st.late_year);
   else if (st.season && st.year) date = (st.season === "spring" ? w.spring : w.summer).replace("{year}", st.year);
   else if (st.year) date = st.year;
   return w.estimated.replace("{date}", date);
+}
+
+// ---- "From first commit to the coupon book" (owner, 2026-11-10) ----
+
+export interface TimelineWhen {
+  date?: string;
+  from?: string;
+  to?: string;
+  month?: string;
+  from_month?: string;
+  to_month?: string;
+  season?: "spring" | "summer";
+  year?: string;
+}
+
+export interface TimelineEntry {
+  /** Key under progress.timeline in the translation files. */
+  id: string;
+  /** True for an estimate. */
+  estimate?: boolean;
+  /** When, or null for no date yet. */
+  when: TimelineWhen | null;
+}
+
+/** Past, today, a fixed date still to come, an estimate, or no date at all yet ("Not scheduled"). */
+export type TimelineState = "past" | "today" | "upcoming" | "estimate" | "unscheduled";
+
+const MONTH = /^\d{4}-\d{2}$/;
+
+/** A date to sort by: the start of the entry, or far in the future for no date yet. */
+export function timelineKey(w: TimelineWhen | null): string {
+  if (!w) return "9999-12-31";
+  if (w.date) return w.date;
+  if (w.from) return w.from;
+  if (w.month) return `${w.month}-01`;
+  if (w.from_month) return `${w.from_month}-01`;
+  if (w.season && w.year) return `${w.year}-${w.season === "spring" ? "03-20" : "06-21"}`;
+  return "9999-12-31";
+}
+
+/** Checks the timeline: usable dates, every estimate marked, in date order. */
+export function checkTimeline(entries: TimelineEntry[]): TimelineEntry[] {
+  const problems: string[] = [];
+  for (const e of entries) {
+    const w = e.when;
+    const ok =
+      w === null ||
+      (w.date && DAY.test(w.date)) ||
+      (w.from && w.to && DAY.test(w.from) && DAY.test(w.to) && w.from <= w.to) ||
+      (w.month && MONTH.test(w.month)) ||
+      (w.from_month && w.to_month && MONTH.test(w.from_month) && MONTH.test(w.to_month)) ||
+      (w.season && w.year && /^\d{4}$/.test(w.year));
+    if (!ok) problems.push(`timeline ${e.id}: "when" is not usable`);
+    // A month or season is an estimate; an entry with no date is "Not scheduled", not an estimate.
+    if (!e.estimate && w !== null && (w.month || w.from_month || w.season)) problems.push(`timeline ${e.id}: a month or season must be marked "estimate": true`);
+  }
+  for (let i = 1; i < entries.length; i++) {
+    if (timelineKey(entries[i].when) < timelineKey(entries[i - 1].when)) problems.push(`timeline ${entries[i].id} is out of date order`);
+  }
+  if (problems.length) throw new Error(`src/data/progress.json timeline cannot be used:\n  - ${problems.join("\n  - ")}`);
+  return entries;
+}
+
+/** Past, today or planned from the build's local date; estimates are always estimates. */
+export function timelineState(e: TimelineEntry, today: string): TimelineState {
+  if (e.when === null) return "unscheduled";
+  if (e.estimate) return "estimate";
+  const w = e.when!;
+  const last = w.to ?? w.date ?? "";
+  const first = w.from ?? w.date ?? "";
+  if (first <= today && today <= last) return "today";
+  return last < today ? "past" : "upcoming";
+}
+
+/** The words the timeline's dates need, from the translation files. */
+export interface TimelineWords {
+  /** Day ranges: "{from} to {to}" / "Del {from} al {to}". */
+  range: string;
+  /** Month ranges: "{from} to {to}" / "De {from} a {to}"; the day range's wording when left out. */
+  monthRange?: string;
+  spring: string;
+  summer: string;
+  noDate: string;
+}
+
+/** An entry's date in words, never a dash: "October 13 to October 18, 2026", "December 2026 to January 2027", "spring 2027". */
+export function timelineDate(w: TimelineWhen | null, lang: string, words: TimelineWords): string {
+  const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(lang, { ...o, timeZone: "UTC" });
+  const full = fmt({ year: "numeric", month: "long", day: "numeric" });
+  const month = fmt({ year: "numeric", month: "long" });
+  if (!w) return words.noDate;
+  if (w.date) return full.format(utc(w.date));
+  if (w.from && w.to) {
+    const sameYear = w.from.slice(0, 4) === w.to.slice(0, 4);
+    const from = sameYear ? fmt({ month: "long", day: "numeric" }).format(utc(w.from)) : full.format(utc(w.from));
+    return words.range.replace("{from}", from).replace("{to}", full.format(utc(w.to)));
+  }
+  if (w.month) return month.format(utc(`${w.month}-15`));
+  if (w.from_month && w.to_month) {
+    return (words.monthRange ?? words.range).replace("{from}", month.format(utc(`${w.from_month}-15`))).replace("{to}", month.format(utc(`${w.to_month}-15`)));
+  }
+  return (w.season === "spring" ? words.spring : words.summer).replace("{year}", w.year ?? "");
 }

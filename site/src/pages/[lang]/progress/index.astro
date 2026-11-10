@@ -13,19 +13,20 @@
  */
 import Base from "../../../layouts/Base.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import { checkProgress, newsDate, phaseStart, type ProgressFile } from "../../../lib/progress.ts";
+import { checkProgress, newsDate, phaseStart, timelineDate, timelineState, type ProgressFile } from "../../../lib/progress.ts";
+import { localParts } from "../../../lib/time.ts";
 import data from "../../../data/progress.json";
 
 export const getStaticPaths = languagePaths;
 
 const { lang } = Astro.params as { lang: string };
-const { i18n, totals, settings } = siteData();
+const { i18n, totals, settings, builtAt } = siteData();
 const tr = translator(lang);
 const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.progress(code)]));
 const progress = checkProgress(data as unknown as ProgressFile);
 const day = (d: string) => tr.formatDate(`${d}T12:00:00Z`);
-const startWords = { started: t("progress.started"), estimated: t("progress.estimated"), lateYear: t("progress.late_year"), spring: t("progress.season.spring"), summer: t("progress.season.summer"), noDate: t("progress.no_date") };
+const startWords = { started: t("progress.started"), estimated: t("progress.estimated"), spring: t("progress.season.spring"), summer: t("progress.season.summer"), noDate: t("progress.no_date") };
 // Names and addresses come from the city's own settings, never typed into the text.
 const siteName = tr.setting(settings.site.name);
 const email = settings.site.contact_email;
@@ -35,6 +36,13 @@ const email = settings.site.contact_email;
 const domain = typeof settings.site.domain === "string" ? settings.site.domain.trim() : "";
 const webAddress = domain || (email.split("@")[1] ?? "");
 const newsVars = { site_name: siteName, email, web_address: webAddress };
+// The timeline: past, today or planned from the build's local date (the site builds twice a week).
+const today = localParts(builtAt.getTime(), settings.site.timezone).date;
+const timelineWords = { range: t("progress.date_range"), monthRange: t("progress.month_range"), spring: t("progress.season.spring"), summer: t("progress.season.summer"), noDate: t("progress.no_date") };
+const phase2 = progress.phases.find((p) => p.id === "p2")?.start?.date;
+const timelineVars = { ...newsVars, started: phase2 ? new Intl.DateTimeFormat(tr.lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${phase2}T12:00:00Z`)) : "" };
+// The open source section: the code address from the data file, the contact address from the settings.
+const [reachBefore, reachAfter] = t("progress.reach_out").split("{reach_out}");
 const numbers =
   totals && totals.opportunities > 0
     ? t("about_page.shifts.numbers_to_date", {
@@ -90,6 +98,29 @@ const numbers =
       )
     }
 
+    {
+      progress.timeline && (
+        <>
+          <h2>{t("progress.timeline_heading")}</h2>
+          <ol class="timeline" data-progress-timeline>
+            {progress.timeline.map((e) => {
+              const state = timelineState(e, today);
+              return (
+                <li class:list={["tl", `tl--${state}`]} data-state={state}>
+                  <span class="tl__marker" aria-hidden="true" />
+                  <div class="tl__body">
+                    <p class="tl__date">{timelineDate(e.when, tr.lang, timelineWords)}</p>
+                    <p class="tl__state">{t(`progress.timeline_state.${state}`)}</p>
+                    <p class="tl__text">{t(`progress.timeline.${e.id}`, timelineVars)}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      )
+    }
+
     <h2>{t("progress.news_heading")}</h2>
     <ul class="news" data-progress-news>
       {
@@ -101,6 +132,20 @@ const numbers =
         ))
       }
     </ul>
+
+    {
+      progress.code_url && (
+        <section aria-labelledby="progress-open-source">
+          <h2 id="progress-open-source">{t("progress.open_source_heading")}</h2>
+          <p data-progress-code>
+            {t("progress.open_source", { site_name: siteName })} <a href={progress.code_url} rel="noopener">{t("site.footer_code_link")}</a>
+          </p>
+          <p data-progress-reach>
+            {reachBefore}<a href={`mailto:${email}`}>{t("progress.reach_out_link")}</a>{reachAfter ?? ""}
+          </p>
+        </section>
+      )
+    }
   </div>
 </Base>
 
@@ -228,6 +273,81 @@ const numbers =
 
   .progress__note {
     margin: calc(-1 * var(--space-4)) 0 var(--space-5);
+  }
+  /* The timeline: a vertical line of markers, top to bottom. The state shows in words and by the
+     marker's shape: done is filled, today is filled with a ring, planned is a thick ring, estimated is dashed,
+     not scheduled is a thin plain outline. */
+  .timeline {
+    margin: var(--space-4) 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+  }
+  .tl {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+  }
+  .tl::before {
+    content: "";
+    position: absolute;
+    top: 1.5rem;
+    bottom: 0;
+    left: calc(0.75rem - 1px);
+    width: 2px;
+    background: var(--color-line);
+  }
+  .tl:last-child::before {
+    display: none;
+  }
+  .tl__marker {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.1rem;
+    border-radius: 999px;
+    border: 3px solid var(--color-primary);
+    background: var(--color-surface);
+  }
+  .tl--past .tl__marker {
+    background: var(--color-primary);
+  }
+  .tl--today .tl__marker {
+    background: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-primary);
+  }
+  .tl--upcoming .tl__marker {
+    border-width: 5px;
+  }
+  .tl--estimate .tl__marker {
+    border-style: dashed;
+  }
+  /* No date yet: a thin, plain outline (no fill, no dashes), with "Not scheduled" in words. */
+  .tl--unscheduled .tl__marker {
+    border-width: 2px;
+    border-color: var(--color-line);
+  }
+  .tl__body {
+    min-width: 0;
+  }
+  .tl__date {
+    margin: 0;
+    font-weight: var(--weight-strong);
+  }
+  /* Each date starts its own line, so it starts with a capital ("Diciembre de 2026", "Primavera de 2027"). */
+  .tl__date::first-letter {
+    text-transform: uppercase;
+  }
+  .tl__state {
+    display: inline-block;
+    margin: var(--space-1) 0;
+    padding: 0 var(--space-2);
+    border: 2px solid var(--color-line);
+    border-radius: 999px;
+  }
+  .tl__text {
+    margin: 0;
+    overflow-wrap: anywhere;
   }
   .news {
     margin: 0;

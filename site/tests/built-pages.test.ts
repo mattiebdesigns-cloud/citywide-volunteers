@@ -712,7 +712,7 @@ test("About page: nine sections in order, each with its drawing, heading and wor
       assert.doesNotMatch(main, /data-placeholder/, "the real drawings, not placeholders");
       for (const m of main.matchAll(/<div class="about-art"[^>]*>/g)) assert.match(m[0], /aria-hidden="true"/);
       assert.equal([...main.matchAll(/<svg/g)].length, 9);
-      const h2 = [...main.matchAll(/<h2[^>]*>([^<]*)<\/h2>/g)].map((m) => decode(m[1]));
+      const h2 = [...main.matchAll(/<h2[^>]*>([^<]*)<\/h2>/g)].map((m) => decode(m[1])).filter((h) => h !== tr.t("about_page.open.heading"));
       assert.deepEqual(h2, [
         tr.t("about_page.shifts.heading"),
         tr.t("about_page.near_you.heading"),
@@ -861,6 +861,25 @@ test("Progress page: phases top to bottom from the data file, live totals, what'
       for (const st of starts) assert.doesNotMatch(st, /\d\s*[–—-]\s*\d/, `${lang}: no dash in "${st}"`);
       if (lang === "en") assert.deepEqual([starts[0], starts.at(-1)], ["Started October 11, 2026.", tr.t("progress.no_date")]);
       assert.ok(main.indexOf("<h1") < main.indexOf("progress__kicker"), `${lang}: Open development under the heading`);
+      // The timeline: every entry from the data file, in order, each with a date in words and a state word.
+      const tl = main.slice(main.indexOf("data-progress-timeline"), main.indexOf("</ol>", main.indexOf("data-progress-timeline")));
+      const entries = [...tl.matchAll(/<li[^>]*data-state="([a-z]+)"[^>]*>([\s\S]*?)<\/li>/g)];
+      assert.equal(entries.length, data.timeline.length, `${lang}: timeline entries`);
+      entries.forEach((m, i) => {
+        const e = data.timeline[i];
+        if (e.when === null) {
+          assert.equal(m[1], "unscheduled", `${lang} ${e.id}: no date is "Not scheduled"`);
+          assert.ok(!text(m[2]).includes(tr.t("progress.timeline_state.estimate")), `${lang} ${e.id}: never "Estimated"`);
+        } else if (e.estimate) assert.equal(m[1], "estimate", `${lang} ${e.id} marked estimated`);
+        const words = text(m[2]);
+        assert.ok(words.includes(tr.t(`progress.timeline_state.${m[1]}`)), `${lang} ${e.id}: state in words`);
+        assert.doesNotMatch(words, /\d\s*[–—-]\s*\d/, `${lang} ${e.id}: no dash`);
+        assert.doesNotMatch(words, /\{[a-z_]+\}/, `${lang} ${e.id}: no raw placeholder`);
+      });
+      assert.ok(main.indexOf(tr.t("progress.timeline_heading")) > 0);
+      // Open source: the code address from the data file; "reach out" to the contact address from the settings.
+      assert.match(main, new RegExp(`<a href="${data.code_url}"[^>]*>${tr.t("site.footer_code_link")}</a>`));
+      assert.match(main, new RegExp(`<a href="mailto:${settings.site.contact_email}"[^>]*>${tr.t("progress.reach_out_link")}</a>`));
       // Live totals from the running totals file, as on the About page.
       assert.ok(text(main).includes(tr.t("about_page.shifts.numbers_to_date", {
         opportunities: tr.plural("about_page.shifts.listings", 518),
@@ -893,6 +912,28 @@ test("Progress page: phases top to bottom from the data file, live totals, what'
   const source = readFileSync(join(site, "src/pages/[lang]/progress/index.astro"), "utf8");
   const markup = source.slice(0, source.indexOf("<style>")).replace(/\/\*[\s\S]*?\*\//g, "");
   assert.doesNotMatch(markup, /\b(95|15|100)\b|"(done|building|next|later)"/, "statuses and percentages come only from the data file");
+});
+
+test("About page: open source, built by one person so far, near the top, with the code link and 'Reach out' (owner, 2026-11-10)", () => {
+  const data = JSON.parse(readFileSync(join(site, "src/data/progress.json"), "utf8"));
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/about/index.html`);
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      const box = main.slice(main.indexOf("data-about-open"), main.indexOf("</section>", main.indexOf("data-about-open")));
+      // Prominent: right after the lead paragraph, before the first numbered section.
+      assert.ok(main.indexOf("about__lead") < main.indexOf("data-about-open") && main.indexOf("data-about-open") < main.indexOf('aria-labelledby="about-shifts"'));
+      assert.match(box, new RegExp(`<h2[^>]*>${tr.t("about_page.open.heading")}</h2>`));
+      for (const key of ["about_page.open.code", "about_page.open.private"]) assert.ok(decode(box).includes(tr.t(key)), key);
+      assert.ok(decode(box).includes(tr.t("about_page.open.solo", { site_name: tr.setting(settings.site.name) })));
+      assert.match(box, new RegExp(`<a href="${data.code_url}"[^>]*>${tr.t("site.footer_code_link")}</a>`));
+      assert.match(box, new RegExp(`<a href="mailto:${settings.site.contact_email}"[^>]*>${tr.t("progress.reach_out_link")}</a>`));
+    }
+  } finally {
+    b.done();
+  }
 });
 
 test("About page says Spanish titles are translated by Anthropic's Claude, and links 'write to us' to the site's address (owner Q139); Back link at the top", () => {

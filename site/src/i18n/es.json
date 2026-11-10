@@ -427,6 +427,12 @@
       "phone": "Pensado primero para el teléfono.",
       "access": "Hecho para funcionar con lectores de pantalla y con el teclado."
     },
+    "open": {
+      "heading": "Código abierto, hecho por una sola persona hasta ahora",
+      "code": "El código de este calendario es abierto: el sitio web, los programas que recogen los anuncios y el formato de los anuncios. Cualquier persona puede verlo y reutilizarlo.",
+      "private": "El código de las cuentas y los puntos, cuando lleguen, seguirá siendo privado.",
+      "solo": "Hasta ahora, una sola persona construye {site_name}."
+    },
     "private": {
       "heading": "Seguro y privado",
       "account": "No necesita una cuenta.",
@@ -631,7 +637,6 @@
     "updated": "Última actualización: {date}.",
     "started": "Comenzó el {date}.",
     "estimated": "Inicio previsto: {date}.",
-    "late_year": "finales de {year}",
     "season": {
       "spring": "primavera de {year}",
       "summer": "verano de {year}"
@@ -651,6 +656,33 @@
     "percent_note": "Los porcentajes muestran el trabajo de desarrollo, no las metas del lanzamiento.",
     "numbers_heading": "Hasta ahora",
     "news_heading": "Novedades",
+    "timeline_heading": "Desde la primera línea de código hasta el libro de cupones",
+    "timeline_state": {
+      "past": "Terminado",
+      "today": "Hoy",
+      "upcoming": "Previsto",
+      "estimate": "Estimado",
+      "unscheduled": "Sin programar"
+    },
+    "timeline": {
+      "t1": "Comienza el proyecto. El plan, las reglas y las listas de verificación.",
+      "t2": "Fase 0, preparación, terminada. Los primeros programas que recogen los anuncios, los archivos de traducción y el formato de eventos.",
+      "t3": "El calendario toma forma. Turnos flexibles y en equipo, la calculadora de horas de Medicaid, la página sobre el sitio y el panel para compartir.",
+      "t4": "Nombre nuevo y nuevo hogar: {site_name} en {web_address}, y la búsqueda.",
+      "t5": "Mapas, títulos traducidos automáticamente al español, un logotipo nuevo, modo claro y oscuro, esta página de avances y la página del Día de Servicio en honor a Martin Luther King Jr.",
+      "t6": "Fase 2, perfiles y registro de horas (comenzó el {started}).",
+      "t7": "Fase 3, las organizaciones publican sus propios turnos.",
+      "t8": "Lanzamiento previsto: el Día de Servicio en honor a Martin Luther King Jr.",
+      "t9": "Fases 4 y 4b: puntos, insignias, amigos y equipos.",
+      "t10": "Fase 5: el libro de cupones, empezando poco a poco con algunos negocios cercanos.",
+      "t11": "Fase 6: habilidades y funciones verificadas.",
+      "t12": "Fase 7: puntos comprados, solo después de la revisión de un abogado."
+    },
+    "month_range": "De {from} a {to}",
+    "open_source_heading": "Código abierto",
+    "open_source": "El código de este calendario es abierto.",
+    "reach_out": "¿Quiere llevar esta plataforma a su ciudad? ¡{reach_out}!",
+    "reach_out_link": "Escríbanos",
     "phases": {
       "p0": {
         "name": "Preparación",

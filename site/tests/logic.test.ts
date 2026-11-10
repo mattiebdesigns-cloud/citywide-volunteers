@@ -508,10 +508,9 @@ test("MLK Day page: the weekend window, its days, the home link's dates, and the
 
 test("progress: each phase's start in words, actual or estimated, never a dash (owner, 2026-11-10)", async () => {
   const { phaseStart } = await import("../src/lib/progress.ts");
-  const w = { started: "Started {date}.", estimated: "Estimated start: {date}.", lateYear: "late {year}", spring: "spring {year}", summer: "summer {year}", noDate: "No date yet." };
+  const w = { started: "Started {date}.", estimated: "Estimated start: {date}.", spring: "spring {year}", summer: "summer {year}", noDate: "No date yet." };
   assert.equal(phaseStart({ start: { date: "2026-10-11" } }, "en", w), "Started October 11, 2026.");
   assert.equal(phaseStart({ start: { month: "2027-01" } }, "en", w), "Estimated start: January 2027.");
-  assert.equal(phaseStart({ start: { late_year: "2027" } }, "en", w), "Estimated start: late 2027.");
   assert.equal(phaseStart({ start: { year: "2028" } }, "en", w), "Estimated start: 2028.");
   assert.equal(phaseStart({ start: { season: "spring", year: "2027" } }, "en", w), "Estimated start: spring 2027.");
   assert.equal(phaseStart({ start: { season: "summer", year: "2027" } }, "en", w), "Estimated start: summer 2027.");
@@ -524,7 +523,41 @@ test("progress: each phase's start in words, actual or estimated, never a dash (
   assert.deepEqual(byId.p1, { date: "2026-10-18" });
   assert.deepEqual(byId.p2, { date: "2026-11-09" });
   assert.equal(byId.p7, null, "phase 7 waits on a lawyer's review: no date");
-  // Pulled in by about half (owner, 2026-11-10).
-  assert.deepEqual([byId.p3, byId.p4, byId.p4b, byId.p5, byId.p6], [{ month: "2026-12" }, { month: "2027-02" }, { month: "2027-02" }, { season: "spring", year: "2027" }, { season: "summer", year: "2027" }]);
+  // Owner, 2026-11-10: phase 3 in February 2027 (no overlap with phase 2), phases 4 and 4b in March.
+  assert.deepEqual([byId.p3, byId.p4, byId.p4b, byId.p5, byId.p6], [{ month: "2027-02" }, { month: "2027-03" }, { month: "2027-03" }, { season: "spring", year: "2027" }, { season: "summer", year: "2027" }]);
   assert.throws(() => checkProgress({ ...file, phases: [{ ...file.phases[0], start: { date: "soon" } }] }), /start must be/);
+});
+
+test("progress timeline: date order, every estimate marked, past/today/planned from the build date, dates in words", async () => {
+  const { checkTimeline, timelineState, timelineDate } = await import("../src/lib/progress.ts");
+  const file = JSON.parse(readFileSync(new URL("../src/data/progress.json", import.meta.url), "utf8"));
+  checkTimeline(file.timeline);
+  // Agrees with the phase starts already on the page.
+  const t = Object.fromEntries(file.timeline.map((e: { id: string }) => [e.id, e]));
+  assert.deepEqual(t.t1.when, { date: file.phases[0].start.date }, "project start = phase 0 start");
+  assert.equal(t.t3.when.from, file.phases[1].start.date, "the calendar from phase 1's start");
+  assert.equal(t.t7.when.month, file.phases.find((p: { id: string }) => p.id === "p3").start.month, "phase 3 on the timeline at its own start");
+  assert.equal(t.t9.when.month, file.phases.find((p: { id: string }) => p.id === "p4").start.month, "phases 4 and 4b at their start");
+  // Phase 2's estimate ends before phase 3 starts: no overlap.
+  assert.ok(`${t.t6.when.to_month}` < `${t.t7.when.month}`);
+  assert.deepEqual(t.t8.when, { date: file.launch_goal });
+  assert.equal(t.t12.when, null);
+  assert.throws(() => checkTimeline([{ id: "a", when: { month: "2027-02" } }]), /must be marked/);
+  // No date yet: its own state, "Not scheduled", never "Estimated"; it needs no estimate mark.
+  checkTimeline([{ id: "n", when: null }]);
+  assert.equal(timelineState({ id: "n", when: null }, "2026-11-10"), "unscheduled");
+  assert.equal(timelineState({ id: "n", estimate: true, when: null }, "2026-11-10"), "unscheduled");
+  assert.equal(t.t12.estimate, undefined, "phase 7 is not marked as an estimate");
+  assert.throws(() => checkTimeline([{ id: "b", when: { date: "2027-02-01" } }, { id: "a", when: { date: "2026-10-01" } }]), /out of date order/);
+  assert.equal(timelineState({ id: "x", when: { date: "2026-11-10" } }, "2026-11-10"), "today");
+  assert.equal(timelineState({ id: "x", when: { from: "2026-10-18", to: "2026-11-08" } }, "2026-11-10"), "past");
+  assert.equal(timelineState({ id: "x", when: { date: "2027-01-18" } }, "2026-11-10"), "upcoming");
+  assert.equal(timelineState({ id: "x", estimate: true, when: { month: "2026-12" } }, "2026-11-10"), "estimate");
+  const w = { range: "{from} to {to}", spring: "spring {year}", summer: "summer {year}", noDate: "No date yet." };
+  assert.equal(timelineDate({ from: "2026-10-13", to: "2026-10-18" }, "en", w), "October 13 to October 18, 2026");
+  assert.equal(timelineDate({ from_month: "2026-12", to_month: "2027-01" }, "en", w), "December 2026 to January 2027");
+  assert.equal(timelineDate({ season: "spring", year: "2027" }, "en", w), "spring 2027");
+  assert.equal(timelineDate(null, "en", w), "No date yet.");
+  assert.equal(timelineDate({ from_month: "2026-12", to_month: "2027-01" }, "es", { ...w, range: "Del {from} al {to}", monthRange: "De {from} a {to}" }), "De diciembre de 2026 a enero de 2027");
+  assert.equal(timelineDate({ from: "2026-10-13", to: "2026-10-18" }, "es", { ...w, range: "Del {from} al {to}", monthRange: "De {from} a {to}" }), "Del 13 de octubre al 18 de octubre de 2026");
 });

@@ -427,6 +427,12 @@
       "phone": "Made for phones first.",
       "access": "Built to work with screen readers and keyboards."
     },
+    "open": {
+      "heading": "Open source, built by one person so far",
+      "code": "The code for this calendar is open source: the website, the programs that collect the listings, and the listing format. Anyone can see it and reuse it.",
+      "private": "The code for accounts and points, when they come, will stay private.",
+      "solo": "{site_name} is built by one person so far."
+    },
     "private": {
       "heading": "Safe and private",
       "account": "You do not need an account.",
@@ -631,7 +637,6 @@
     "updated": "Last updated {date}.",
     "started": "Started {date}.",
     "estimated": "Estimated start: {date}.",
-    "late_year": "late {year}",
     "season": {
       "spring": "spring {year}",
       "summer": "summer {year}"
@@ -651,6 +656,33 @@
     "percent_note": "Percentages show building work, not the launch goals.",
     "numbers_heading": "So far",
     "news_heading": "What's new",
+    "timeline_heading": "From the first line of code to the coupon book",
+    "timeline_state": {
+      "past": "Done",
+      "today": "Today",
+      "upcoming": "Planned",
+      "estimate": "Estimated",
+      "unscheduled": "Not scheduled"
+    },
+    "timeline": {
+      "t1": "Project starts. The plan, rules and checklists.",
+      "t2": "Phase 0, setup, done. First scrapers, translation files, the event format.",
+      "t3": "The calendar takes shape. Flexible and Team Shifts, Medicaid hours calculator, About page, share panel.",
+      "t4": "New name and new home: {site_name} at {web_address}, and search.",
+      "t5": "Maps, titles translated automatically into Spanish, a new logo, light and dark mode, this Progress page and the Martin Luther King Jr. Day of Service page.",
+      "t6": "Phase 2, profiles and hours log (started {started}).",
+      "t7": "Phase 3, organizations post their own shifts.",
+      "t8": "Launch goal: the Martin Luther King Jr. Day of Service.",
+      "t9": "Phases 4 and 4b: points, badges, friends and teams.",
+      "t10": "Phase 5: the coupon book, starting small with a few nearby businesses.",
+      "t11": "Phase 6: verified skills and roles.",
+      "t12": "Phase 7: purchased points, only after a lawyer's review."
+    },
+    "month_range": "{from} to {to}",
+    "open_source_heading": "Open source",
+    "open_source": "The code for this calendar is open source.",
+    "reach_out": "Want to build this platform for your city? {reach_out}!",
+    "reach_out_link": "Reach out",
     "phases": {
       "p0": {
         "name": "Setup",
