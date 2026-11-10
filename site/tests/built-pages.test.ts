@@ -748,6 +748,32 @@ test("About page: nine sections in order, each with its drawing, heading and wor
   }
 });
 
+test("About page says Spanish titles are translated by Anthropic's Claude, and links 'write to us' to the site's address (owner Q139); Back link at the top", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/about/index.html`);
+      const p = html.match(/<p class="about__translation"[^>]*data-about-translation[^>]*>([\s\S]*?)<\/p>/)![1];
+      const expected = tr.t("about_page.everyone.translation", { write_to_us: tr.t("about_page.everyone.write_to_us") });
+      assert.equal(decode(p.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim(), expected, lang);
+      assert.match(text(p), /Anthropic/);
+      assert.match(text(p), /Claude/);
+      // The link uses the contact address already on the page, from the settings.
+      assert.match(p, new RegExp(`<a href="mailto:${settings.site.contact_email}"[^>]*>${tr.t("about_page.everyone.write_to_us")}</a>`));
+      // "Back to all shifts" at the top, to this language's home page (owner, 2026-11-10).
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      assert.match(main.slice(0, main.indexOf("<h1")), new RegExp(`<a class="tap-link"[^>]*href="/${lang}/"[^>]*>${tr.t("listing.back")}</a>`));
+      // In the section about who the site is for, after the languages line.
+      const section = html.slice(html.indexOf('aria-labelledby="about-everyone"'));
+      assert.ok(section.indexOf(tr.t("about_page.everyone.languages")) < section.indexOf("data-about-translation"));
+      assert.ok(section.indexOf("data-about-translation") < section.indexOf("</section>"));
+    }
+  } finally {
+    b.done();
+  }
+});
+
 test("About page 'to date' line from the running totals file (PV_STATS): numbers only, never the file's note", () => {
   const dir = mkdtempSync(join(tmpdir(), "pv-stats-"));
   const stats = join(dir, "listings-ledger.json");

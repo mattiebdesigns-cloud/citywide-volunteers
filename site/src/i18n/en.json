@@ -421,6 +421,8 @@
       "heading": "Built for everyone",
       "free": "Free to use.",
       "languages": "In English and Spanish.",
+      "translation": "Spanish titles are translated automatically by Anthropic's Claude from the organization's own words. We send only the listing text, never anything about you. To have a listing or a name in it removed, {write_to_us}.",
+      "write_to_us": "write to us",
       "phone": "Made for phones first.",
       "access": "Built to work with screen readers and keyboards."
     },
