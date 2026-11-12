@@ -1,5 +1,5 @@
 {
-  "_about": "The Progress page's facts (owner, 2026-11-10). The coordinator updates this file; the page shows it and never types figures itself. Words come from src/i18n/ (progress.*). status: done | building | next | later. percent: whole number 0-100, or null to show no bar. News dates: \"date\" (YYYY-MM-DD), or \"from\" and \"to\", or \"month\" (YYYY-MM). start: when the phase began ({\"date\": \"YYYY-MM-DD\"}), or an estimate ({\"month\": \"YYYY-MM\"} or {\"year\": \"YYYY\"} or {\"season\": \"spring\" or \"summer\", \"year\": \"YYYY\"}), or null for no date yet. code_url: the public code repository, linked from the open source section. timeline: \"From first commit to the coupon book\", in date order; \"estimate\": true marks an estimate (not needed, and not used, for an entry with no date, which shows \"Not scheduled\"); \"when\" is {\"date\"}, {\"from\",\"to\"}, {\"month\"}, {\"from_month\",\"to_month\"}, {\"season\",\"year\"} or null (no date yet). Past, today and planned are worked out from the build date.",
+  "_about": "The Progress page's facts (owner, 2026-11-10). The coordinator updates this file; the page shows it and never types figures itself. Words come from src/i18n/ (progress.*). status: done | building | next | later. percent: whole number 0-100, or null to show no bar. News dates: \"date\" (YYYY-MM-DD), or \"from\" and \"to\", or \"month\" (YYYY-MM). start: when the phase began ({\"date\": \"YYYY-MM-DD\"}), or an estimate ({\"month\": \"YYYY-MM\"} or {\"year\": \"YYYY\"} or {\"season\": \"spring\" or \"summer\", \"year\": \"YYYY\"}), or null for no date yet. timeline: \"From first commit to the coupon book\", in date order; \"estimate\": true marks an estimate (not needed, and not used, for an entry with no date, which shows \"Not scheduled\"); \"when\" is {\"date\"}, {\"from\",\"to\"}, {\"month\"}, {\"from_month\",\"to_month\"}, {\"season\",\"year\"} or null (no date yet). Past, today and planned are worked out from the build date.",
   "updated": "2026-11-10",
   "launch_goal": "2027-01-18",
   "phases": [
@@ -104,7 +104,6 @@
       "month": "2026-10"
     }
   ],
-  "code_url": "https://github.com/mattiebdesigns-cloud/citywide-volunteers",
   "timeline": [
     {
       "id": "t1",

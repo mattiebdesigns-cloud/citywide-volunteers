@@ -13,7 +13,7 @@ import AboutArt from "../../../components/AboutArt.astro";
 import { MEDICAID, startDateText } from "../../../lib/medicaid.ts";
 import { cityName } from "../../../lib/og.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
-import progressData from "../../../data/progress.json";
+import { siteLinks } from "../../../lib/links.ts";
 
 export const getStaticPaths = languagePaths;
 
@@ -44,8 +44,8 @@ const numbers =
     : null;
 const [emailBefore, emailAfter] = t("about_page.contact.email").split("{email}");
 // Open source, built by one person so far (owner, 2026-11-10). The code address comes from the same
-// place as the Progress page's (src/data/progress.json), never typed into the page.
-const codeUrl = (progressData as { code_url?: string }).code_url ?? "";
+// place as the Progress page's (src/data/links.json), never typed into the page.
+const codeUrl = siteLinks().code_url;
 const [reachBefore, reachAfter] = t("progress.reach_out").split("{reach_out}");
 ---
 
@@ -60,7 +60,7 @@ const [reachBefore, reachAfter] = t("progress.reach_out").split("{reach_out}");
       <h2 id="about-open">{t("about_page.open.heading")}</h2>
       <p>
         {t("about_page.open.code")}
-        {codeUrl && <> <a href={codeUrl} rel="noopener">{t("site.footer_code_link")}</a></>}
+        {codeUrl && <> <a href={codeUrl} rel="noopener noreferrer">{t("site.footer_code_link")}</a></>}
       </p>
       <p>{t("about_page.open.private")}</p>
       <p>{t("about_page.open.solo", { site_name: siteName })}</p>

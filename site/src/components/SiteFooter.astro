@@ -12,6 +12,7 @@
  */
 import MapCredits from "./MapCredits.astro";
 import { paths, translator } from "../lib/site.ts";
+import { siteLinks } from "../lib/links.ts";
 import { startDateText } from "../lib/medicaid.ts";
 
 interface Props {
@@ -26,6 +27,8 @@ interface Props {
 
 const { lang, path, testBuild = false, noStorage = false, mapCredits = false } = Astro.props;
 const tr = translator(lang);
+// The project's Instagram (owner, 2026-11-12): a plain link from src/data/links.json; nothing loads from Instagram.
+const instagram = siteLinks().instagram;
 const current = (href: string) => (href === path ? "page" : undefined);
 ---
 
@@ -34,6 +37,7 @@ const current = (href: string) => (href === path ? "page" : undefined);
     <a class="site-footer__link" href={paths.medicaid(lang)} aria-current={current(paths.medicaid(lang))}
       >{tr.t("medicaid.link_with_date", { date: startDateText(tr.lang) })}</a
     >
+    {instagram && <a class="site-footer__link" href={instagram.url} rel="noopener noreferrer" data-instagram>{tr.t("site.instagram", { handle: instagram.handle })}</a>}
     {
       !noStorage && (
         <button type="button" class="theme-switch" aria-pressed="false" data-theme-toggle hidden>

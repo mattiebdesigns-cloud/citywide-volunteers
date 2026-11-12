@@ -31,8 +31,6 @@ export interface ProgressFile {
   launch_goal: string;
   phases: ProgressPhase[];
   news: ProgressNews[];
-  /** The public code repository (the open source section). */
-  code_url?: string;
   /** "From first commit to the coupon book". */
   timeline?: TimelineEntry[];
 }
@@ -72,7 +70,6 @@ export function checkProgress(file: ProgressFile): ProgressFile {
       if (!ok) problems.push(`news ${n.id}: give "date", or "from" and "to", or "month"`);
     }
   }
-  if (file?.code_url !== undefined && !/^https:\/\/[^\s"<>]+$/.test(String(file.code_url))) problems.push('"code_url" must be an https:// address');
   if (problems.length) throw new Error(`src/data/progress.json cannot be used:\n  - ${problems.join("\n  - ")}`);
   if (file.timeline) checkTimeline(file.timeline);
   return file;

@@ -15,6 +15,7 @@ import Base from "../../../layouts/Base.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 import { checkProgress, newsDate, phaseStart, timelineDate, timelineState, type ProgressFile } from "../../../lib/progress.ts";
 import { localParts } from "../../../lib/time.ts";
+import { siteLinks } from "../../../lib/links.ts";
 import data from "../../../data/progress.json";
 
 export const getStaticPaths = languagePaths;
@@ -41,7 +42,8 @@ const today = localParts(builtAt.getTime(), settings.site.timezone).date;
 const timelineWords = { range: t("progress.date_range"), monthRange: t("progress.month_range"), spring: t("progress.season.spring"), summer: t("progress.season.summer"), noDate: t("progress.no_date") };
 const phase2 = progress.phases.find((p) => p.id === "p2")?.start?.date;
 const timelineVars = { ...newsVars, started: phase2 ? new Intl.DateTimeFormat(tr.lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${phase2}T12:00:00Z`)) : "" };
-// The open source section: the code address from the data file, the contact address from the settings.
+// The open source section: the code address from src/data/links.json, the contact address from the settings.
+const codeUrl = siteLinks().code_url;
 const [reachBefore, reachAfter] = t("progress.reach_out").split("{reach_out}");
 const numbers =
   totals && totals.opportunities > 0
@@ -134,11 +136,11 @@ const numbers =
     </ul>
 
     {
-      progress.code_url && (
+      codeUrl && (
         <section aria-labelledby="progress-open-source">
           <h2 id="progress-open-source">{t("progress.open_source_heading")}</h2>
           <p data-progress-code>
-            {t("progress.open_source", { site_name: siteName })} <a href={progress.code_url} rel="noopener">{t("site.footer_code_link")}</a>
+            {t("progress.open_source", { site_name: siteName })} <a href={codeUrl} rel="noopener noreferrer">{t("site.footer_code_link")}</a>
           </p>
           <p data-progress-reach>
             {reachBefore}<a href={`mailto:${email}`}>{t("progress.reach_out_link")}</a>{reachAfter ?? ""}

@@ -561,3 +561,13 @@ test("progress timeline: date order, every estimate marked, past/today/planned f
   assert.equal(timelineDate({ from_month: "2026-12", to_month: "2027-01" }, "es", { ...w, range: "Del {from} al {to}", monthRange: "De {from} a {to}" }), "De diciembre de 2026 a enero de 2027");
   assert.equal(timelineDate({ from: "2026-10-13", to: "2026-10-18" }, "es", { ...w, range: "Del {from} al {to}", monthRange: "De {from} a {to}" }), "Del 13 de octubre al 18 de octubre de 2026");
 });
+
+test("links file: the code and Instagram addresses are checked (owner, 2026-11-12)", async () => {
+  const { siteLinks } = await import("../src/lib/links.ts");
+  const l = siteLinks();
+  assert.equal(l.instagram?.url, "https://www.instagram.com/phillyvolunteers/");
+  assert.equal(l.instagram?.handle, "@phillyvolunteers");
+  assert.match(l.code_url, /^https:\/\/github\.com\//);
+  assert.throws(() => siteLinks({ code_url: "http://x", instagram: null }), /code_url/);
+  assert.throws(() => siteLinks({ code_url: "https://x.org", instagram: { url: "https://evil.example/", handle: "@x" } }), /instagram\.url/);
+});

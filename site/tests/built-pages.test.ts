@@ -878,7 +878,8 @@ test("Progress page: phases top to bottom from the data file, live totals, what'
       });
       assert.ok(main.indexOf(tr.t("progress.timeline_heading")) > 0);
       // Open source: the code address from the data file; "reach out" to the contact address from the settings.
-      assert.match(main, new RegExp(`<a href="${data.code_url}"[^>]*>${tr.t("site.footer_code_link")}</a>`));
+      const links = JSON.parse(readFileSync(join(site, "src/data/links.json"), "utf8"));
+      assert.match(main, new RegExp(`<a href="${links.code_url}"[^>]*>${tr.t("site.footer_code_link")}</a>`));
       assert.match(main, new RegExp(`<a href="mailto:${settings.site.contact_email}"[^>]*>${tr.t("progress.reach_out_link")}</a>`));
       // Live totals from the running totals file, as on the About page.
       assert.ok(text(main).includes(tr.t("about_page.shifts.numbers_to_date", {
@@ -914,8 +915,48 @@ test("Progress page: phases top to bottom from the data file, live totals, what'
   assert.doesNotMatch(markup, /\b(95|15|100)\b|"(done|building|next|later)"/, "statuses and percentages come only from the data file");
 });
 
+test("links to other sites carry rel=noopener noreferrer: Instagram, the code, the Medicaid help links, the map credits (licence gate)", () => {
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      for (const page of ["index.html", "about/index.html", "progress/index.html", "medicaid-hours/index.html", "map-data/index.html", "flexible/index.html", "teams/index.html"]) {
+        const html = b.read(`${lang}/${page}`);
+        // Every link that leaves the site, except mailto/tel and the organizations' own sign-up links on cards.
+        for (const m of html.matchAll(/<a\b[^>]*href="(https?:\/\/[^"]+)"[^>]*>/g)) {
+          if (/class="[^"]*(card__|btn)/.test(m[0])) continue; // listing cards and sign-up buttons keep their own rules
+          if (/data-share|share-panel/.test(m[0])) continue;
+          assert.match(m[0], /rel="[^"]*noopener[^"]*noreferrer|rel="[^"]*noreferrer[^"]*noopener/, `${lang} ${page}: ${m[1]}`);
+        }
+      }
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("footer: a plain Instagram link on every page, from the links file; nothing loads from Instagram (owner, 2026-11-12)", () => {
+  const links = JSON.parse(readFileSync(join(site, "src/data/links.json"), "utf8"));
+  const b = build({});
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      for (const page of ["index.html", "flexible/index.html", "teams/index.html", "about/index.html", "progress/index.html", "mlk-day/index.html", "medicaid-hours/index.html", "map-data/index.html"]) {
+        const html = b.read(`${lang}/${page}`);
+        const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+        assert.match(footer, new RegExp(`<a class="site-footer__link"[^>]*href="${links.instagram.url}"[^>]*>${tr.t("site.instagram", { handle: links.instagram.handle })}</a>`), `${lang} ${page}`);
+        // Only a link: no embed, script, font or picture from Instagram anywhere on the page.
+        assert.doesNotMatch(html.replace(links.instagram.url, ""), /instagram\.com|cdninstagram|fbcdn/i, `${lang} ${page}`);
+      }
+    }
+  } finally {
+    b.done();
+  }
+  // The page code never types the address.
+  for (const f of ["src/components/SiteFooter.astro"]) assert.doesNotMatch(readFileSync(join(site, f), "utf8"), /instagram\.com/);
+});
+
 test("About page: open source, built by one person so far, near the top, with the code link and 'Reach out' (owner, 2026-11-10)", () => {
-  const data = JSON.parse(readFileSync(join(site, "src/data/progress.json"), "utf8"));
+  const data = JSON.parse(readFileSync(join(site, "src/data/links.json"), "utf8"));
   const b = build({});
   try {
     for (const lang of ["en", "es"]) {
