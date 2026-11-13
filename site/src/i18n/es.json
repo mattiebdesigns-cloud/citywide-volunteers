@@ -750,8 +750,12 @@
     "email_us": "Escríbanos: {email}",
     "instagram_heading": "Instagram",
     "instagram": "Si tiene 18 años o más, etiquétenos en {handle} y mencione el grupo con el que hizo voluntariado.",
-    "photos": "Publique solo a personas que aceptaron salir en la foto. Nunca publique a niños ni a las personas a las que el grupo atiende.",
-    "photos_events": "No nos etiquete en publicaciones de protestas, acciones colectivas, eventos relacionados con la inmigración o eventos que piden no tomar fotos, ni de ningún evento en el que ser visto pueda poner a alguien en riesgo. Si tiene dudas, no nos etiquete.",
+    "tips": {
+      "lead": "Consejos para etiquetarnos en fotos de Instagram:",
+      "consent": "Publique solo a personas que aceptaron salir en la foto.",
+      "children": "Nunca publique a niños ni a las personas a las que el grupo atiende.",
+      "risk": "No nos etiquete en publicaciones de ningún evento en el que ser visto pueda poner a alguien en riesgo, por ejemplo: protestas, acciones colectivas, eventos relacionados con la inmigración y eventos que piden no tomar fotos. Si tiene dudas, no nos etiquete."
+    },
     "form": {
       "kind": "Tipo de consulta",
       "kinds": {

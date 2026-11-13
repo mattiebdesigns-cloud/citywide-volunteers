@@ -956,14 +956,25 @@ test("Contact page: the form right under the heading, Instagram with the photo r
       assert.doesNotMatch(main, /data-contact-email/);
       const ig = main.slice(main.indexOf("data-contact-instagram"));
       assert.match(ig, new RegExp(`<a href="${links.instagram.url}"[^>]*rel="noopener noreferrer"[^>]*>${links.instagram.handle}</a>`));
-      assert.ok(decode(ig).includes(tr.t("contact.photos")));
-      // Owner wording (2026-11-12): the age line and the protests/immigration line, in both languages.
+      // Owner wording (2026-11-12): the age line first, in both languages.
       assert.ok(decode(text(ig)).includes(tr.t("contact.instagram", { handle: links.instagram.handle })), `${lang}: age line`);
-      assert.ok(decode(ig).includes(tr.t("contact.photos_events")), `${lang}: events line`);
       assert.match(tr.t("contact.instagram"), lang === "en" ? /18 or older/ : /18/);
-      assert.match(tr.t("contact.photos_events"), lang === "en" ? /protests.*immigration/ : /protesta.*inmigra/i);
-      // Owner Q157: any event where being seen could put someone at risk; if in doubt, don't tag.
-      assert.match(tr.t("contact.photos_events"), lang === "en" ? /could put someone at risk\. If in doubt, don't tag us\./ : /riesgo\..*dudas, no nos etiquete\./);
+      // Owner, 2026-11-13: a lead-in, then the tips as a real numbered list, in this order.
+      for (const key of ["contact.tips.lead", "contact.tips.consent", "contact.tips.children", "contact.tips.risk"]) {
+        assert.notEqual(tr.t(key), key, `${lang}: ${key} is in the translation files`);
+      }
+      assert.ok(ig.indexOf("data-contact-tips") > ig.indexOf(links.instagram.handle), `${lang}: the age line comes before the tips`);
+      assert.match(ig, /<p id="contact-tips"[^>]*>[^<]+<\/p>\s*<ol[^>]*aria-labelledby="contact-tips"/);
+      assert.equal(decode(text(ig.match(/<p id="contact-tips"[^>]*>([^<]*)<\/p>/)![1])), tr.t("contact.tips.lead"));
+      if (lang === "en") assert.match(tr.t("contact.tips.lead"), /Instagram/, "Instagram spelled out");
+      const tips = [...ig.match(/<ol[^>]*data-contact-tips[^>]*>([\s\S]*?)<\/ol>/)![1].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => decode(text(m[1])));
+      assert.deepEqual(tips, ["contact.tips.consent", "contact.tips.children", "contact.tips.risk"].map((k) => tr.t(k)), `${lang}: tips in order`);
+      // The protests/immigration wording, and owner Q157: any event where being seen could put someone at risk; if in doubt, don't tag.
+      assert.match(tr.t("contact.tips.risk"), lang === "en" ? /protests.*immigration/ : /protesta.*inmigra/i);
+      assert.match(tr.t("contact.tips.risk"), lang === "en" ? /could put someone at risk/ : /riesgo/);
+      assert.match(tr.t("contact.tips.risk"), lang === "en" ? /If in doubt, don't tag us\.$/ : /dudas, no nos etiquete\.$/);
+      if (lang === "es") assert.match(tr.t("contact.tips.risk"), /acciones colectivas/);
+      if (lang === "es") assert.match(tr.t("contact.tips.children"), /las personas a las que el grupo atiende/);
       assert.doesNotMatch(tr.t("contact.instagram"), /featured|destac/i, "no promise of reposting");
       // The Contact form is the only form, and every field is inside it.
       assert.equal((main.match(/<form\b/g) ?? []).length, 1, "one form");

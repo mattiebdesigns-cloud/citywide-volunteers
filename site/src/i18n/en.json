@@ -750,8 +750,12 @@
     "email_us": "Email us: {email}",
     "instagram_heading": "Instagram",
     "instagram": "If you're 18 or older, tag us on {handle} and name the group you volunteered with.",
-    "photos": "Only post people who agreed to be in the photo. Never post children or the people a group serves.",
-    "photos_events": "Don't tag us from protests, actions, immigration-related events, events that ask for no photos, or any event where being seen could put someone at risk. If in doubt, don't tag us.",
+    "tips": {
+      "lead": "Tips for tagging us in Instagram photos:",
+      "consent": "Only post people who agreed to be in the photo.",
+      "children": "Never post children or the people a group serves.",
+      "risk": "Don't tag us at any event where being seen could put someone at risk, for example: protests, actions, immigration-related events, and events that ask for no photos. If in doubt, don't tag us."
+    },
     "form": {
       "kind": "Type of inquiry",
       "kinds": {

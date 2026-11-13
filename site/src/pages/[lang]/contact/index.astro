@@ -117,9 +117,13 @@ const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: 
               ),
             )}
           </p>
-          {/* The owner's photo rules (2026-11-12), each its own short line. */}
-          <p data-contact-photos>{t("contact.photos")}</p>
-          <p data-contact-events>{t("contact.photos_events")}</p>
+          {/* The owner's photo tips (2026-11-13): a lead-in, then a numbered list. */}
+          <p id="contact-tips" class="contact__tips-lead">{t("contact.tips.lead")}</p>
+          <ol class="contact__tips" aria-labelledby="contact-tips" data-contact-tips>
+            <li>{t("contact.tips.consent")}</li>
+            <li>{t("contact.tips.children")}</li>
+            <li data-contact-risk>{t("contact.tips.risk")}</li>
+          </ol>
         </section>
       )
     }
@@ -202,6 +206,16 @@ const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: 
   .contact__error:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+  }
+  .contact__tips-lead {
+    margin-bottom: var(--space-2);
+  }
+  .contact__tips {
+    margin: 0 0 var(--space-4);
+    padding-inline-start: 1.5em;
+  }
+  .contact__tips li + li {
+    margin-top: var(--space-2);
   }
   .contact__email-us,
   .contact__form-wrap {
