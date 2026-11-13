@@ -42,13 +42,16 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
         <span class="sr-only">{siteName}</span>
       </a>
     </p>
-    {/* About, and Progress directly under it (owner, 2026-11-10). */}
+    {/* Two columns (owner, 2026-11-13): About · Progress, then MLK Day of Service · Contact while the
+        MLK window is open; after it, one row: About · Progress · Contact. (A menu button waits for
+        profiles; IDEAS.md.) */}
     <nav class="site-header__pages" aria-label={tr.t("site.pages_nav")}>
-      <ul>
+      <ul data-rows={mlkOpen ? "2" : "1"}>
         <li><a class="site-header__about" href={paths.about(lang)} aria-current={current(paths.about(lang))}>{tr.t("about_page.nav")}</a></li>
         <li><a class="site-header__about" href={paths.progress(lang)} aria-current={current(paths.progress(lang))}>{tr.t("progress.nav")}</a></li>
         {/* Martin Luther King Jr. Day of Service (decision 0041; owner, 2026-11-10): only while its window in src/data/mlk-day.json is open. */}
         {mlkOpen && <li><a class="site-header__about" href={paths.mlk(lang)} aria-current={current(paths.mlk(lang))}>{tr.t("mlk.nav")}</a></li>}
+        <li><a class="site-header__about" href={paths.contact(lang)} aria-current={current(paths.contact(lang))}>{tr.t("contact.nav")}</a></li>
       </ul>
     </nav>
     <LanguageSwitch lang={lang} alternates={alternates} noStorage={noStorage} />
@@ -88,19 +91,24 @@ const logoSvg = logo.replace(/<!--[\s\S]*?-->\s*/g, "");
       height: 4rem;
     }
   }
-  /* About and Progress, one under the other, right-aligned. */
   /* Kept at the right edge, also when it wraps under the logo on a narrow screen. */
   .site-header__pages {
     margin-inline-start: auto;
   }
+  /* Two columns, or one row of three once the MLK link is gone (owner, 2026-11-13). Each link is a
+     44 px tall target (the By Date row's rule); the rows touch, the columns have a gap. */
   .site-header__pages ul {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: end;
+    column-gap: var(--space-4);
     margin: 0;
     padding: 0;
     list-style: none;
-    text-align: end;
   }
-  /* About, Progress and MLK Day of Service: one tight stack (owner, 2026-11-10). Each link is a
-     44 px tall target (the By Date row's rule), with no margin between them, so the targets touch. */
+  .site-header__pages ul[data-rows="1"] {
+    grid-template-columns: repeat(3, auto);
+  }
   .site-header__pages li {
     margin: 0;
   }

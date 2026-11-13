@@ -618,9 +618,12 @@ test("header as before (1715dec): logo, About, languages; footer: calculator, Da
         const mlkOpen = today >= "2026-11-10" && today <= "2027-01-18";
         assert.deepEqual(
           [...beforeLanguages.matchAll(/<a[^>]*href="(\/[a-z]{2}\/[^"]*)"/g)].map((m) => m[1]),
-          [`/${lang}/`, `/${lang}/about/`, `/${lang}/progress/`, ...(mlkOpen ? [`/${lang}/mlk-day/`] : [])],
+          [`/${lang}/`, `/${lang}/about/`, `/${lang}/progress/`, ...(mlkOpen ? [`/${lang}/mlk-day/`] : []), `/${lang}/contact/`],
           page,
         );
+        // Two columns while the MLK link shows, one row of three after (owner, 2026-11-13); the nav keeps its name.
+        assert.match(header, new RegExp(`<nav class="site-header__pages"[^>]*aria-label="${tr.t("site.pages_nav")}"[^>]*>\\s*<ul data-rows="${mlkOpen ? 2 : 1}"`), page);
+        assert.ok(decode(header).includes(`>${tr.t("contact.nav")}</a>`), `${lang} ${page}: header Contact link`);
         // Footer: the calculator link with its date, the Dark mode switch (hidden until its script runs), the sources line.
         const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
         assert.ok(text(footer).includes(calc), `${lang} ${page}: calculator link`);
