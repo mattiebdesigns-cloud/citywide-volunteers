@@ -747,15 +747,12 @@
   "contact": {
     "nav": "Contact",
     "title": "Contact us",
-    "listing": "Something wrong in a listing, or want a name removed? Write to us.",
-    "org": "Run an organization and want your shifts listed? Tell us where you post them.",
-    "city": "Want to build this platform for your city? Reach out.",
+    "email_us": "Email us: {email}",
     "instagram_heading": "Instagram",
     "instagram": "If you're 18 or older, tag us on {handle} and name the group you volunteered with.",
     "photos": "Only post people who agreed to be in the photo. Never post children or the people a group serves.",
     "photos_events": "Don't tag us from protests, actions, immigration-related events, events that ask for no photos, or any event where being seen could put someone at risk. If in doubt, don't tag us.",
     "form": {
-      "heading": "Send us a message",
       "kind": "Type of inquiry",
       "kinds": {
         "listing_fix": "Fix or remove a listing",

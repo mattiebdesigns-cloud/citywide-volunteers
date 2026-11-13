@@ -934,7 +934,7 @@ test("links to other sites carry rel=noopener noreferrer: Instagram, the code, t
   }
 });
 
-test("Contact page: three lines each with the contact address, Instagram with the photo rule; linked from every footer; with a real key, the one form and nothing else to type in (owner, 2026-11-12; decision 0046)", () => {
+test("Contact page: the form right under the heading, Instagram with the photo rule; linked from every footer; with a real key, the one form and nothing else to type in (owner, 2026-11-12 and 2026-11-13; decision 0046)", () => {
   const links = JSON.parse(readFileSync(join(site, "src/data/links.json"), "utf8"));
   // An injected test key, so this test does not depend on the value in links.json.
   const b = build({ PV_TURNSTILE_SITE_KEY: "0x4AAAAAAATestKey123" });
@@ -944,14 +944,16 @@ test("Contact page: three lines each with the contact address, Instagram with th
       const html = b.read(`${lang}/contact/index.html`);
       const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
       assert.match(main, new RegExp(`<h1[^>]*>${tr.t("contact.title")}</h1>`));
-      const lines = [...main.matchAll(/<li[^>]*data-contact-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
-      assert.equal(lines.length, 3);
-      ["contact.listing", "contact.org", "contact.city"].forEach((key, i) => {
-        assert.ok(decode(lines[i]).includes(tr.t(key)), `${lang} ${key}`);
-        // With the form, the address is not repeated on each line; it shows once, under "Prefer email?"
-        // (checked in the Contact form test). Without the form, each line has it (also there).
-        assert.doesNotMatch(lines[i], /href="mailto:/, `${lang} ${key}: no address on the line while the form is on`);
-      });
+      // Owner, 2026-11-13: nothing between "Contact us" and the form but the (hidden) error region;
+      // no reasons list, no subheading. One h1; the menu keeps its label for screen readers.
+      assert.equal((main.match(/<h1\b/g) ?? []).length, 1, "one h1");
+      const between = main.slice(main.indexOf("</h1>") + 5, main.indexOf("<form"));
+      assert.equal(text(between.replace(/<div id="contact-error"[^>]*><\/div>/, "")).trim(), "", `${lang}: the form starts right under the heading`);
+      assert.doesNotMatch(main, /data-contact-line|<h2[^>]*>\s*[^<]*<\/h2>\s*<form/, `${lang}: no reasons, no subheading`);
+      assert.match(main, new RegExp(`<label for="contact-kind"[^>]*>${tr.t("contact.form.kind")}</label>`), `${lang}: the menu's label`);
+      // With the form, the address shows once, under "Prefer email?"; no "Email us:" line.
+      assert.equal((main.match(/href="mailto:/g) ?? []).length, 1, `${lang}: the address once`);
+      assert.doesNotMatch(main, /data-contact-email/);
       const ig = main.slice(main.indexOf("data-contact-instagram"));
       assert.match(ig, new RegExp(`<a href="${links.instagram.url}"[^>]*rel="noopener noreferrer"[^>]*>${links.instagram.handle}</a>`));
       assert.ok(decode(ig).includes(tr.t("contact.photos")));
@@ -994,10 +996,15 @@ test("Contact form (decision 0046): fields match the Worker's contract; Turnstil
     for (const lang of ["en", "es"]) {
       const html = plain.read(`${lang}/contact/index.html`);
       assert.doesNotMatch(html, /<form/);
-      assert.equal((html.match(/href="mailto:/g) ?? []).length >= 3, true, "the three lines keep the address");
-      const lines = [...html.matchAll(/<li[^>]*data-contact-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
-      assert.equal(lines.length, 3);
-      for (const line of lines) assert.match(line, new RegExp(`<a[^>]*href="mailto:${settings.site.contact_email}"[^>]*>${settings.site.contact_email}</a>`), `${lang}: address on each line`);
+      // No form: only "Email us:" and the address, right under the heading (owner, 2026-11-13).
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      const email = main.match(/<p[^>]*data-contact-email[^>]*>([\s\S]*?)<\/p>/)!;
+      assert.match(email[1], new RegExp(`<a[^>]*href="mailto:${settings.site.contact_email}"[^>]*>${settings.site.contact_email}</a>`), `${lang}: the address`);
+      const tr = i18n.translator(lang);
+      assert.notEqual(tr.t("contact.email_us"), "contact.email_us", `${lang}: "Email us" is in the translation files`);
+      assert.equal(decode(text(email[1])).trim(), tr.t("contact.email_us", { email: settings.site.contact_email }));
+      assert.equal(text(main.slice(main.indexOf("</h1>") + 5, main.lastIndexOf("<p", main.indexOf("data-contact-email")))), "", `${lang}: right under the heading`);
+      assert.doesNotMatch(main, /data-contact-line|data-contact-form/);
       assert.ok(plain.read(`${lang}/contact/thanks/index.html`).includes(i18n.translator(lang).t("contact.thanks.body")), `${lang}: thanks page`);
     }
   } finally {
@@ -1006,7 +1013,7 @@ test("Contact form (decision 0046): fields match the Worker's contract; Turnstil
   // Every form word is a real translation, not a missing key shown as its own name.
   for (const lang of ["en", "es"]) {
     const tr = i18n.translator(lang);
-    for (const key of ["contact.form.heading", "contact.form.kind", "contact.form.send", "contact.form.required", "contact.error.turnstile", "contact.thanks.title", "contact.thanks.body"]) {
+    for (const key of ["contact.form.kind", "contact.form.send", "contact.form.required", "contact.error.turnstile", "contact.thanks.title", "contact.thanks.body"]) {
       assert.notEqual(tr.t(key), key, `${lang}: ${key} is in the translation files`);
     }
   }
@@ -1028,7 +1035,7 @@ test("Contact form (decision 0046): fields match the Worker's contract; Turnstil
       // Field names and limits from support/contact-worker/README.md.
       const names = [...form.matchAll(/\sname="([^"]+)"/g)].map((m) => m[1]).sort();
       assert.deepEqual(names, ["email", "kind", "lang", "message", "name", "website"]);
-      assert.deepEqual([...form.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]), ["listing-fix", "add-org", "build-city", "press", "other"]);
+      assert.deepEqual([...form.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]), ["listing-fix", "add-org", "press", "other", "build-city"], "menu order (owner, 2026-11-13: Build this for my city last)");
       assert.match(form, new RegExp(`<input type="hidden" name="lang" value="${lang}"`));
       assert.match(form, /<input[^>]*name="name"[^>]*maxlength="100"/);
       assert.match(form, /<input[^>]*name="email"[^>]*type="email"[^>]*maxlength="254"[^>]*required/);

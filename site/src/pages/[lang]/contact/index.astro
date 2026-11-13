@@ -1,7 +1,8 @@
 ---
 /**
- * Contact (owner, 2026-11-12; PROJECT.md 5; decision 0046). Three short
- * reasons to write, the contact form, one "Prefer email?" line, and the
+ * Contact (owner, 2026-11-12 and 2026-11-13; PROJECT.md 5; decision 0046).
+ * The contact form right under the heading (owner, 2026-11-13: no reasons
+ * list, no subheading), one "Prefer email?" line, and the
  * Instagram account from src/data/links.json with the photo rules. Linked
  * from the footer; the About and Progress pages keep their direct email links.
  *
@@ -12,7 +13,7 @@
  * at the top. Cloudflare Turnstile (the spam check) is the site's only script
  * from another site, and it loads on this page only, only when a real site key
  * is set. While links.json holds the placeholder, no form and no outside
- * script: the three lines keep the email address, as before.
+ * script: one "Email us:" line with the address takes the form's place.
  */
 import Base from "../../../layouts/Base.astro";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
@@ -33,14 +34,15 @@ const form = siteLinks().contactForm;
 const kinds = [
   ["listing-fix", "listing_fix"],
   ["add-org", "add_org"],
-  ["build-city", "build_city"],
   ["press", "press"],
   ["other", "other"],
+  ["build-city", "build_city"], // last (owner, 2026-11-13)
 ] as const;
 // The Worker's error codes and their messages; {email} is the contact address.
 const errorCodes = ["kind", "name", "email", "message", "turnstile", "too-large", "bad-request", "config", "send", "method"];
 const errorData = Object.fromEntries(errorCodes.map((code) => [`data-error-${code}`, t(`contact.error.${code.replace("-", "_")}`, { email })]));
 const [preferBefore, preferAfter] = t("contact.form.prefer_email").split("{email}");
+const [emailBefore, emailAfter] = t("contact.email_us").split("{email}");
 const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: instagram.handle, lang: "en" } }) : [];
 ---
 
@@ -54,21 +56,18 @@ const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: 
     {/* An error sent back by the Worker (?error=<code>), shown and focused by scripts/contact-form.ts. */}
     {form && <div id="contact-error" class="contact__error" role="alert" tabindex="-1" hidden {...errorData}></div>}
 
-    <ul class="contact__list">
-      {
-        ["contact.listing", "contact.org", "contact.city"].map((key) => (
-          <li data-contact-line>
-            <p>{t(key)}</p>
-            {!form && <a class="contact__email" href={`mailto:${email}`}>{email}</a>}
-          </li>
-        ))
-      }
-    </ul>
+    {/* No form (placeholder key): the one way to reach us is the address. */}
+    {
+      !form && (
+        <p class="contact__email-us" data-contact-email>
+          {emailBefore}<a class="contact__email" href={`mailto:${email}`}>{email}</a>{emailAfter ?? ""}
+        </p>
+      )
+    }
 
     {
       form && (
-        <section aria-labelledby="contact-form-heading" data-contact-form>
-          <h2 id="contact-form-heading">{t("contact.form.heading")}</h2>
+        <div class="contact__form-wrap" data-contact-form>
           <form class="contact-form" method="post" action={form.action} enctype="application/x-www-form-urlencoded">
             <input type="hidden" name="lang" value={lang} />
             <div class="field">
@@ -101,7 +100,7 @@ const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: 
           <p class="contact__prefer">
             {preferBefore}<a class="contact__email" href={`mailto:${email}`}>{email}</a>{preferAfter ?? ""}
           </p>
-        </section>
+        </div>
       )
     }
 
@@ -204,17 +203,9 @@ const tag = instagram ? templateParts(t("contact.instagram"), { handle: { text: 
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
   }
-  .contact__list {
+  .contact__email-us,
+  .contact__form-wrap {
     margin: 0 0 var(--space-5);
-    padding: 0;
-    list-style: none;
-  }
-  .contact__list li {
-    padding-block: var(--space-3);
-    border-top: 1px solid var(--color-line-soft);
-  }
-  .contact__list p {
-    margin: 0;
   }
   .contact a[lang] {
     display: inline-block;
