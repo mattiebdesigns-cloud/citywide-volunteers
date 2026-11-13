@@ -80,6 +80,20 @@ The list stays the main view. A "List | Map" switch (hidden without JavaScript) 
 
 The site is light for everyone, whatever the device is set to (owner, 2026-11-10). The "Dark mode" button in the footer sets `data-theme="dark"` on `<html>`; the dark colours in `styles/tokens.css` apply only then. The choice is kept in this browser only (`localStorage`, `cvh.theme`): no cookie, nothing in the address, nothing sent. A tiny script in the page head applies it before the first paint, so the page does not flash. The map redraws its street map in the matching colours when the switch is pressed. Pages that use no storage (the Medicaid calculator) show no switch and stay light. `<meta name="color-scheme" content="light dark">` tells browsers we have our own dark colours, so Chrome on Android does not darken the page itself.
 
+### Contact page and form (decision 0046)
+
+`/<lang>/contact/` has three reasons to write, a form, a "Prefer email?" line and the Instagram section. The form is plain HTML that posts to the private contact Worker (`contact_form.action` in `src/data/links.json`) and works without our own script; the Worker sends people to `/<lang>/contact/thanks/` or back with `?error=<code>`, and `src/scripts/contact-form.ts` shows that error's message at the top (focused, in a `role="alert"` box, tied to its field). Cloudflare Turnstile, the spam check, is the site's only script from another site: it loads on the Contact page only, and only when `contact_form.turnstile_site_key` in `links.json` is a real key. While it is `"PLACEHOLDER"`, the page shows no form and loads nothing from outside; each reason keeps the email address. For a test build, `PV_TURNSTILE_SITE_KEY` overrides the key.
+
+### Account links and /listings.json (Phase 2, decision 0033)
+
+All of this is off unless the city's settings have `accounts.url` (for us `https://my.phillyvolunteers.org`); empty or missing, nothing below exists in the build. With it set:
+
+- **`/listings.json`**: every listing the calendar shows, dated and flexible, sensitive ones included, with exactly nine facts the listing pages already show (`id, title, org_name, start, end, area, sensitive, flexible, listing_language`), nothing about any person. `sensitive` is `isSensitive()` from `src/lib/prepare.ts`, the same value the page's note uses; never an organization's history. An id the account pages cannot use (`^[a-z0-9][a-z0-9-]{0,79}$`) is left out and gets no account links. At most 20,000 listings and 5 MB, or the build stops. The CORS header for the account pages and `Referrer-Policy: no-referrer` are set by the deploy, not by this site (the private repo's upload check refuses a `_headers` file from the build).
+- **Listing pages**: "Log this shift" (`<accounts.url>/log/#listing=<id>`, `/es/log/` from Spanish pages), on a sensitive listing an icon and a one-line note about what is kept after 30 days, and "Report a safety concern" (`/report/#listing=<id>`). The id goes after `#`, which browsers never send to a server.
+- **Flexible Shift cards**: "Log this shift", each link named with its card's title for screen readers.
+- **Footer**: "Weekly email" (`<accounts.url>/weekly/`).
+- **Every page**: `<meta name="referrer" content="no-referrer">`.
+
 ### About page
 
 `/en/about/` and `/es/about/` (decision 0025): nine sections, each with one of pv-design's drawings (`src/components/ui/aboutArt.ts`), linked from the header and footer. The listing, organization and neighborhood counts come from this build's data (`src/lib/about.ts`). If `aboutArt.ts` lacks a drawing, the build stops; if the file is missing, only test builds (`PV_TEST_BUILD=1`) draw placeholders. It prints as a handout, one section never split across pages.

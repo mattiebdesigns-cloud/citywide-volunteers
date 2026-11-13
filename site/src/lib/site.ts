@@ -109,6 +109,7 @@ export const paths = {
   mapData: (lang: string) => `/${lang}/map-data/`,
   progress: (lang: string) => `/${lang}/progress/`,
   mlk: (lang: string) => `/${lang}/mlk-day/`,
+  contact: (lang: string) => `/${lang}/contact/`,
   /** The home page with its map open (MAP_HASH in lib/map.ts): a fixed address, nothing else in it. */
   homeMap: (lang: string) => `/${lang}/#map`,
 };

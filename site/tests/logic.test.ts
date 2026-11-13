@@ -571,3 +571,13 @@ test("links file: the code and Instagram addresses are checked (owner, 2026-11-1
   assert.throws(() => siteLinks({ code_url: "http://x", instagram: null }), /code_url/);
   assert.throws(() => siteLinks({ code_url: "https://x.org", instagram: { url: "https://evil.example/", handle: "@x" } }), /instagram\.url/);
 });
+
+test("no reply-time or fix-time promises anywhere in the site's words (owner, 2026-11-12: give no estimate)", () => {
+  const walk = (o: unknown, p = ""): Array<[string, string]> =>
+    typeof o === "string" ? [[p, o]] : Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => walk(v, p ? `${p}.${k}` : k));
+  const promise = /within (a|one|\d+) (day|days|hour|hours|business day)|within 24|24 hours|a few days|usually reply|we('ll| will) (fix|reply|respond)|en un plazo de|unos pocos días|24 horas|normalmente respondemos|lo corregiremos/i;
+  for (const lang of ["en", "es"]) {
+    const all = walk(JSON.parse(readFileSync(new URL(`../src/i18n/${lang}.json`, import.meta.url), "utf8")));
+    for (const [key, value] of all) assert.doesNotMatch(value, promise, `${lang} ${key}: ${value}`);
+  }
+});

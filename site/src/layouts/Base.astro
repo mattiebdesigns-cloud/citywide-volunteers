@@ -12,6 +12,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import PreviewTags from "../components/PreviewTags.astro";
 import { siteData, translator } from "../lib/site.ts";
+import { accountsUrl } from "../lib/accounts.ts";
 
 interface Props {
   lang: string;
@@ -68,7 +69,8 @@ const absolute = (path: string) => (siteUrl ? siteUrl + path : path);
     <title>{pageTitle}</title>
     <meta name="description" content={tr.t("site.description")} />
     {testBuild && <meta name="robots" content="noindex, nofollow" />}
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    {/* Decision 0033: with the account pages on, both sites send no referrer. */}
+    <meta name="referrer" content={accountsUrl(settings) ? "no-referrer" : "strict-origin-when-cross-origin"} />
     <PreviewTags lang={lang} path={path} />
     {
       Object.entries(alternates).map(([code, href]) => (

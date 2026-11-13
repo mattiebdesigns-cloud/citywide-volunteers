@@ -743,5 +743,59 @@
     "apply": "Mostrar turnos",
     "search_label": "Buscar en estos turnos",
     "group_only": "Solo turnos ideales para grupos"
+  },
+  "contact": {
+    "nav": "Contacto",
+    "title": "Contáctenos",
+    "listing": "¿Hay un error en un anuncio o quiere que quitemos un nombre? Escríbanos.",
+    "org": "¿Dirige una organización y quiere que aparezcan sus turnos? Díganos dónde los publica.",
+    "city": "¿Quiere llevar esta plataforma a su ciudad? Escríbanos.",
+    "instagram_heading": "Instagram",
+    "instagram": "Si tiene 18 años o más, etiquétenos en {handle} y mencione el grupo con el que hizo voluntariado.",
+    "photos": "Publique solo a personas que aceptaron salir en la foto. Nunca publique a niños ni a las personas a las que el grupo atiende.",
+    "photos_events": "No nos etiquete en publicaciones de protestas, acciones colectivas, eventos relacionados con la inmigración o eventos que piden no tomar fotos, ni de ningún evento en el que ser visto pueda poner a alguien en riesgo. Si tiene dudas, no nos etiquete.",
+    "form": {
+      "heading": "Envíenos un mensaje",
+      "kind": "Tipo de consulta",
+      "kinds": {
+        "listing_fix": "Corregir o quitar un anuncio",
+        "add_org": "Agregar los turnos de mi organización",
+        "build_city": "Llevar esto a mi ciudad",
+        "press": "Prensa o colaboraciones",
+        "other": "Otro asunto"
+      },
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "message": "Mensaje",
+      "optional": "(opcional)",
+      "required": "(obligatorio)",
+      "honeypot": "Deje este campo vacío",
+      "send": "Enviar",
+      "retention": "Los mensajes llegan al equipo de {site_name}. Los guardamos un año y luego los borramos.",
+      "prefer_email": "¿Prefiere el correo electrónico? {email}"
+    },
+    "error": {
+      "kind": "Por favor, elija un tipo de consulta.",
+      "name": "Por favor, use 100 caracteres o menos para su nombre.",
+      "email": "Por favor, escriba una dirección de correo electrónico a la que podamos responder.",
+      "message": "Por favor, escriba un mensaje de hasta 4000 caracteres.",
+      "turnstile": "La comprobación contra el spam no terminó. Por favor, inténtelo de nuevo o escríbanos a {email}.",
+      "too_large": "El mensaje era demasiado largo para enviarlo. Por favor, acórtelo o escríbanos a {email}.",
+      "bad_request": "Algo del formulario no llegó bien. Por favor, inténtelo de nuevo.",
+      "config": "El formulario no funciona en este momento por un problema de nuestra parte. Por favor, escríbanos a {email}.",
+      "send": "No se pudo enviar su mensaje. Por favor, inténtelo más tarde o escríbanos a {email}.",
+      "method": "Por favor, use el formulario de esta página para enviar un mensaje."
+    },
+    "thanks": {
+      "title": "¡Gracias!",
+      "body": "Su mensaje está en camino."
+    }
+  },
+  "accounts": {
+    "log": "Registrar este turno",
+    "log_for": "de {title}",
+    "report_link": "Reportar un problema de seguridad",
+    "report_note": "Esto llega al equipo de Philly Volunteers, no a la organización anfitriona.",
+    "sensitive_note": "30 días después de este turno, su perfil guarda solo sus horas, en un total mensual. El registro del turno se borra."
   }
 }

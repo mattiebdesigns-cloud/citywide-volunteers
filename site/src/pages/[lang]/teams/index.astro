@@ -18,6 +18,7 @@ import OriginalText from "../../../components/OriginalText.astro";
 import MapCardLines from "../../../components/MapCardLines.astro";
 import PageTabs from "../../../components/PageTabs.astro";
 import MapSwitch from "../../../components/MapSwitch.astro";
+import CardLogLink from "../../../components/CardLogLink.astro";
 import MapView from "../../../components/MapView.astro";
 import { mapAttrs } from "../../../lib/map-build.ts";
 import { TEAMS_FILTERS_KEY } from "../../../scripts/device.ts";
@@ -169,6 +170,7 @@ function teamFacts(o: PreparedListing | Opportunity): Fact[] {
                   headingLevel={2}
                 />
                 <OriginalText lang={lang} item={o} />
+                <CardLogLink lang={lang} item={o} id={o.id} title={shownListing(o, lang).title.text} titleLang={shownListing(o, lang).title.lang} />
                 <MapCardLines lang={lang} item={o} />
               </li>
             ))}

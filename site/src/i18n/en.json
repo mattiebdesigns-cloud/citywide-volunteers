@@ -743,5 +743,59 @@
     "apply": "Show shifts",
     "search_label": "Search these shifts",
     "group_only": "Only shifts good for groups"
+  },
+  "contact": {
+    "nav": "Contact",
+    "title": "Contact us",
+    "listing": "Something wrong in a listing, or want a name removed? Write to us.",
+    "org": "Run an organization and want your shifts listed? Tell us where you post them.",
+    "city": "Want to build this platform for your city? Reach out.",
+    "instagram_heading": "Instagram",
+    "instagram": "If you're 18 or older, tag us on {handle} and name the group you volunteered with.",
+    "photos": "Only post people who agreed to be in the photo. Never post children or the people a group serves.",
+    "photos_events": "Don't tag us from protests, actions, immigration-related events, events that ask for no photos, or any event where being seen could put someone at risk. If in doubt, don't tag us.",
+    "form": {
+      "heading": "Send us a message",
+      "kind": "Type of inquiry",
+      "kinds": {
+        "listing_fix": "Fix or remove a listing",
+        "add_org": "Add my organization's shifts",
+        "build_city": "Build this for my city",
+        "press": "Press or partnership",
+        "other": "Something else"
+      },
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "optional": "(optional)",
+      "required": "(required)",
+      "honeypot": "Leave this field empty",
+      "send": "Send",
+      "retention": "Messages go to the team at {site_name}. We keep them for one year, then delete them.",
+      "prefer_email": "Prefer email? {email}"
+    },
+    "error": {
+      "kind": "Please choose a type of inquiry.",
+      "name": "Please keep your name to 100 characters or fewer.",
+      "email": "Please enter an email address we can reply to.",
+      "message": "Please write a message of up to 4,000 characters.",
+      "turnstile": "The spam check did not finish. Please try again, or write to us at {email}.",
+      "too_large": "That message was too long to send. Please shorten it, or write to us at {email}.",
+      "bad_request": "Something in the form did not come through. Please try again.",
+      "config": "The form is not working on our side right now. Please write to us at {email}.",
+      "send": "Your message could not be sent. Please try again later, or write to us at {email}.",
+      "method": "Please use the form on this page to send a message."
+    },
+    "thanks": {
+      "title": "Thanks!",
+      "body": "Your message is on its way."
+    }
+  },
+  "accounts": {
+    "log": "Log this shift",
+    "log_for": "for {title}",
+    "report_link": "Report a safety concern",
+    "report_note": "This goes to the team at Philly Volunteers, not the host organization.",
+    "sensitive_note": "30 days after this shift, your profile keeps only its hours, in a monthly total. The record of the shift itself is deleted."
   }
 }

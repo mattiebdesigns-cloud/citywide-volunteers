@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { astroBuild, buildFolder, removeFolder } from "./build-helper.ts";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -932,6 +932,131 @@ test("links to other sites carry rel=noopener noreferrer: Instagram, the code, t
   } finally {
     b.done();
   }
+});
+
+test("Contact page: three lines each with the contact address, Instagram with the photo rule; linked from every footer; with a real key, the one form and nothing else to type in (owner, 2026-11-12; decision 0046)", () => {
+  const links = JSON.parse(readFileSync(join(site, "src/data/links.json"), "utf8"));
+  // An injected test key, so this test does not depend on the value in links.json.
+  const b = build({ PV_TURNSTILE_SITE_KEY: "0x4AAAAAAATestKey123" });
+  try {
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/contact/index.html`);
+      const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+      assert.match(main, new RegExp(`<h1[^>]*>${tr.t("contact.title")}</h1>`));
+      const lines = [...main.matchAll(/<li[^>]*data-contact-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+      assert.equal(lines.length, 3);
+      ["contact.listing", "contact.org", "contact.city"].forEach((key, i) => {
+        assert.ok(decode(lines[i]).includes(tr.t(key)), `${lang} ${key}`);
+        // With the form, the address is not repeated on each line; it shows once, under "Prefer email?"
+        // (checked in the Contact form test). Without the form, each line has it (also there).
+        assert.doesNotMatch(lines[i], /href="mailto:/, `${lang} ${key}: no address on the line while the form is on`);
+      });
+      const ig = main.slice(main.indexOf("data-contact-instagram"));
+      assert.match(ig, new RegExp(`<a href="${links.instagram.url}"[^>]*rel="noopener noreferrer"[^>]*>${links.instagram.handle}</a>`));
+      assert.ok(decode(ig).includes(tr.t("contact.photos")));
+      // Owner wording (2026-11-12): the age line and the protests/immigration line, in both languages.
+      assert.ok(decode(text(ig)).includes(tr.t("contact.instagram", { handle: links.instagram.handle })), `${lang}: age line`);
+      assert.ok(decode(ig).includes(tr.t("contact.photos_events")), `${lang}: events line`);
+      assert.match(tr.t("contact.instagram"), lang === "en" ? /18 or older/ : /18/);
+      assert.match(tr.t("contact.photos_events"), lang === "en" ? /protests.*immigration/ : /protesta.*inmigra/i);
+      // Owner Q157: any event where being seen could put someone at risk; if in doubt, don't tag.
+      assert.match(tr.t("contact.photos_events"), lang === "en" ? /could put someone at risk\. If in doubt, don't tag us\./ : /riesgo\..*dudas, no nos etiquete\./);
+      assert.doesNotMatch(tr.t("contact.instagram"), /featured|destac/i, "no promise of reposting");
+      // The Contact form is the only form, and every field is inside it.
+      assert.equal((main.match(/<form\b/g) ?? []).length, 1, "one form");
+      assert.doesNotMatch(main.replace(/<form\b[\s\S]*?<\/form>/, ""), /<form|<input|<textarea|<select/, "no field outside the form");
+      // The footer links here on every page.
+      for (const page of ["index.html", "about/index.html", "progress/index.html", "medicaid-hours/index.html"]) {
+        const p = b.read(`${lang}/${page}`);
+        assert.ok(p.slice(p.indexOf("<footer")).includes(`href="/${lang}/contact/"`), `${lang} ${page}: footer Contact link`);
+      }
+      // About and Progress keep a direct email path (removal requests).
+      assert.ok(b.read(`${lang}/about/index.html`).includes(`href="mailto:${settings.site.contact_email}"`));
+    }
+  } finally {
+    b.done();
+  }
+});
+
+test("Contact form (decision 0046): fields match the Worker's contract; Turnstile only on the Contact page, only with a real key; thanks page", () => {
+  const TURNSTILE = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+  const allPages = (out: string) => {
+    const found: string[] = [];
+    const walk = (d: string) => { for (const e of readdirSync(d, { withFileTypes: true })) { const p = join(d, e.name); if (e.isDirectory()) walk(p); else if (e.name.endsWith(".html")) found.push(p); } };
+    walk(out);
+    return found;
+  };
+  // With the placeholder key (injected, whatever links.json holds): no form, no outside script, the email links stay.
+  const plain = build({ PV_TURNSTILE_SITE_KEY: "PLACEHOLDER" });
+  try {
+    for (const p of allPages(plain.out)) assert.ok(!readFileSync(p, "utf8").includes("challenges.cloudflare.com"), `no Turnstile in ${p}`);
+    for (const lang of ["en", "es"]) {
+      const html = plain.read(`${lang}/contact/index.html`);
+      assert.doesNotMatch(html, /<form/);
+      assert.equal((html.match(/href="mailto:/g) ?? []).length >= 3, true, "the three lines keep the address");
+      const lines = [...html.matchAll(/<li[^>]*data-contact-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+      assert.equal(lines.length, 3);
+      for (const line of lines) assert.match(line, new RegExp(`<a[^>]*href="mailto:${settings.site.contact_email}"[^>]*>${settings.site.contact_email}</a>`), `${lang}: address on each line`);
+      assert.ok(plain.read(`${lang}/contact/thanks/index.html`).includes(i18n.translator(lang).t("contact.thanks.body")), `${lang}: thanks page`);
+    }
+  } finally {
+    plain.done();
+  }
+  // Every form word is a real translation, not a missing key shown as its own name.
+  for (const lang of ["en", "es"]) {
+    const tr = i18n.translator(lang);
+    for (const key of ["contact.form.heading", "contact.form.kind", "contact.form.send", "contact.form.required", "contact.error.turnstile", "contact.thanks.title", "contact.thanks.body"]) {
+      assert.notEqual(tr.t(key), key, `${lang}: ${key} is in the translation files`);
+    }
+  }
+  // With a real site key (test value): the form, as the Worker expects it.
+  const b = build({ PV_TURNSTILE_SITE_KEY: "0x4AAAAAAATestKey123" });
+  try {
+    for (const p of allPages(b.out)) {
+      const has = readFileSync(p, "utf8").includes(TURNSTILE);
+      assert.equal(has, /\/contact\/index\.html$/.test(p), `Turnstile only on the Contact page: ${p.slice(b.out.length)}`);
+    }
+    for (const lang of ["en", "es"]) {
+      const tr = i18n.translator(lang);
+      const html = b.read(`${lang}/contact/index.html`);
+      const head = html.slice(0, html.indexOf("</head>"));
+      assert.ok(head.includes(`<script src="${TURNSTILE}" async defer></script>`), "the script is in the head");
+      const form = html.match(/<form[^>]*>[\s\S]*?<\/form>/)![0];
+      assert.match(form, /<form[^>]*method="post"/);
+      assert.match(form, /action="https:\/\/contact\.phillyvolunteers\.org\/"/);
+      // Field names and limits from support/contact-worker/README.md.
+      const names = [...form.matchAll(/\sname="([^"]+)"/g)].map((m) => m[1]).sort();
+      assert.deepEqual(names, ["email", "kind", "lang", "message", "name", "website"]);
+      assert.deepEqual([...form.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]), ["listing-fix", "add-org", "build-city", "press", "other"]);
+      assert.match(form, new RegExp(`<input type="hidden" name="lang" value="${lang}"`));
+      assert.match(form, /<input[^>]*name="name"[^>]*maxlength="100"/);
+      assert.match(form, /<input[^>]*name="email"[^>]*type="email"[^>]*maxlength="254"[^>]*required/);
+      assert.match(form, /<textarea[^>]*name="message"[^>]*maxlength="4000"[^>]*required/);
+      assert.match(form, /<div class="contact__hp"[^>]*aria-hidden="true"[^>]*>[\s\S]*?<input[^>]*name="website"[^>]*tabindex="-1"[^>]*autocomplete="off"/);
+      assert.match(form, new RegExp(`<div class="cf-turnstile" data-sitekey="0x4AAAAAAATestKey123" data-language="${lang}"`));
+      // Every visible field has a label; required is said in words.
+      for (const id of ["contact-kind", "contact-name", "contact-email", "contact-message"]) assert.match(form, new RegExp(`<label for="${id}"`), id);
+      assert.equal((decode(form).match(new RegExp(tr.t("contact.form.required").replace(/[()]/g, "\\$&"), "g")) ?? []).length, 2);
+      // Decision 0046 amendment: who reads the message and how long it is kept, just before Send,
+      // and read with the button.
+      const kept = form.match(/<p id="contact-kept"[^>]*>([\s\S]*?)<\/p>\s*<button([^>]*)>/)!;
+      assert.notEqual(tr.t("contact.form.retention"), "contact.form.retention", `${lang}: the line is in the translation files`);
+      assert.equal(decode(kept[1]).trim(), tr.t("contact.form.retention"));
+      assert.match(kept[2], /type="submit"[^>]*aria-describedby="contact-kept"/);
+      // The error region holds every Worker error code's message, ready for scripts/contact-form.ts.
+      const err = html.match(/<div id="contact-error"[^>]*>/)![0];
+      for (const code of ["kind", "name", "email", "message", "turnstile", "too-large", "bad-request", "config", "send", "method"]) assert.match(err, new RegExp(`data-error-${code}="`), code);
+      assert.match(err, /role="alert"/);
+      // The email address stays on the page, once, as "Prefer email?".
+      assert.match(html, new RegExp(`<p class="contact__prefer"[^>]*>[\\s\\S]*?href="mailto:${settings.site.contact_email}"`));
+    }
+  } finally {
+    b.done();
+  }
+  // The error script only reads the address.
+  const script = readFileSync(join(site, "src/scripts/contact-form.ts"), "utf8").replace(/\/\/.*$/gm, "");
+  for (const banned of ["pushState", "replaceState", "location.href", "location.hash =", "localStorage", "sessionStorage", "fetch(", "sendBeacon", "cookie"]) assert.ok(!script.includes(banned), banned);
 });
 
 test("footer: a plain Instagram link on every page, from the links file; nothing loads from Instagram (owner, 2026-11-12)", () => {

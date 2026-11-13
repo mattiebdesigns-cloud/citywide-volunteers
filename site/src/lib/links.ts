@@ -6,7 +6,12 @@ import data from "../data/links.json" with { type: "json" };
 export interface SiteLinks {
   code_url: string;
   instagram: { url: string; handle: string } | null;
+  /** The Contact page form (decision 0046), or null while the Turnstile site key is still the placeholder. */
+  contactForm: { action: string; siteKey: string } | null;
 }
+
+/** The value links.json holds until the owner creates the Turnstile widget. */
+export const SITE_KEY_PLACEHOLDER = "PLACEHOLDER";
 
 const HTTPS = /^https:\/\/[^\s"<>]+$/;
 
@@ -18,6 +23,18 @@ export function siteLinks(file: unknown = data): SiteLinks {
     if (!/^https:\/\/www\.instagram\.com\/[A-Za-z0-9._]+\/$/.test(String(f.instagram.url))) problems.push('"instagram.url" must be an https://www.instagram.com/<name>/ address');
     if (!/^@[A-Za-z0-9._]+$/.test(String(f.instagram.handle))) problems.push('"instagram.handle" must look like @name');
   }
+  // The form: an https address, and a site key that is either the placeholder or a real key.
+  // PV_TURNSTILE_SITE_KEY (build time) overrides the file, for test builds only.
+  const form = (file as { contact_form?: { action?: string; turnstile_site_key?: string } })?.contact_form;
+  const key = (globalThis.process?.env?.PV_TURNSTILE_SITE_KEY || form?.turnstile_site_key || "").trim();
+  if (form) {
+    if (!HTTPS.test(String(form.action))) problems.push('"contact_form.action" must be an https:// address');
+    if (key !== SITE_KEY_PLACEHOLDER && !/^[0-9A-Za-z_-]{8,100}$/.test(key)) problems.push('"contact_form.turnstile_site_key" must be a Turnstile site key or "PLACEHOLDER"');
+  }
   if (problems.length) throw new Error(`src/data/links.json cannot be used:\n  - ${problems.join("\n  - ")}`);
-  return { code_url: f.code_url!, instagram: f.instagram ?? null };
+  return {
+    code_url: f.code_url!,
+    instagram: f.instagram ?? null,
+    contactForm: form && key !== SITE_KEY_PLACEHOLDER ? { action: form.action!, siteKey: key } : null,
+  };
 }

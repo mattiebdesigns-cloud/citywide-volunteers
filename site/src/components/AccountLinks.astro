@@ -1,0 +1,71 @@
+---
+/**
+ * On a listing page, when accounts are on (settings accounts.url; decision
+ * 0033, plan task 2.1): "Log this shift", on a sensitive listing the icon and
+ * the line that no record is kept on your profile after 30 days (decision 0017
+ * amendment), and "Report a safety concern" as the link, with the line on who
+ * reads it as plain text after it. The id goes after #, which
+ * browsers never send to a server. Nothing here when accounts are off.
+ * The sensitive note uses isSensitive(), the same value /listings.json carries
+ * (sensitive-events condition 1).
+ */
+import Icon from "./ui/Icon.astro";
+import { siteData, translator } from "../lib/site.ts";
+import { accountsUrl, linkable, logUrl, reportUrl } from "../lib/accounts.ts";
+import { isSensitive } from "../lib/prepare.ts";
+import type { Listing } from "../lib/types.ts";
+
+interface Props {
+  lang: string;
+  item: Pick<Listing, "id" | "sensitive" | "type">;
+}
+
+const { lang, item } = Astro.props;
+const t = translator(lang).t;
+const base = accountsUrl(siteData().settings);
+const on = linkable(base, item.id);
+const sensitive = isSensitive(item);
+---
+
+{
+  on && (
+    <section class="account-links" data-account-links data-sensitive={String(sensitive)}>
+      <p><a class="account-links__link" href={logUrl(base, lang, item.id)} rel="noopener noreferrer">{t("accounts.log")}</a></p>
+      {sensitive && (
+        <p class="account-links__note" data-sensitive-note>
+          <Icon name="sensitive" />
+          <span>{t("accounts.sensitive_note")}</span>
+        </p>
+      )}
+      <p data-report>
+        <a class="account-links__link" href={reportUrl(base, lang, item.id)} rel="noopener noreferrer">{t("accounts.report_link")}</a>
+        <span class="account-links__aside">{t("accounts.report_note")}</span>
+      </p>
+    </section>
+  )
+}
+
+<style>
+  .account-links {
+    margin-block: var(--space-4);
+  }
+  .account-links p {
+    margin: 0 0 var(--space-2);
+  }
+  .account-links__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong);
+  }
+  /* The note sits right under "Log this shift": the icon is decorative; the words say it. */
+  .account-links__note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .account-links__note :global(.icon) {
+    flex: none;
+    margin-top: 0.15em;
+  }
+</style>

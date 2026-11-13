@@ -136,6 +136,11 @@ export interface SiteSettings extends I18nSettings {
   faith_traditions?: string[];
   activities?: string[];
   features: { campaigns: boolean; [key: string]: unknown };
+  /**
+   * The private account pages (decision 0033), such as https://my.phillyvolunteers.org.
+   * Empty or missing: no account links, no sensitive-listing note, no /listings.json.
+   */
+  accounts?: { url?: string; [key: string]: unknown };
 }
 
 /** A listing plus facts worked out once at build time, in the city's time zone. */

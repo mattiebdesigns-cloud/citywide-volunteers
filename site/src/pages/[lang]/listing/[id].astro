@@ -14,6 +14,7 @@ import IconButton from "../../../components/ui/IconButton.astro";
 import Pill from "../../../components/ui/Pill.astro";
 import SpotsBadge from "../../../components/ui/SpotsBadge.astro";
 import { buildIcs } from "../../../lib/ics.ts";
+import AccountLinks from "../../../components/AccountLinks.astro";
 import { paths, siteData, translator } from "../../../lib/site.ts";
 import type { PreparedListing } from "../../../lib/types.ts";
 import { joinLabel, placeText, splitAround, spotsLabel, timeText, typeLabel, whenText, whereLines } from "../../../lib/words.ts";
@@ -283,6 +284,9 @@ const reportHref =
         data-failed={t("listing.share_failed")}
       >
       </p>
+
+      {/* Account links (decision 0033; plan task 2.1): only when settings accounts.url is set. */}
+      <AccountLinks lang={lang} item={e} />
 
       <p class="listing__checked">
         <strong>{t("listing.last_checked", { date: tr.formatDate(e.last_seen_at) })}</strong>

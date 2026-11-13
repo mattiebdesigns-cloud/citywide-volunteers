@@ -1,0 +1,72 @@
+---
+/**
+ * "Log this shift" under a Flexible Shift card (decision 0047 point 4; plan
+ * task 2.1), only when accounts are on. Each link has its own name for screen
+ * readers ("Log this shift for <title>"), the title in its own language.
+ * On a sensitive card, the same icon and note as a sensitive listing page,
+ * from isSensitive(), the value /listings.json carries (sensitive-events condition 1).
+ */
+import Icon from "./ui/Icon.astro";
+import { isSensitive } from "../lib/prepare.ts";
+import type { Listing } from "../lib/types.ts";
+import { siteData, translator } from "../lib/site.ts";
+import { accountsUrl, linkable, logUrl } from "../lib/accounts.ts";
+import { templateParts } from "../lib/map.ts";
+
+interface Props {
+  lang: string;
+  id: string;
+  title: string;
+  titleLang: string;
+  /** The card's listing, for its sensitive mark. */
+  item: Pick<Listing, "sensitive" | "type">;
+}
+
+const { lang, id, title, titleLang, item } = Astro.props;
+const sensitive = isSensitive(item);
+const t = translator(lang).t;
+const base = accountsUrl(siteData().settings);
+const parts = templateParts(t("accounts.log_for"), { title: { text: title, lang: titleLang } });
+---
+
+{
+  linkable(base, id) && (
+    <div class="card-log" data-card-log data-sensitive={String(sensitive)}>
+      <p>
+        <a href={logUrl(base, lang, id)} rel="noopener noreferrer">
+          {t("accounts.log")}<span class="sr-only"> {parts.map((p) => (p.lang ? <span lang={p.lang}>{p.text}</span> : p.text))}</span>
+        </a>
+      </p>
+      {sensitive && (
+        <p class="card-log__note" data-sensitive-note>
+          <Icon name="sensitive" />
+          <span>{t("accounts.sensitive_note")}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .card-log {
+    margin: var(--space-2) 0 0;
+  }
+  .card-log p {
+    margin: 0 0 var(--space-1);
+  }
+  .card-log__note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .card-log__note :global(.icon) {
+    flex: none;
+    margin-top: 0.15em;
+  }
+  .card-log a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong);
+  }
+</style>

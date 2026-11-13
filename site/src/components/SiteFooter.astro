@@ -11,8 +11,9 @@
  * storage (the Medicaid calculator, decision 0022) show no switch and stay light.
  */
 import MapCredits from "./MapCredits.astro";
-import { paths, translator } from "../lib/site.ts";
+import { paths, siteData, translator } from "../lib/site.ts";
 import { siteLinks } from "../lib/links.ts";
+import { accountsUrl, weeklyUrl } from "../lib/accounts.ts";
 import { startDateText } from "../lib/medicaid.ts";
 
 interface Props {
@@ -29,6 +30,8 @@ const { lang, path, testBuild = false, noStorage = false, mapCredits = false } =
 const tr = translator(lang);
 // The project's Instagram (owner, 2026-11-12): a plain link from src/data/links.json; nothing loads from Instagram.
 const instagram = siteLinks().instagram;
+// "Weekly email" (decision 0033): only when the account pages are on.
+const accounts = accountsUrl(siteData().settings);
 const current = (href: string) => (href === path ? "page" : undefined);
 ---
 
@@ -37,6 +40,8 @@ const current = (href: string) => (href === path ? "page" : undefined);
     <a class="site-footer__link" href={paths.medicaid(lang)} aria-current={current(paths.medicaid(lang))}
       >{tr.t("medicaid.link_with_date", { date: startDateText(tr.lang) })}</a
     >
+    {accounts && <a class="site-footer__link" href={weeklyUrl(accounts, lang)} rel="noopener noreferrer" data-weekly>{tr.t("site.nav_email")}</a>}
+    <a class="site-footer__link" href={paths.contact(lang)} aria-current={current(paths.contact(lang))}>{tr.t("contact.nav")}</a>
     {instagram && <a class="site-footer__link" href={instagram.url} rel="noopener noreferrer" data-instagram>{tr.t("site.instagram", { handle: instagram.handle })}</a>}
     {
       !noStorage && (

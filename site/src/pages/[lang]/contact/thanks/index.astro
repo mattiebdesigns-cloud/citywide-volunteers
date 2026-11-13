@@ -1,0 +1,32 @@
+---
+/**
+ * After a message is sent from the Contact form (decision 0046): the private
+ * Worker sends people here. A plain thank-you, no script, nothing tracked.
+ */
+import Base from "../../../../layouts/Base.astro";
+import { languagePaths, paths, siteData, translator } from "../../../../lib/site.ts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.params as { lang: string };
+const { i18n } = siteData();
+const tr = translator(lang);
+const t = tr.t;
+const alternates = Object.fromEntries(i18n.languages.map((code) => [code, `${paths.contact(code)}thanks/`]));
+---
+
+<Base lang={lang} title={t("contact.thanks.title")} alternates={alternates} path={`${paths.contact(lang)}thanks/`}>
+  <div class="page contact-thanks" data-contact-thanks>
+    <h1>{t("contact.thanks.title")}</h1>
+    <p>{t("contact.thanks.body")}</p>
+    <p><a class="tap-link" href={paths.home(lang)}>{t("listing.back")}</a></p>
+  </div>
+</Base>
+
+<style>
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+</style>

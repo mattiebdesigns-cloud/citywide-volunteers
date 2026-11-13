@@ -1,8 +1,12 @@
 {
-  "_about": "Public links shown on the site (owner, 2026-11-10 and 2026-11-12). Not settings: the city's settings file has no field for these. code_url: the public code repository (Progress and About pages). instagram: the project's Instagram account, linked from the footer as plain text (no embed, script or image from Instagram).",
+  "_about": "Public links shown on the site (owner, 2026-11-10 and 2026-11-12). Not settings: the city's settings file has no field for these. code_url: the public code repository (Progress and About pages). instagram: the project's Instagram account, linked from the footer as plain text (no embed, script or image from Instagram). contact_form (decision 0046): where the Contact page form posts (the private Worker), and the Cloudflare Turnstile site key, which is public. While the key is \"PLACEHOLDER\", the Contact page shows no form and loads no outside script; it shows the email address instead.",
   "code_url": "https://github.com/mattiebdesigns-cloud/citywide-volunteers",
   "instagram": {
     "url": "https://www.instagram.com/phillyvolunteers/",
     "handle": "@phillyvolunteers"
+  },
+  "contact_form": {
+    "action": "https://contact.phillyvolunteers.org/",
+    "turnstile_site_key": "0x4AAAAAAF-eZfAl_oPd-4zM"
   }
 }
