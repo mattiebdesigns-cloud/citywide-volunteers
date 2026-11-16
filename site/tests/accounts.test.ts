@@ -21,6 +21,7 @@ import {
   flexibleFavoriteUrl,
   hostFavoriteUrl,
   listingsFile,
+  sortingFacts,
   logUrl,
   reportUrl,
   weeklyUrl,
@@ -38,7 +39,24 @@ const opp: OpportunitiesFile = JSON.parse(readFileSync(join(site, "../docs/examp
 const i18n = createI18n(settings, Object.fromEntries(["en", "es"].map((c) => [c, JSON.parse(readFileSync(join(site, `src/i18n/${c}.json`), "utf8"))])));
 const tr = { en: i18n.translator("en"), es: i18n.translator("es") } as Record<string, ReturnType<typeof i18n.translator>>;
 const MY = "https://my.phillyvolunteers.org";
-const FIELDS = ["area", "end", "flexible", "id", "listing_language", "org_id", "org_name", "place_id", "sensitive", "series_id", "start", "start_time", "title"];
+const FIELDS = [
+  "activities",
+  "area",
+  "cause",
+  "end",
+  "flexible",
+  "id",
+  "listing_language",
+  "org_id",
+  "org_name",
+  "place_id",
+  "sensitive",
+  "series_id",
+  "start",
+  "start_time",
+  "team_required",
+  "title",
+];
 const TZ = settings.site.timezone;
 // Test ids in the event format's shape (decision 0060); the pipeline computes the real ones.
 const hex = (s: string) => createHash("sha256").update(s).digest("hex").slice(0, 16);
@@ -66,16 +84,16 @@ test("favorites links (decision 0060): ids only, after #; series on recurring, h
   const org = orgId("Sample Org");
   const series = seriesId("x");
   assert.ok(ORG_ID.test(org) && SERIES_ID.test(series));
-  assert.equal(favoriteUrl(MY, "en", "add", "series", series), `${MY}/favorites/#add=series:${series}`);
-  assert.equal(favoriteUrl(MY, "es", "offer", "host", org), `${MY}/es/favorites/#offer=host:${org}`);
+  assert.equal(favoriteUrl(MY, "en", "add", "series", series), `${MY}/recommended/#add=series:${series}`);
+  assert.equal(favoriteUrl(MY, "es", "offer", "host", org), `${MY}/es/recommended/#offer=host:${org}`);
   // Recurring with a series id: the series.
   assert.deepEqual(eventFavorite(MY, "en", { recurring: true, series_id: series, org_id: org }), {
-    href: `${MY}/favorites/#add=series:${series}`,
+    href: `${MY}/recommended/#add=series:${series}`,
     kind: "series",
   });
   // One-time: the host is offered, not saved straight away.
   assert.deepEqual(eventFavorite(MY, "es", { recurring: false, series_id: null, org_id: org }), {
-    href: `${MY}/es/favorites/#offer=host:${org}`,
+    href: `${MY}/es/recommended/#offer=host:${org}`,
     kind: "one-time",
   });
   // A series id on a listing that is not recurring does not count (event format rule).
@@ -89,9 +107,9 @@ test("favorites links (decision 0060): ids only, after #; series on recurring, h
   for (const bad of ["o-XYZ", "O-0123456789abcdef", "o-0123456789abcdef0", "https://x", "o-0123456789abcde#"]) {
     assert.equal(hostFavoriteUrl(MY, "en", { org_id: bad }), "", bad);
   }
-  assert.equal(hostFavoriteUrl(MY, "en", { org_id: org }), `${MY}/favorites/#add=host:${org}`);
+  assert.equal(hostFavoriteUrl(MY, "en", { org_id: org }), `${MY}/recommended/#add=host:${org}`);
   // Flexible opportunities ("Flexible and team shifts"): by their own id; not when the id cannot be used.
-  assert.equal(flexibleFavoriteUrl(MY, "es", "b2c4e6f8a0b1c3d5"), `${MY}/es/favorites/#add=flexible:b2c4e6f8a0b1c3d5`);
+  assert.equal(flexibleFavoriteUrl(MY, "es", "b2c4e6f8a0b1c3d5"), `${MY}/es/recommended/#add=flexible:b2c4e6f8a0b1c3d5`);
   assert.equal(flexibleFavoriteUrl(MY, "en", "Bad_Id"), "");
   assert.equal(flexibleFavoriteUrl("", "en", "b2c4e6f8a0b1c3d5"), "");
   // Accounts off (plan task 1.3): no links at all.
@@ -173,8 +191,35 @@ test("listings.json: exactly the contract's fields; dated and flexible; sensitiv
   // An id the account pages cannot use is left out.
   const bad = { ...structuredClone(sample.events[0]), id: "Bad_Id" };
   assert.ok(!listingsFile(sample, prepareListings({ ...sample, events: [bad] }, settings, { now }), [], TZ).listings.some((x) => x.id === "Bad_Id"));
-  // The file names no person: only the eleven listing facts.
+  // The file names no person: only the sixteen listing facts.
   assert.doesNotMatch(JSON.stringify(file), /email|attend|going|signed|account|contact/i);
+});
+
+test("listings.json: cause, activities and team_required (decision 0064, Q247 (a)) are the listing's own, as the calendar shows them", () => {
+  const now = new Date("2026-10-01T00:00:00Z");
+  const listings = prepareListings(sample, settings, { now });
+  const opps = prepareOpportunities(opp, settings);
+  const file = listingsFile(sample, listings, opps, TZ);
+  for (const e of [...listings, ...opps]) {
+    const x = file.listings.find((y) => y.id === e.id)!;
+    assert.equal(x.cause, e.cause ?? null, e.id);
+    assert.deepEqual(x.activities, e.activity ?? [], e.id);
+    assert.equal(x.team_required, e.team_required === true, e.id);
+    if (x.cause !== null) assert.ok(settings.causes.includes(x.cause), `${e.id}: cause is from the settings' list`);
+    for (const a of x.activities) assert.ok((settings.activities ?? []).includes(a), `${e.id}: activity ${a} is from the settings' list`);
+  }
+  // The sample really exercises each field.
+  assert.ok(file.listings.some((x) => x.cause !== null), "a listing with a cause");
+  assert.ok(file.listings.some((x) => x.activities.length > 0), "a listing with activities");
+  assert.ok(file.listings.some((x) => x.team_required) && file.listings.some((x) => !x.team_required), "team and not team");
+  // Older files without them, and odd values: null, [] and false; never anything else.
+  assert.deepEqual(sortingFacts({}), { cause: null, activities: [], team_required: false });
+  assert.deepEqual(sortingFacts({ cause: "<b>", activity: ["outdoors", "Bad Id", "outdoors", 7 as unknown as string], team_required: "yes" as unknown as boolean }), {
+    cause: null,
+    activities: ["outdoors"],
+    team_required: false,
+  });
+  assert.deepEqual(sortingFacts({ cause: "food", activity: null, team_required: true }), { cause: "food", activities: [], team_required: true });
 });
 
 // ---- Built pages, both ways (decision 0033: "A test builds the calendar both ways") ----
@@ -222,7 +267,7 @@ test("accounts off (today): no /listings.json, no account links, no sensitive no
       const html = readFileSync(p, "utf8");
       assert.doesNotMatch(
         html,
-        /data-account-links|data-sensitive-note|data-card-log|data-weekly|data-favorite|favorites\/|#add=|#offer=|my\.phillyvolunteers|#listing=/,
+        /data-account-links|data-sensitive-note|data-card-log|data-weekly|data-favorite|favorites\/|recommended\/|#add=|#offer=|my\.phillyvolunteers|#listing=/,
         p.slice(out.length),
       );
     }
@@ -262,8 +307,8 @@ test("accounts on: listings.json, log and report links, card log links, weekly l
         assert.equal(report[2].replaceAll("&#39;", "'").trim(), tr[lang].t("accounts.report_note"), `${lang} ${l.id}: plain note`);
         assert.match(html, /<meta name="referrer" content="no-referrer"/);
         // Favorites (decision 0060): the host's ☆, and the listing's own ☆ (series, or host offered).
-        const hostHref = `href="${MY}${prefix}/favorites/#add=host:${l.org_id}"`;
-        const eventHref = l.series_id ? `href="${MY}${prefix}/favorites/#add=series:${l.series_id}"` : `href="${MY}${prefix}/favorites/#offer=host:${l.org_id}"`;
+        const hostHref = `href="${MY}${prefix}/recommended/#add=host:${l.org_id}"`;
+        const eventHref = l.series_id ? `href="${MY}${prefix}/recommended/#add=series:${l.series_id}"` : `href="${MY}${prefix}/recommended/#offer=host:${l.org_id}"`;
         assert.ok(html.includes(hostHref), `${lang} ${l.id}: host favorite link`);
         assert.ok(html.includes(eventHref), `${lang} ${l.id}: listing favorite link`);
         for (const href of [hostHref, eventHref]) {
@@ -275,13 +320,13 @@ test("accounts on: listings.json, log and report links, card log links, weekly l
           assert.ok(link.includes(l.org_name) || link.includes(l.title) || lang === "es", `${lang} ${l.id}: the link names its item`);
         }
         // The host's id is the only thing after # in every favorites link: never a name.
-        for (const m of html.matchAll(/favorites\/#([^"]*)"/g)) assert.match(m[1], /^(add=series:s|add=host:o|offer=host:o)-[0-9a-f]{16}$/);
+        for (const m of html.matchAll(/recommended\/#([^"]*)"/g)) assert.match(m[1], /^(add=series:s|add=host:o|offer=host:o)-[0-9a-f]{16}$/);
         favorites += 1;
       }
       // Calendar cards: the same ☆ for every dated listing, recurring ones saving the series.
       const homeCards = readFileSync(join(out, lang, "index.html"), "utf8");
       for (const l of file.listings.filter((x: { flexible: boolean }) => !x.flexible)) {
-        const href = l.series_id ? `${MY}${prefix}/favorites/#add=series:${l.series_id}` : `${MY}${prefix}/favorites/#offer=host:${l.org_id}`;
+        const href = l.series_id ? `${MY}${prefix}/recommended/#add=series:${l.series_id}` : `${MY}${prefix}/recommended/#offer=host:${l.org_id}`;
         assert.ok(homeCards.includes(`href="${href}"`), `${lang} home card ${l.id}: favorite link`);
       }
       // A sensitive recurring listing keeps its ☆ (decision 0060: device-only on the account pages).
@@ -301,7 +346,7 @@ test("accounts on: listings.json, log and report links, card log links, weekly l
           const block = html.slice(html.lastIndexOf("data-card-log", at), html.indexOf("</div>", at));
           assert.equal(block.includes("data-sensitive-note"), l.sensitive, `${lang} ${page} ${l.id}: note matches the file`);
           // The card's ☆ (decision 0060, flexible and team shifts), sensitive ones included, named for screen readers.
-          const fav = html.indexOf(`href="${MY}${prefix}/favorites/#add=flexible:${l.id}"`, at);
+          const fav = html.indexOf(`href="${MY}${prefix}/recommended/#add=flexible:${l.id}"`, at);
           assert.ok(fav > at && fav < html.indexOf("</li>", at), `${lang} ${page} ${l.id}: flexible favorite link on the card`);
           const link = html.slice(fav, html.indexOf("</a>", fav));
           assert.match(link, /aria-hidden="true"[^>]*>☆<\/span>/, `${lang} ${page} ${l.id}: decorative star`);

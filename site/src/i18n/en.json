@@ -801,8 +801,8 @@
     "sensitive_note": "30 days after this shift, your profile keeps only its hours, in a monthly total. The record of the shift itself is deleted."
   },
   "favorites": {
-    "add": "Add to My Favorites",
-    "add_host": "Add this host to My Favorites",
+    "add": "Star this shift",
+    "add_host": "Star this organization",
     "series_for": "(repeats on a schedule: {title})",
     "one_time_for": "(one-time event: {title})",
     "flexible_for": "(any time: {title})",

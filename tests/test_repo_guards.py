@@ -299,3 +299,57 @@ def test_secret_scan_skips_ignored_files_but_not_committed_ones(tmp_path):
     subprocess.run([*git, "add", "-f", "node_modules/forced.js"], check=True)
     findings = [str(f) for f in repo_guard.find_secrets(tmp_path, history=False)]
     assert findings == ["node_modules/forced.js:1: possible Anthropic API key"], findings
+
+
+def _copy_case(tmp_path, private_path: str):
+    """A public repo with one committed drawing file, and a private repo that
+    holds a byte-for-byte copy of it at `private_path`. Invented content."""
+    import subprocess
+
+    public = tmp_path / "public"
+    private = tmp_path / "private"
+    public.mkdir()
+    private.mkdir()
+    git = _new_repo(public)
+    source = public / "site/src/components/ui/causeArt.ts"
+    source.parent.mkdir(parents=True)
+    source.write_text("// MIT\nexport const invented = 'drawing one';\n")
+    subprocess.run([*git, "add", "site"], check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "Add drawing"], check=True)
+    subprocess.run(["git", "init", "-q", str(private)], check=True)
+    copy = private / private_path
+    copy.parent.mkdir(parents=True)
+    copy.write_bytes(source.read_bytes())
+    return public, private, git, source
+
+
+def _content_findings(public, private):
+    """Only the content comparison (the helper repo's notes.txt is off the allow list)."""
+    return [p for p in repo_guard.find_leaks(public, private) if p.startswith("private file ")]
+
+
+def test_leak_check_allows_listed_unchanged_copy_of_public_file(tmp_path):
+    public, private, _, _ = _copy_case(tmp_path, "web/src/lib/art/causeArt.ts")
+    assert _content_findings(public, private) == []
+
+
+def test_leak_check_flags_unlisted_copy_of_public_file(tmp_path):
+    public, private, _, _ = _copy_case(tmp_path, "web/src/lib/art/otherArt.ts")
+    problems = _content_findings(public, private)
+    assert problems == [
+        "private file web/src/lib/art/otherArt.ts has an exact copy in the public repo or its history"
+    ]
+
+
+def test_leak_check_flags_listed_copy_once_public_source_changes(tmp_path):
+    # The copy now matches only an older public version: no longer a current
+    # copy of its source, so it is compared like any private file.
+    import subprocess
+
+    public, private, git, source = _copy_case(tmp_path, "web/src/lib/art/causeArt.ts")
+    source.write_text("// MIT\nexport const invented = 'drawing two';\n")
+    subprocess.run([*git, "commit", "-q", "-am", "Change drawing"], check=True)
+    problems = _content_findings(public, private)
+    assert problems == [
+        "private file web/src/lib/art/causeArt.ts has an exact copy in the public repo or its history"
+    ]

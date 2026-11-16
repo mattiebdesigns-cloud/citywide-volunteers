@@ -12,7 +12,9 @@ Two checks:
    source lists and .env files, wherever they turn up. When the private repo
    is available it also compares contents: no file of the private repo may
    have an exact copy anywhere in the public repo's history, except the few
-   test files the two repos share on purpose.
+   test files the two repos share on purpose and the named public files
+   copied into the private repo (COPIED_FROM_PUBLIC), each only while it is
+   byte-identical to its source in the public repo's latest commit.
 
 2. Secret scan. Looks for key-shaped text, and for passwords written into
    web addresses (scheme://user:password@host), in tracked files and in every
@@ -88,6 +90,17 @@ PLACEHOLDER_NAMES = {".gitkeep", ".keep"}
 # Files the two repos share on purpose (identical test code). The content
 # comparison skips them; everything else in the private repo is compared.
 SHARED_ON_PURPOSE = ("tests/guards/", "tests/test_licences.py", "tests/test_workflows.py")
+
+# Public MIT files copied INTO the private repo, byte for byte (private path:
+# public source path). The content comparison skips such a file only while it
+# is identical to that source in the public repo's latest commit: an edited
+# copy, or a copy whose public source changed or went away, is compared like
+# any other private file. Adding a path here needs the coordinator and the
+# scraping and licence gatekeeper (decision 0064, plan task 4.1).
+COPIED_FROM_PUBLIC = {
+    "web/src/lib/art/causeArt.ts": "site/src/components/ui/causeArt.ts",
+    "web/src/lib/art/onboardingArt.ts": "site/src/components/ui/onboardingArt.ts",
+}
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -184,6 +197,17 @@ def private_blob_ids(private_repo: Path) -> dict[str, str]:
     return found
 
 
+def public_source_blob(public_repo: Path, path: str) -> str | None:
+    """Blob id of a file in the public repo's latest commit, or None if absent."""
+    result = subprocess.run(
+        ["git", "-C", str(public_repo), "rev-parse", "--verify", "--quiet", f"HEAD:{path}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
 def find_leaks(public_repo: Path, private_repo: Path | None = None) -> list[str]:
     problems: list[str] = []
     for path in tracked_files(public_repo):
@@ -198,6 +222,9 @@ def find_leaks(public_repo: Path, private_repo: Path | None = None) -> list[str]
     if private_repo is not None:
         public_blobs = all_blob_ids(public_repo)
         for blob, path in sorted(private_blob_ids(private_repo).items()):
+            source = COPIED_FROM_PUBLIC.get(path)
+            if source and public_source_blob(public_repo, source) == blob:
+                continue  # an unchanged copy of a public file, not a leak
             if blob in public_blobs:
                 problems.append(
                     f"private file {path} has an exact copy in the public repo or its history"

@@ -801,8 +801,8 @@
     "sensitive_note": "30 días después de este turno, su perfil guarda solo sus horas, en un total mensual. El registro del turno se borra."
   },
   "favorites": {
-    "add": "Agregar a Mis favoritos",
-    "add_host": "Agregar esta organización a Mis favoritos",
+    "add": "Marcar este turno con estrella",
+    "add_host": "Marcar esta organización con estrella",
     "series_for": "(se repite según un horario: {title})",
     "one_time_for": "(evento único: {title})",
     "flexible_for": "(en cualquier momento: {title})",

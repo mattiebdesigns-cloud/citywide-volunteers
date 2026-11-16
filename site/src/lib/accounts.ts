@@ -64,13 +64,20 @@ export function favoriteIds(e: FavoriteFields): { org_id: string | null; series_
 }
 
 /**
- * A link to My Favorites on the account pages (decision 0060, design accepted
- * 2026-11-16). `add` saves the item; `offer` asks first ("This event is not
+ * The account pages' Your Recommended Shifts page, where the ☆ links go
+ * (decision 0064; it replaces decision 0060's My Favorites page, and the old
+ * /favorites/ address forwards there).
+ */
+const RECOMMENDED = "/recommended/";
+
+/**
+ * A ☆ link to Your Recommended Shifts on the account pages (decisions 0060,
+ * 0064). `add` stars the item; `offer` asks first ("This event is not
  * recurring. Favorite the host organization instead?"). Only the id goes, and
  * only after #, which browsers never send to a server.
  */
 export function favoriteUrl(base: string, lang: string, action: "add" | "offer", kind: "series" | "host", id: string): string {
-  return `${base}${langPart(lang)}/favorites/#${action}=${kind}:${id}`;
+  return `${base}${langPart(lang)}${RECOMMENDED}#${action}=${kind}:${id}`;
 }
 
 /** The ☆ on a dated listing's card or page. */
@@ -102,7 +109,7 @@ export function eventFavorite(base: string, lang: string, e: FavoriteFields): Ev
  * "" when accounts are off. Sensitive ones keep the ☆, as a series does.
  */
 export function flexibleFavoriteUrl(base: string, lang: string, id: string): string {
-  return linkable(base, id) ? `${base}${langPart(lang)}/favorites/#add=flexible:${id}` : "";
+  return linkable(base, id) ? `${base}${langPart(lang)}${RECOMMENDED}#add=flexible:${id}` : "";
 }
 
 /** The ☆ beside a host's name, or "" when accounts are off or the listing has no host id. */
@@ -111,13 +118,35 @@ export function hostFavoriteUrl(base: string, lang: string, e: FavoriteFields): 
   return base && org_id ? favoriteUrl(base, lang, "add", "host", org_id) : "";
 }
 
+/** The shape of a cause or activity id in the settings' lists: lowercase words joined by "-". */
+const TAG_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
 /**
- * One entry of /listings.json: exactly these thirteen fields, nothing about any
+ * The listing's cause, activities and Team Shift mark, for the account pages'
+ * sorting (decision 0064, owner Q247 (a)). The same values the calendar puts on
+ * the listing's card and page. A cause or activity id of the wrong shape is
+ * left out (cause null); activities are in the listing's order, each once, []
+ * when none.
+ */
+export function sortingFacts(e: { cause?: string | null; activity?: string[] | null; team_required?: boolean }): {
+  cause: string | null;
+  activities: string[];
+  team_required: boolean;
+} {
+  const cause = typeof e.cause === "string" && TAG_ID.test(e.cause) ? e.cause : null;
+  const activities = Array.isArray(e.activity) ? [...new Set(e.activity.filter((a) => typeof a === "string" && TAG_ID.test(a)))] : [];
+  return { cause, activities, team_required: e.team_required === true };
+}
+
+/**
+ * One entry of /listings.json: exactly these sixteen fields, nothing about any
  * person. org_id and series_id are null when the listing has none; series_id
  * is always null on a flexible entry (decision 0060). place_id (decision 0063)
  * is null when the listing has no org_id or no address. start_time is the
  * start's local time of day, "HH:MM" in the settings' time zone, for the
- * volunteer time notes (decision 0062); null on a flexible entry.
+ * volunteer time notes (decision 0062); null on a flexible entry. cause,
+ * activities and team_required (decision 0064) are for Your Recommended
+ * Shifts' sorting: see sortingFacts().
  */
 export interface ListingsFileEntry {
   id: string;
@@ -133,6 +162,9 @@ export interface ListingsFileEntry {
   sensitive: boolean;
   flexible: boolean;
   listing_language: string;
+  cause: string | null;
+  activities: string[];
+  team_required: boolean;
 }
 
 export interface ListingsFile {
@@ -184,6 +216,7 @@ export function listingsFile(
       sensitive: isSensitive(e),
       flexible,
       listing_language: e.listing_language,
+      ...sortingFacts(e),
     });
   };
   for (const e of listings) add(e, false);
