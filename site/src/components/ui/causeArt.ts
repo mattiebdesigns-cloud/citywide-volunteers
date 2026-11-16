@@ -10,14 +10,29 @@
 //   l = ink outline, no fill; cl = white with ink outline;
 //   w = white line, no fill; s = soft white shape for depth.
 export const art: Record<string, string> = {
+  // Two hands holding out a bowl of soup, with steam (no faces; coral hands
+  // with an ink outline, white sleeves).
   food: `
-    <circle class="s" cx="250" cy="40" r="48"/>
-    <path class="l" d="M138 52c-8-10 8-16 0-26M160 50c-8-10 8-16 0-26M182 52c-8-10 8-16 0-26"/>
-    <path class="a" d="M100 70h120c0 34-27 56-60 56s-60-22-60-56z"/>
-    <rect class="b" x="92" y="64" width="136" height="12" rx="6"/>
-    <path class="w" d="M120 88c4 12 14 20 26 22"/>
-    <rect class="b" x="236" y="40" width="10" height="72" rx="5" transform="rotate(18 241 76)"/>
-    <ellipse class="b" cx="231" cy="40" rx="14" ry="20" transform="rotate(18 231 40)"/>`,
+    <circle class="s" cx="256" cy="40" r="44"/>
+    <path class="l" d="M138 46c-8-10 8-16 0-26M160 44c-8-10 8-16 0-26M182 46c-8-10 8-16 0-26"/>
+    <path class="a" d="M108 66h104c0 30-23 50-52 50s-52-20-52-50z"/>
+    <rect class="b" x="100" y="58" width="120" height="12" rx="6"/>
+    <rect class="l" x="100" y="58" width="120" height="12" rx="6"/>
+    <path class="w" d="M126 82c4 12 14 20 26 22"/>
+    <g transform="translate(4 -16) rotate(-30 116 110)">
+      <rect class="cl" x="42" y="97" width="56" height="26" rx="4"/>
+      <path class="b" d="M98 98h18a12 12 0 0 1 0 24H98z"/>
+      <path class="l" d="M98 98h18a12 12 0 0 1 0 24H98z"/>
+      <path class="b" d="M104 99v-8a5 5 0 0 1 10 0v8z"/>
+      <path class="l" d="M104 99v-8a5 5 0 0 1 10 0v8"/>
+    </g>
+    <g transform="translate(320 0) scale(-1 1) translate(4 -16) rotate(-30 116 110)">
+      <rect class="cl" x="42" y="97" width="56" height="26" rx="4"/>
+      <path class="b" d="M98 98h18a12 12 0 0 1 0 24H98z"/>
+      <path class="l" d="M98 98h18a12 12 0 0 1 0 24H98z"/>
+      <path class="b" d="M104 99v-8a5 5 0 0 1 10 0v8z"/>
+      <path class="l" d="M104 99v-8a5 5 0 0 1 10 0v8"/>
+    </g>`,
   "parks-and-trees": `
     <circle class="b" cx="250" cy="38" r="22"/>
     <ellipse class="a" cx="160" cy="150" rx="210" ry="40" opacity=".35"/>
