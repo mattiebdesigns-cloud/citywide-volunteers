@@ -218,7 +218,8 @@
     "share_failed": "No se pudo copiar el enlace. Cópielo de la barra de direcciones.",
     "full": "Completo",
     "spots_left": {"one": "Queda {count} lugar, según datos del {day}", "other": "Quedan {count} lugares, según datos del {day}"},
-    "spots_left_on": {"one": "Queda {count} lugar, según datos del {date}", "other": "Quedan {count} lugares, según datos del {date}"}
+    "spots_left_on": {"one": "Queda {count} lugar, según datos del {date}", "other": "Quedan {count} lugares, según datos del {date}"},
+    "time_note": "Una persona que ya hizo este voluntariado nos contó que este turno empieza a las {time}, pero el sitio web de la organización anfitriona indica la hora que aparece aquí."
   },
   "report": {
     "button": "Reportar un problema con este anuncio",
@@ -798,5 +799,18 @@
     "report_link": "Reportar un problema de seguridad",
     "report_note": "Esto llega al equipo de Philly Volunteers, no a la organización anfitriona.",
     "sensitive_note": "30 días después de este turno, su perfil guarda solo sus horas, en un total mensual. El registro del turno se borra."
+  },
+  "favorites": {
+    "add": "Agregar a Mis favoritos",
+    "add_host": "Agregar esta organización a Mis favoritos",
+    "series_for": "(se repite según un horario: {title})",
+    "one_time_for": "(evento único: {title})",
+    "flexible_for": "(en cualquier momento: {title})",
+    "host_for": "({org})"
+  },
+  "tips": {
+    "summary": "Vea consejos de personas que ya hicieron este voluntariado:",
+    "about": "Estos consejos los escribieron personas voluntarias que asistieron a este turno, y una persona moderadora revisó cada uno. Un consejo es una recomendación práctica, como qué llevar, dónde estacionar o cómo encontrar la entrada. No es una reseña y no viene de la organización anfitriona. Para ver los datos oficiales, consulte la página de la organización anfitriona.",
+    "label": "Consejo de una persona voluntaria:"
   }
 }

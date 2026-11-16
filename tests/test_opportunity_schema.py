@@ -85,13 +85,16 @@ TEAM_FIELDS = ["team_required", "team_size", "team_task"]
 MAP_FIELDS = ["lat", "lon", "approximate"]
 # Decision 0036: optional machine translations; its own shape, since it also holds commitment.
 OWN_FIELDS = ["commitment", "machine_translations"]
+# Decision 0060 (favorites): optional org_id, as in a listing; never series_id.
+FAVORITE_FIELDS = ["org_id"]
 
 
-def test_fields_are_the_ones_decisions_0018_0020_0035_and_0036_name():
+def test_fields_are_the_ones_decisions_0018_0020_0035_0036_and_0060_name():
     schema = _load(OPPORTUNITY)
     assert sorted(schema["properties"]) == sorted(
-        DECISION_0018_FIELDS + TEAM_FIELDS + MAP_FIELDS + ["machine_translations"]
+        DECISION_0018_FIELDS + TEAM_FIELDS + MAP_FIELDS + FAVORITE_FIELDS + ["machine_translations"]
     )
+    assert "series_id" not in schema["properties"]
     assert sorted(schema["required"]) == sorted(DECISION_0018_FIELDS)
 
 

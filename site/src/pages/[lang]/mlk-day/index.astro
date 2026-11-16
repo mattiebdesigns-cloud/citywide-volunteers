@@ -16,6 +16,7 @@ import SearchBox from "../../../components/SearchBox.astro";
 import Base from "../../../layouts/Base.astro";
 import FlexibleFilterPanel from "../../../components/FlexibleFilterPanel.astro";
 import ListingCard from "../../../components/ui/ListingCard.astro";
+import CardFavorite from "../../../components/CardFavorite.astro";
 import { MLK_FILTERS_KEY } from "../../../scripts/device.ts";
 import { languagePaths, paths, siteData, translator } from "../../../lib/site.ts";
 import { cardSearchText, businessLabel, joinLabel, placeSpoken, placeText, requirementFacts, spotsLabel, typeLabel, whenText } from "../../../lib/words.ts";
@@ -123,6 +124,7 @@ const to = new Intl.DateTimeFormat(tr.lang, { year: "numeric", month: "long", da
                   shareUrl={paths.listing(lang, e.id)}
                   headingLevel={2}
                 />
+                <CardFavorite lang={lang} item={e} />
               </li>
             ))}
           </ul>

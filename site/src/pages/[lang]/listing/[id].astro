@@ -15,6 +15,11 @@ import Pill from "../../../components/ui/Pill.astro";
 import SpotsBadge from "../../../components/ui/SpotsBadge.astro";
 import { buildIcs } from "../../../lib/ics.ts";
 import AccountLinks from "../../../components/AccountLinks.astro";
+import CardFavorite from "../../../components/CardFavorite.astro";
+import FavoriteLink from "../../../components/FavoriteLink.astro";
+import { accountsUrl, hostFavoriteUrl } from "../../../lib/accounts.ts";
+import ListingTips from "../../../components/ListingTips.astro";
+import { publicNotes, timeNoteFor, tipsFor } from "../../../lib/public-notes.ts";
 import { paths, siteData, translator } from "../../../lib/site.ts";
 import type { PreparedListing } from "../../../lib/types.ts";
 import { joinLabel, placeText, splitAround, spotsLabel, timeText, typeLabel, whenText, whereLines } from "../../../lib/words.ts";
@@ -33,6 +38,10 @@ const t = tr.t;
 const alternates = Object.fromEntries(i18n.languages.map((code) => [code, paths.listing(code, e.id)]));
 
 const spots = spotsLabel(tr, e, builtAt);
+// Read once per build; empty when accounts are off or the read fails (decisions 0062, 0063).
+const notes = await publicNotes(settings);
+const tips = tipsFor(notes, e);
+const timeNote = timeNoteFor(notes, e, settings.site.timezone);
 // The organization's text in this page's language when the pipeline translated it
 // (decision 0036), else as the organization wrote it. The name is never translated.
 const shown = shownListing(e, lang);
@@ -100,6 +109,8 @@ const reportHref =
       <h1 id="listing-title" class="listing__title" lang={shown.title.lang}>{shown.title.text}</h1>
       <p class="listing__org">
         {hostBefore}<span lang={e.listing_language}>{e.org_name}</span>{hostAfter}
+        {/* ☆ for the host (decision 0060): only when accounts are on and the listing has an org_id. */}
+        <FavoriteLink lang={lang} href={hostFavoriteUrl(accountsUrl(settings), lang, e)} kind="host" name={e.org_name} nameLang={e.listing_language} layout="inline" />
       </p>
       {
         shown.translated ? (
@@ -138,6 +149,13 @@ const reportHref =
             <time datetime={e.start}>{tr.formatDate(e.start)}</time>
             <br />
             {timeText(tr, e)}
+            {/* Volunteer time note (decision 0062): beside the host's time, never on a sensitive listing. */}
+            {timeNote && (
+              <>
+                <br />
+                <span class="listing__time-note" data-time-note>{t("listing.time_note", { time: tr.formatTime(timeNote) })}</span>
+              </>
+            )}
             {e.endsNextDay && (
               <>
                 <br />
@@ -286,6 +304,7 @@ const reportHref =
       </p>
 
       {/* Account links (decision 0033; plan task 2.1): only when settings accounts.url is set. */}
+      <CardFavorite lang={lang} item={e} />
       <AccountLinks lang={lang} item={e} />
 
       <p class="listing__checked">
@@ -299,6 +318,9 @@ const reportHref =
         <br />
         <span class="muted">{t("report.mail_note")}</span>
       </p>
+
+      {/* Published tips (decision 0063): closed by default, only when there is one. */}
+      <ListingTips lang={lang} tips={tips} />
     </article>
   </div>
   <SharePanel lang={lang} />

@@ -70,6 +70,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from pvscrapers import ids
+
 TYPES = ("service", "training", "campaign", "protest_action")
 JOIN_METHODS = ("drop_in", "signup", "application")
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -283,6 +285,7 @@ class SourceDefaults:
         link: str,
         fetched_at: datetime,
         recurrence_rule: str | None = None,
+        series_key: str | None = None,
         spots_left: int | None = None,
         spots_total: int | None = None,
         full: bool = False,
@@ -293,11 +296,18 @@ class SourceDefaults:
         page, read at the same moment as `fetched_at` (decision 0008). Leave
         them out when the page shows none: never estimate, and never pass
         anything about who signed up.
+
+        series_key is the source's own id for a repeating event (for example a
+        feed's UID on an event with a repeat rule). It is used only for
+        series_id, and only when the listing repeats; never pass a title or a
+        date (docs/EVENT-FORMAT.md, "Ids for favorites").
         """
         _check_spots(spots_left, spots_total, full)
+        recurring = recurrence_rule is not None
         return {
             "id": event_id(self.source_id, own_id),
             "org_name": self.org_name,
+            "org_id": ids.org_id(self.org_name),
             "title": self.listing_title or title,
             "start": iso(start),
             "end": iso(end) if end is not None else None,
@@ -316,8 +326,15 @@ class SourceDefaults:
             "training_required": self.training_required,
             "clearances_required": self.clearances_required,
             "group_friendly": self.group_friendly,
-            "recurring": recurrence_rule is not None,
+            "recurring": recurring,
             "recurrence_rule": recurrence_rule,
+            "series_id": ids.series_id(
+                recurring=recurring,
+                source_id=self.source_id,
+                series_key=series_key,
+                org_name=self.org_name,
+                recurrence_rule=recurrence_rule,
+            ),
             "source_url": link,
             "source_id": self.source_id,
             "last_seen_at": iso(fetched_at),

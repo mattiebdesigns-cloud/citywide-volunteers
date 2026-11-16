@@ -13,7 +13,7 @@ export function getStaticPaths() {
 }
 
 export const GET: APIRoute = () => {
-  const { listings, opportunities, generatedAt } = siteData();
-  const body = listingsFile({ generated_at: generatedAt }, listings, opportunities);
+  const { listings, opportunities, generatedAt, settings } = siteData();
+  const body = listingsFile({ generated_at: generatedAt }, listings, opportunities, settings.site.timezone);
   return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
 };

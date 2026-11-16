@@ -2,6 +2,7 @@
   {
     "id": "example-orchard-group-b3a5981297018e28",
     "org_name": "Example Orchard Group",
+    "org_id": "o-23cc2d93e99bb1a8",
     "title": "POP Learning Orchard Work Day",
     "start": "2026-11-10T10:00:00-05:00",
     "end": "2026-11-10T12:30:00-05:00",
@@ -22,6 +23,7 @@
     "group_friendly": false,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://www.phillyorchards.org/events-new/pop-learning-orchard-work-day-2026-407-214-668-609-292-282-637/",
     "source_id": "example-orchard-group",
     "last_seen_at": "2026-11-05T18:38:17+00:00",
@@ -32,6 +34,7 @@
   {
     "id": "example-orchard-group-237b261624fce660",
     "org_name": "Example Orchard Group",
+    "org_id": "o-23cc2d93e99bb1a8",
     "title": "DATE CHANGED: Fair Amount Food Forest Workday",
     "start": "2026-11-10T15:00:00-05:00",
     "end": "2026-11-10T17:00:00-05:00",
@@ -52,6 +55,7 @@
     "group_friendly": false,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://www.phillyorchards.org/events-new/apple-pawpaw-festival-953/",
     "source_id": "example-orchard-group",
     "last_seen_at": "2026-11-05T18:38:17+00:00",
@@ -62,6 +66,7 @@
   {
     "id": "example-orchard-group-f1d08e0e89ff4dfb",
     "org_name": "Example Orchard Group",
+    "org_id": "o-23cc2d93e99bb1a8",
     "title": "Bartram’s Orchard Work Day",
     "start": "2026-11-14T09:30:00-05:00",
     "end": "2026-11-14T12:00:00-05:00",
@@ -82,6 +87,7 @@
     "group_friendly": false,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://www.phillyorchards.org/events-new/bartrams-orchard-work-day-580-370-830-734-806-636-163-992-939-695-853-236-682-927-676-388-811-819-223-267-723-263-115-625-196-105-458/",
     "source_id": "example-orchard-group",
     "last_seen_at": "2026-11-05T18:38:17+00:00",
@@ -92,6 +98,7 @@
   {
     "id": "example-orchard-group-9e1d3e3ba383ea2e",
     "org_name": "Example Orchard Group",
+    "org_id": "o-23cc2d93e99bb1a8",
     "title": "SPHS Food Forest Fall Workday",
     "start": "2026-11-14T10:00:00-05:00",
     "end": "2026-11-14T12:00:00-05:00",
@@ -112,6 +119,7 @@
     "group_friendly": false,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://www.phillyorchards.org/events-new/hort-center-food-forest-workday-450-658-579-261-812-524-174-488-275-816/",
     "source_id": "example-orchard-group",
     "last_seen_at": "2026-11-05T18:38:17+00:00",

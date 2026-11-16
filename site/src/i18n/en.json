@@ -218,7 +218,8 @@
     "share_failed": "Could not copy the link. Copy it from the address bar.",
     "full": "Full",
     "spots_left": {"one": "{count} spot left as of {day}", "other": "{count} spots left as of {day}"},
-    "spots_left_on": {"one": "{count} spot left as of {date}", "other": "{count} spots left as of {date}"}
+    "spots_left_on": {"one": "{count} spot left as of {date}", "other": "{count} spots left as of {date}"},
+    "time_note": "A previous volunteer shared that this shift starts at {time}, but the host's website lists the time shown."
   },
   "report": {
     "button": "Report a problem with this listing",
@@ -798,5 +799,18 @@
     "report_link": "Report a safety concern",
     "report_note": "This goes to the team at Philly Volunteers, not the host organization.",
     "sensitive_note": "30 days after this shift, your profile keeps only its hours, in a monthly total. The record of the shift itself is deleted."
+  },
+  "favorites": {
+    "add": "Add to My Favorites",
+    "add_host": "Add this host to My Favorites",
+    "series_for": "(repeats on a schedule: {title})",
+    "one_time_for": "(one-time event: {title})",
+    "flexible_for": "(any time: {title})",
+    "host_for": "({org})"
+  },
+  "tips": {
+    "summary": "See tips from previous volunteers:",
+    "about": "Volunteers who went to this shift wrote these tips, and a moderator checked each one. A tip is practical advice, such as what to bring, where to park or how to find the way in. It is not a review, and it does not come from the host. For the official details, check the host's page.",
+    "label": "A volunteer's tip:"
   }
 }

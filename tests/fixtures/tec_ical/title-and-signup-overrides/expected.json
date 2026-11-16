@@ -2,6 +2,7 @@
   {
     "id": "example-repair-group-ba6a04416e5f07f7",
     "org_name": "Example Repair Group",
+    "org_id": "o-01af1e7d1871d639",
     "title": "Volunteer fixer or helper at a Repair Fair",
     "start": "2026-11-12T18:00:00-05:00",
     "end": "2026-11-12T20:00:00-05:00",
@@ -22,6 +23,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://repair.example.org/event/repair-fair-2026nov/",
     "source_id": "example-repair-group",
     "last_seen_at": "2026-10-18T03:00:00-04:00",
@@ -32,6 +34,7 @@
   {
     "id": "example-repair-group-b71b8e42c598e675",
     "org_name": "Example Repair Group",
+    "org_id": "o-01af1e7d1871d639",
     "title": "Volunteer fixer or helper at a Repair Fair",
     "start": "2026-12-10T18:00:00-05:00",
     "end": "2026-12-10T20:00:00-05:00",
@@ -52,6 +55,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://repair.example.org/event/repair-fair-2026dec/",
     "source_id": "example-repair-group",
     "last_seen_at": "2026-10-18T03:00:00-04:00",

@@ -138,6 +138,8 @@ def parse_with_report(page_text: str, source: dict, fetched_at: datetime) -> Par
                 link=link,
                 fetched_at=fetched_at,
                 recurrence_rule=_rrule(event),
+                # The feed's UID names the repeating event itself (never a title or date).
+                series_key=event.text("UID"),
             )
         )
     return result

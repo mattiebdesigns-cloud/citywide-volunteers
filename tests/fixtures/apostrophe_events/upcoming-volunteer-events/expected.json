@@ -2,6 +2,7 @@
   {
     "id": "example-parks-program-7438d0d06eea81f4",
     "org_name": "Example Parks Program",
+    "org_id": "o-edda7a56ac721489",
     "title": "Boone Park Stewardship",
     "start": "2026-11-07T09:00:00-05:00",
     "end": "2026-11-07T10:00:00-05:00",
@@ -22,6 +23,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://loveyourpark.org/events/boone-park-stewardship11-2026",
     "source_id": "example-parks-program",
     "last_seen_at": "2026-11-05T18:38:15+00:00",
@@ -32,6 +34,7 @@
   {
     "id": "example-parks-program-5e1c3baf96170698",
     "org_name": "Example Parks Program",
+    "org_id": "o-edda7a56ac721489",
     "title": "Community Planting at Cobbs Creek Park",
     "start": "2026-11-07T09:00:00-05:00",
     "end": "2026-11-07T12:00:00-05:00",
@@ -52,6 +55,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://loveyourpark.org/events/cobbs-creek-community-workday-11-7-26",
     "source_id": "example-parks-program",
     "last_seen_at": "2026-11-05T18:38:15+00:00",
@@ -62,6 +66,7 @@
   {
     "id": "example-parks-program-3b289ec8b78997d2",
     "org_name": "Example Parks Program",
+    "org_id": "o-edda7a56ac721489",
     "title": "Second Saturday at Haddington Woods",
     "start": "2026-12-12T10:00:00-05:00",
     "end": "2026-12-12T12:00:00-05:00",
@@ -82,6 +87,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://loveyourpark.org/events/second-saturday-haddington-12-12",
     "source_id": "example-parks-program",
     "last_seen_at": "2026-11-05T18:38:15+00:00",
@@ -92,6 +98,7 @@
   {
     "id": "example-parks-program-fd350c9910280166",
     "org_name": "Example Parks Program",
+    "org_id": "o-edda7a56ac721489",
     "title": "Second Saturday at Boxer's Trail",
     "start": "2027-01-09T10:00:00-05:00",
     "end": "2027-01-09T12:00:00-05:00",
@@ -112,6 +119,7 @@
     "group_friendly": null,
     "recurring": false,
     "recurrence_rule": null,
+    "series_id": null,
     "source_url": "https://loveyourpark.org/events/second-saturday-boxers-trail-01-09",
     "source_id": "example-parks-program",
     "last_seen_at": "2026-11-05T18:38:15+00:00",

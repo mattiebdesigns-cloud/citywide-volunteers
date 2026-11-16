@@ -11,6 +11,10 @@ export type TimeOfDay = "morning" | "afternoon" | "evening" | "overnight";
 export interface Listing {
   id: string;
   org_name: string;
+  /** Stable id of the organization, for favorites (decision 0060). Optional; null when unknown. */
+  org_id?: string | null;
+  /** Stable id of a recurring listing's series, for favorites (decision 0060). Only when recurring. */
+  series_id?: string | null;
   title: string;
   start: string;
   end: string | null;
@@ -74,6 +78,7 @@ export interface Opportunity
     Listing,
     | "id"
     | "org_name"
+    | "org_id"
     | "title"
     | "address"
     | "area"
@@ -140,7 +145,17 @@ export interface SiteSettings extends I18nSettings {
    * The private account pages (decision 0033), such as https://my.phillyvolunteers.org.
    * Empty or missing: no account links, no sensitive-listing note, no /listings.json.
    */
-  accounts?: { url?: string; [key: string]: unknown };
+  accounts?: {
+    url?: string;
+    /**
+     * The account database's public address and its public (anon or publishable) key, for
+     * reading published tips and volunteer time notes at build time (decisions 0062, 0063).
+     * Never a service key: the build refuses one. Empty or missing: no tips, no notes.
+     */
+    public_api_url?: string;
+    public_api_key?: string;
+    [key: string]: unknown;
+  };
 }
 
 /** A listing plus facts worked out once at build time, in the city's time zone. */

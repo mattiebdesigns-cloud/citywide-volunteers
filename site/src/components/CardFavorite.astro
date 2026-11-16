@@ -1,0 +1,26 @@
+---
+/**
+ * The ☆ under a listing's card, and on its listing page (decision 0060; plan
+ * task 4.6). A recurring shift with a series id: "Add to My Favorites" saves
+ * the series. A listing that does not repeat: the same words, and the account
+ * page offers its host instead. A flexible opportunity (pass `flexible`): saved
+ * by its own id ("Flexible and team shifts", owner 2026-11-16). Nothing while
+ * accounts are off, or when the item has no usable id (lib/accounts.ts).
+ */
+import FavoriteLink from "./FavoriteLink.astro";
+import { siteData } from "../lib/site.ts";
+import { accountsUrl, eventFavorite, flexibleFavoriteUrl } from "../lib/accounts.ts";
+import { shownListing } from "../i18n/listing-text.ts";
+import type { Opportunity, PreparedListing } from "../lib/types.ts";
+
+type Props = { lang: string; item: PreparedListing; flexible?: false } | { lang: string; item: Opportunity; flexible: true };
+
+const { lang, item, flexible } = Astro.props;
+const base = accountsUrl(siteData().settings);
+const fav = flexible
+  ? { href: flexibleFavoriteUrl(base, lang, item.id), kind: "flexible" as const }
+  : eventFavorite(base, lang, item as PreparedListing);
+const title = shownListing(item, lang).title;
+---
+
+{fav && fav.href && <FavoriteLink lang={lang} href={fav.href} kind={fav.kind} name={title.text} nameLang={title.lang} />}

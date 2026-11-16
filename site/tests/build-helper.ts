@@ -4,7 +4,8 @@
 // the system temp folder) makes every build share site/.astro/.prerender, and
 // two builds at once then break each other. Each build also gets its own
 // Vite cache (PV_CACHE_DIR, read by astro.config.mjs).
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
+import { promisify } from "node:util";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +29,21 @@ export function astroBuild(dir: string, env: Record<string, string | undefined>)
     // PV_ALLOW_PLACEHOLDER_ART: until pv-design's About drawings land (decision 0025).
     env: { ...clean, ASTRO_TELEMETRY_DISABLED: "1", PV_CACHE_DIR: join(dir, "cache"), PV_ALLOW_PLACEHOLDER_ART: "1", ...env },
     stdio: "pipe",
+  });
+  return out;
+}
+
+/**
+ * The same build without blocking this process, for a test that serves
+ * something to the build from a local test server while it runs.
+ */
+export async function astroBuildAsync(dir: string, env: Record<string, string | undefined>): Promise<string> {
+  const out = join(dir, "dist");
+  const clean = { ...process.env };
+  for (const k of ["PV_SITE_URL", "PV_TEST_BUILD", "PV_OPPORTUNITIES", "PV_EVENTS", "PV_SETTINGS"]) delete clean[k];
+  await promisify(execFile)(join(site, "node_modules/.bin/astro"), ["build", "--outDir", out, "--silent"], {
+    cwd: site,
+    env: { ...clean, ASTRO_TELEMETRY_DISABLED: "1", PV_CACHE_DIR: join(dir, "cache"), PV_ALLOW_PLACEHOLDER_ART: "1", ...env },
   });
   return out;
 }

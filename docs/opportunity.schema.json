@@ -41,6 +41,9 @@
     "org_name": {
       "$ref": "urn:citywide-volunteers:schema:event#/properties/org_name"
     },
+    "org_id": {
+      "$ref": "urn:citywide-volunteers:schema:event#/properties/org_id"
+    },
     "title": {
       "description": "Name of the program, in the language the organization wrote it.",
       "$ref": "urn:citywide-volunteers:schema:event#/properties/title"

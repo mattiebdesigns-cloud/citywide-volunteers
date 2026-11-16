@@ -23,7 +23,7 @@ No other top-level fields are allowed.
 
 ## One listing
 
-Every field in the first table must be present in every listing, even when its value is unknown. Some groups are optional, so older files still pass: `section` (marked optional in the table), and the tag, open-spots and team fields in the later tables. Two more groups are added by the pipeline only when it has something to put in them: the map point and machine translations. No other fields are allowed, so nothing extra (above all, nothing about people) can slip in.
+Every field in the first table must be present in every listing, even when its value is unknown. Some groups are optional, so older files still pass: `section` (marked optional in the table), and the tag, open-spots, team and favorites-id fields in the later tables. Two more groups are added by the pipeline only when it has something to put in them: the map point and machine translations. No other fields are allowed, so nothing extra (above all, nothing about people) can slip in.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -124,6 +124,50 @@ The site's maps (decision 0035) put each listing on a map. The pipeline, not the
 - A sensitive listing gets a point the same way as any other: the meetup place the organization itself published (owner, Q119).
 - Flexible opportunities can carry the same three fields.
 
+### Ids for favorites: org_id and series_id (optional)
+
+A volunteer can save a recurring shift or a host organization as a favorite. A favorite is kept as an id, never a name, so each listing carries two more ids. Both are optional so older files still pass; new output always writes them (`null` when there is none).
+
+| Field | Type | Notes |
+|---|---|---|
+| org_id | `o-` and 16 hex characters, or null | The same organization gets the same id in every listing, every source and every run. null only when the normalized name is empty |
+| series_id | `s-` and 16 hex characters, or null | Only on a listing with `recurring: true`: the same id for every date of one repeating shift. null on every other listing |
+
+**Normalizing an organization name** (the same steps the pipeline already uses to match names):
+
+1. Unicode NFKD, then drop the combining marks (accents), then case-fold.
+2. Replace `&` with ` and `.
+3. Replace every run of characters that are not `a`-`z` or `0`-`9` with one space, and split into words.
+4. Drop a first word `the`. Then, while the last word is one of `inc`, `incorporated`, `llc`, `ltd`, `co`, `corp`, `corporation`, `org`, drop it.
+5. Join the words with single spaces. For example "The Food Trust, Inc." becomes `food trust`.
+
+**org_id** = `o-` + the first 16 hex characters (lowercase) of SHA-256 over the UTF-8 text `org-id`, the byte 0x1F, and the normalized name. The `org-id` prefix keeps it from matching any other fingerprint made from the same name.
+
+**series_id** = `s-` + the first 16 hex characters of SHA-256 over the UTF-8 text joined by the byte 0x1F:
+
+- when the source gives its own key for the series (for example a repeating event's parent id): `series`, `source_id`, that key;
+- otherwise: `series`, `source_id`, the normalized organization name, `recurrence_rule`.
+
+If the listing is recurring but has neither a series key nor a `recurrence_rule`, `series_id` is null: there is no safe way to tell its dates belong together. Never use the title or the date in the recipe; a title can be reworded and the date changes with every shift.
+
+- A sensitive listing gets both ids the same way as any other. What the site does with a favorite of a sensitive listing is decided by the site, not the format.
+- Flexible opportunities carry `org_id` too, but never `series_id`.
+
+### place_id: worked out by the site, not in events.json
+
+Published tips from earlier volunteers can be tied to a place, so a tip stays useful week after week. The key for a place is `place_id`. It is **not a field in events.json** or in the opportunities file, and scrapers never write it. The calendar site works it out when it builds, from each listing's `org_id` and `address`, and puts it in the site's `/listings.json`. The account database only checks its shape.
+
+| Field | Type | Notes |
+|---|---|---|
+| place_id | `p-` and 16 hex characters, or null | The same organization at the same address gets the same id in every listing and every build. null when `org_id` is null or the normalized address is empty |
+
+**Normalizing an address**: the name steps 1, 2, 3 and 5 above, with nothing dropped (no step 4: a first word `the` and the suffixes stay). For example "The Café & Garden, 12 Main St." becomes `the cafe and garden 12 main st`.
+
+**place_id** = `p-` + the first 16 hex characters (lowercase) of SHA-256 over the UTF-8 text `place`, the byte 0x1F, the listing's whole `org_id` (with its `o-`), the byte 0x1F, and the normalized address.
+
+- A sensitive listing gets a `place_id` the same way as any other.
+- A flexible opportunity gets one too, when it has an `org_id` and an address.
+
 ### Machine translations (optional)
 
 On a page in another language, the site shows the organization's own words machine translated, labeled "Translated automatically", with the original one tap away (decision 0036). The pipeline adds them after the run.
@@ -152,12 +196,14 @@ If the source does not say, record that it does not say. Each field has exactly 
 - Every other field that can be unknown uses `null`: `end`, `address`, `section`, `neighborhood_or_town`, `cause`, `host_type`, `faith_tradition`, `activity`, `min_age`, `training_required`, `clearances_required`, `group_friendly`, `team_size`, `team_task`, `recurrence_rule`.
 - `photos_allowed` is the one field with a default: true, unless the listing says "no photos".
 - `sensitive` has no unknown: when unsure, write true.
+- `org_id` and `series_id` use `null` when there is none (see "Ids for favorites").
 - `spots_left` and `spots_total` use `null` when the page shows no count; `full` is false unless the page says full. All three may be left out of older files.
 
 ## Rules the schema checks
 
 - A `protest_action` listing must have `sensitive: true`.
 - A listing with a `recurrence_rule` must have `recurring: true`.
+- A listing with a `series_id` must have `recurring: true`; `org_id` and `series_id`, when not null, must have their fixed shape (`o-` or `s-` and 16 lowercase hex characters).
 - A listing with `full: true` must have `spots_left` of 0 or null.
 - `lat`, `lon` and `approximate` come together or not at all, and `lat` and `lon` are in range.
 - `machine_translations` holds only `title` and `team_task` (plus `commitment` for a flexible opportunity), under language codes.
@@ -191,11 +237,11 @@ Some volunteer programs have no set dates or times: you contact the organization
 { "generated_at": "2026-11-05T06:00:00-05:00", "opportunities": [ ... ] }
 ```
 
-- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`, and optionally `team_required, team_size, team_task` and the map point `lat, lon, approximate`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
+- **Same fields as a listing, without the dates.** An opportunity has these listing fields, with the same meaning and the same rules: `id, org_name, title, address, area, section, neighborhood_or_town, cause, type, sensitive, photos_allowed, signup_url, join_method, min_age, listing_language, spanish_spoken, training_required, clearances_required, group_friendly, source_url, source_id, last_seen_at, host_type, faith_tradition, activity`, and optionally `org_id`, `team_required, team_size, team_task` and the map point `lat, lon, approximate`. The opportunity schema points at the listing schema for each of them, so the two cannot drift apart.
 - **No `start`, `end`, `recurring` or `recurrence_rule`.** A schedule is never guessed from opening hours. If an organization publishes real dates, those dates are listings in `events.json` instead.
 - **No open-spots fields** (`spots_left`, `spots_total`, `full`).
 - **One extra field, `commitment`:** the time the organization asks for, in its own words, for example "2 hours a week for 6 months". `null` when the organization does not say. Never worked out by us.
-- **Every field is required**, except the team fields, the map point and `machine_translations`. This is a new file with no older copies, so `section`, `host_type`, `faith_tradition` and `activity` are always written (`null` when not known).
+- **Every field is required**, except the team fields, the map point, `org_id` and `machine_translations`. This is a new file with no older copies, so `section`, `host_type`, `faith_tradition` and `activity` are always written (`null` when not known).
 - **`machine_translations`** has the same shape as in a listing, and may also translate `commitment`.
 - **Same unknown rules:** `join_method` and `spanish_spoken` use `"unknown"`; every other unknown is `null`. A `protest_action` program must have `sensitive: true`.
 - `section` and `neighborhood_or_town` come from the address in the same way as for listings.

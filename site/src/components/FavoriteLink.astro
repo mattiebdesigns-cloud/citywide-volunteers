@@ -1,0 +1,78 @@
+---
+/**
+ * A ☆ link to My Favorites on the account pages (decision 0060, design
+ * accepted 2026-11-16; plan task 4.6; PROJECT.md 2, 6, 8.1).
+ *
+ * - kind "series": a recurring shift, saved as itself (#add=series:<series_id>).
+ * - kind "one-time": a listing that does not repeat; the account page asks
+ *   whether to favorite its host instead (#offer=host:<org_id>).
+ * - kind "host": the host organization (#add=host:<org_id>).
+ * - kind "flexible": a flexible opportunity, by its own id (#add=flexible:<id>).
+ *
+ * The calendar keeps no favorites of its own, so the ☆ is always an outline:
+ * the account page shows what is saved. The caller passes an href only when
+ * accounts are on (settings accounts.url) and the listing has the id; with no
+ * href nothing is drawn. Sensitive listings keep the link: the account pages
+ * keep those favorites on the device only (decision 0060, Q205 (a)).
+ *
+ * Each link names its item for screen readers ("Add to My Favorites
+ * (repeats on a schedule: <title>)"), the name in its own language. The star is
+ * decorative; the words say what the link does. 44 px tall target.
+ */
+import { translator } from "../lib/site.ts";
+import { templateParts } from "../lib/map.ts";
+
+interface Props {
+  lang: string;
+  href: string | null | undefined;
+  kind: "series" | "one-time" | "host" | "flexible";
+  /** The listing's title, or the host's name for kind "host". */
+  name: string;
+  nameLang: string;
+  /** "inline" sits in a line of text (beside the host's name); "block" is its own line. */
+  layout?: "block" | "inline";
+}
+
+const { lang, href, kind, name, nameLang, layout = "block" } = Astro.props;
+const t = translator(lang).t;
+const visible = kind === "host" ? t("favorites.add_host") : t("favorites.add");
+const forKeys = { host: "favorites.host_for", series: "favorites.series_for", "one-time": "favorites.one_time_for", flexible: "favorites.flexible_for" };
+const forKey = forKeys[kind];
+const varName = kind === "host" ? "org" : "title";
+const parts = templateParts(t(forKey), { [varName]: { text: name, lang: nameLang } });
+const Tag = layout === "inline" ? "span" : "p";
+---
+
+{
+  href && (
+    <Tag class:list={["favorite-link", `favorite-link--${layout}`]} data-favorite={kind}>
+      <a href={href} rel="noopener noreferrer">
+        <span class="favorite-link__star" aria-hidden="true">☆</span>
+        <span>{visible}</span>
+        <span class="sr-only"> {parts.map((p) => (p.lang ? <span lang={p.lang}>{p.text}</span> : p.text))}</span>
+      </a>
+    </Tag>
+  )
+}
+
+<style>
+  .favorite-link--block {
+    margin: var(--space-2) 0 0;
+  }
+  .favorite-link--inline {
+    display: inline-block;
+    margin-inline-start: var(--space-2);
+  }
+  .favorite-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    font-weight: var(--weight-strong);
+  }
+  .favorite-link__star {
+    font-size: 1.25em;
+    line-height: 1;
+  }
+</style>

@@ -1,0 +1,65 @@
+---
+/**
+ * "See tips from previous volunteers:" at the bottom of a listing page
+ * (decision 0063, built from decision 0052; PROJECT.md 11.1). Closed by
+ * default: a native <details>, so it opens with a keyboard and a screen reader
+ * says whether it is open, with no script. Shown only when the listing has a
+ * published tip. The section says plainly what a tip is and is not. No name,
+ * ever; each tip carries the language it is written in.
+ */
+import { translator } from "../lib/site.ts";
+import type { Tip } from "../lib/public-notes.ts";
+
+interface Props {
+  lang: string;
+  tips: Tip[];
+}
+
+const { lang, tips } = Astro.props;
+const t = translator(lang).t;
+---
+
+{
+  tips.length > 0 && (
+    <details class="listing-tips" data-tips>
+      <summary class="listing-tips__summary">{t("tips.summary")}</summary>
+      <p class="listing-tips__about muted">{t("tips.about")}</p>
+      <ul class="listing-tips__list">
+        {tips.map((tip) => (
+          <li>
+            <span class="listing-tips__label">{t("tips.label")}</span>{" "}
+            <span lang={tip.language}>{tip.text}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+<style>
+  .listing-tips {
+    margin-block: var(--space-4);
+  }
+  /* Keeps the browser's own open/closed arrow (display stays list-item);
+     the padding makes the tap area at least 44 px tall. */
+  .listing-tips__summary {
+    min-height: var(--tap);
+    padding-block: var(--space-2);
+    cursor: pointer;
+    font-weight: var(--weight-strong);
+  }
+  .listing-tips__about {
+    margin: var(--space-2) 0;
+  }
+  .listing-tips__list {
+    margin: 0;
+    padding-inline-start: var(--space-4);
+  }
+  .listing-tips__list li {
+    margin-block: var(--space-2);
+    overflow-wrap: anywhere;
+  }
+  .listing-tips__label {
+    font-weight: var(--weight-strong);
+  }
+</style>
