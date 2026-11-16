@@ -39,7 +39,8 @@ process.env.PV_SETTINGS_PATH = process.env.PV_SETTINGS
 
 export default defineConfig({
   site: process.env.PV_SITE_URL || undefined,
-  // Tests give each build its own cache folder (tests/build-helper.ts).
+  // Tests give each build its own cache folders, Astro's and Vite's (tests/build-helper.ts),
+  // so builds running at once never share node_modules/.vite.
   ...(process.env.PV_CACHE_DIR ? { cacheDir: process.env.PV_CACHE_DIR } : {}),
   output: "static",
   trailingSlash: "ignore",
@@ -52,5 +53,9 @@ export default defineConfig({
   // CSS through PostCSS, not minified: Vite never calls lightningcss (MPL-2.0),
   // which is replaced by an empty stand-in (vendor/no-lightningcss). Changing
   // either setting makes the build stop with an error. tests/build-guards.test.ts checks both.
-  vite: { css: { transformer: "postcss" }, build: { cssMinify: false } },
+  vite: {
+    css: { transformer: "postcss" },
+    build: { cssMinify: false },
+    ...(process.env.PV_CACHE_DIR ? { cacheDir: `${process.env.PV_CACHE_DIR}/vite` } : {}),
+  },
 });
